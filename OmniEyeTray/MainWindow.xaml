@@ -427,7 +427,7 @@
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding CreatedAt, StringFormat=\{0:dd.MM.yyyy HH:mm\}}" 
                                                        FontSize="11" Foreground="#777777" VerticalAlignment="Center" Margin="0,0,14,0"/>
-                                            <ui:Button Appearance="Subtle" Icon="{ui:SymbolIcon Symbol=Dismiss16}" 
+                                            <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon Symbol=Dismiss16}" 
                                                        Padding="6" Click="BtnDeleteEntry_Click" ToolTip="Удалить из Белого списка" 
                                                        Foreground="#FF99A4"/>
                                         </StackPanel>

@@ -113,7 +113,10 @@ public class FirewallEnforcer : IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to apply Zero-Trust Firewall Policy: {Message}", ex.Message);
-            throw;
+            if (!_config.DeveloperMode)
+            {
+                throw;
+            }
         }
     }
 
