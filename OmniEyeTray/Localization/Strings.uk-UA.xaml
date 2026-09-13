@@ -146,4 +146,29 @@
     <sys:String x:Key="Alert_Kill">ЗНИЩИТИ ПРОЦЕС</sys:String>
     <sys:String x:Key="Alert_Ignore">ІГНОРУВАТИ</sys:String>
 
+    <!-- Network Monitor -->
+    <sys:String x:Key="NetMon_Title">МОНІТОРИНГ МЕРЕЖЕВИХ З'ЄДНАНЬ</sys:String>
+    <sys:String x:Key="NetMon_Subtitle">Телеметрія активних сокетів та співставлення процесів з політикою Zero-Trust</sys:String>
+    <sys:String x:Key="NetMon_SearchPlaceholder">Пошук за назвою процесу, PID, IP-адресою чи портом...</sys:String>
+    <sys:String x:Key="NetMon_FilterAll">Усі протоколи</sys:String>
+    <sys:String x:Key="NetMon_FilterTcp">Лише TCP</sys:String>
+    <sys:String x:Key="NetMon_FilterUdp">Лише UDP</sys:String>
+    <sys:String x:Key="NetMon_AutoRefresh">Автооновлення (3с)</sys:String>
+    <sys:String x:Key="NetMon_Paused">На паузі</sys:String>
+    <sys:String x:Key="NetMon_BtnRefresh">Оновити</sys:String>
+    <sys:String x:Key="NetMon_ColProcess">ПРОЦЕС</sys:String>
+    <sys:String x:Key="NetMon_ColProtocol">ПРОТОКОЛ</sys:String>
+    <sys:String x:Key="NetMon_ColLocal">ЛОКАЛЬНА АДРЕСА</sys:String>
+    <sys:String x:Key="NetMon_ColRemote">ВІДДАЛЕНА АДРЕСА</sys:String>
+    <sys:String x:Key="NetMon_ColState">СТАН</sys:String>
+    <sys:String x:Key="NetMon_ColStatus">СТАТУС</sys:String>
+    <sys:String x:Key="NetMon_ColAction">ДІЯ</sys:String>
+    <sys:String x:Key="NetMon_StatusWhitelisted">ДОЗВОЛЕНО</sys:String>
+    <sys:String x:Key="NetMon_StatusBlocked">ЗАБЛОКОВАНО</sys:String>
+    <sys:String x:Key="NetMon_StatusException">ВИНЯТОК СИСТЕМИ</sys:String>
+    <sys:String x:Key="NetMon_StatusPermissive">ДОЗВІЛЬНИЙ</sys:String>
+    <sys:String x:Key="NetMon_ActionAdd">+ У білий список</sys:String>
+    <sys:String x:Key="NetMon_CountFormat">Активних сокетів: {0}</sys:String>
+    <sys:String x:Key="NetMon_Empty">Немає активних мережевих з'єднань за вказаними критеріями.</sys:String>
+
 </ResourceDictionary>

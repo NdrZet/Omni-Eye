@@ -33,6 +33,7 @@ public class Program
         await RunTestAsync("TEST 4: Named Pipe IPC Server/Client Protocol & Security Prompts", Test4_NamedPipeIpcAndPrompts);
         await RunTestAsync("TEST 5: DeveloperMode Lifecycle & Graceful Rollback", Test5_DeveloperModeLifecycle);
         await RunTestAsync("TEST 6: Dynamic Firewall Policy Switching via IPC", Test6_DynamicFirewallPolicySwitching);
+        await RunTestAsync("TEST 7: Active Network Connection Monitoring & Process Attribution", Test7_ActiveNetworkConnectionMonitoring);
 
         Console.WriteLine();
         Console.WriteLine("------------------------------------------------------------------");
@@ -398,5 +399,64 @@ public class Program
 
         ipcServer.Stop();
         try { Directory.Delete(testDir, recursive: true); } catch { }
+    }
+
+    private static async Task Test7_ActiveNetworkConnectionMonitoring()
+    {
+        // 1. Verify resolution of the current test process
+        int currentPid = Environment.ProcessId;
+        string currentProcessPath = Environment.ProcessPath ?? Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
+        var (resolvedName, resolvedPath) = NetworkMonitorService.ResolveProcess(currentPid);
+
+        Console.WriteLine($" -> Current process PID: {currentPid}, Resolved: '{resolvedName}', Path: '{resolvedPath}'");
+        if (string.IsNullOrEmpty(resolvedName))
+            throw new Exception("ResolveProcess failed to resolve current process name.");
+
+        // 2. Mock a whitelist with the current process path
+        var mockWhitelist = new List<string> { resolvedPath };
+
+        // 3. Enumerate active connections with Zero-Trust correlation (DefaultOutboundAction: BLOCK)
+        var connections = await Task.Run(() => NetworkMonitorService.GetActiveConnections(mockWhitelist, isOutboundBlocked: true));
+        Console.WriteLine($" -> Total active sockets detected: {connections.Count}");
+
+        if (connections.Count == 0)
+            throw new Exception("Expected at least 1 active network socket on Windows.");
+
+        int tcpCount = 0;
+        int udpCount = 0;
+        int whitelistedCount = 0;
+        int blockedCount = 0;
+        int exceptionCount = 0;
+
+        foreach (var conn in connections)
+        {
+            if (conn.Protocol == NetworkProtocol.Tcp) tcpCount++;
+            else if (conn.Protocol == NetworkProtocol.Udp) udpCount++;
+
+            if (conn.EnforcementStatus == ZeroTrustEnforcementStatus.Whitelisted) whitelistedCount++;
+            else if (conn.EnforcementStatus == ZeroTrustEnforcementStatus.Blocked) blockedCount++;
+            else if (conn.EnforcementStatus == ZeroTrustEnforcementStatus.SystemException) exceptionCount++;
+
+            // Check endpoint format integrity
+            if (string.IsNullOrEmpty(conn.LocalEndpoint) || !conn.LocalEndpoint.Contains(':'))
+                throw new Exception($"Invalid LocalEndpoint format: '{conn.LocalEndpoint}'");
+
+            if (string.IsNullOrEmpty(conn.StatusBadgeBackground) || !conn.StatusBadgeBackground.StartsWith('#'))
+                throw new Exception($"Invalid StatusBadgeBackground hex color for {conn.EnforcementStatus}");
+
+            if (string.IsNullOrEmpty(conn.ProtocolBadgeBackground) || !conn.ProtocolBadgeBackground.StartsWith('#'))
+                throw new Exception($"Invalid ProtocolBadgeBackground hex color for {conn.Protocol}");
+        }
+
+        Console.WriteLine($" -> TCP Sockets: {tcpCount}, UDP Sockets: {udpCount}");
+        Console.WriteLine($" -> Policy correlation breakdown: Whitelisted: {whitelistedCount}, Blocked: {blockedCount}, Exceptions: {exceptionCount}");
+
+        // 4. Test Permissive mode correlation (DefaultOutboundAction: ALLOW)
+        var permissiveConnections = await Task.Run(() => NetworkMonitorService.GetActiveConnections(mockWhitelist, isOutboundBlocked: false));
+        int permissiveCount = permissiveConnections.Count(c => c.EnforcementStatus == ZeroTrustEnforcementStatus.Permissive);
+        Console.WriteLine($" -> Permissive mode sockets: {permissiveCount}");
+
+        if (permissiveCount == 0 && permissiveConnections.Count > 0)
+            throw new Exception("Expected sockets to evaluate to Permissive when isOutboundBlocked=false and not in whitelist.");
     }
 }

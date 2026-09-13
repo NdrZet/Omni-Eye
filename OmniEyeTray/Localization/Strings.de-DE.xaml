@@ -146,4 +146,29 @@
     <sys:String x:Key="Alert_Kill">PROZESS BEENDEN</sys:String>
     <sys:String x:Key="Alert_Ignore">IGNORIEREN</sys:String>
 
+    <!-- Network Monitor -->
+    <sys:String x:Key="NetMon_Title">AKTIVE NETZWERKVERBINDUNGEN</sys:String>
+    <sys:String x:Key="NetMon_Subtitle">Live-Socket-Telemetrie und Prozesszuordnung abgestimmt auf Zero-Trust-Firewall-Richtlinie</sys:String>
+    <sys:String x:Key="NetMon_SearchPlaceholder">Nach Prozessname, PID, IP-Adresse oder Port filtern...</sys:String>
+    <sys:String x:Key="NetMon_FilterAll">Alle Protokolle</sys:String>
+    <sys:String x:Key="NetMon_FilterTcp">Nur TCP</sys:String>
+    <sys:String x:Key="NetMon_FilterUdp">Nur UDP</sys:String>
+    <sys:String x:Key="NetMon_AutoRefresh">Auto-Aktualisierung (3s)</sys:String>
+    <sys:String x:Key="NetMon_Paused">Pausiert</sys:String>
+    <sys:String x:Key="NetMon_BtnRefresh">Aktualisieren</sys:String>
+    <sys:String x:Key="NetMon_ColProcess">PROZESS</sys:String>
+    <sys:String x:Key="NetMon_ColProtocol">PROTOKOLL</sys:String>
+    <sys:String x:Key="NetMon_ColLocal">LOKALER ENDPUNKT</sys:String>
+    <sys:String x:Key="NetMon_ColRemote">ENTFERNTER ENDPUNKT</sys:String>
+    <sys:String x:Key="NetMon_ColState">STATUS</sys:String>
+    <sys:String x:Key="NetMon_ColStatus">RICHTLINIE</sys:String>
+    <sys:String x:Key="NetMon_ColAction">AKTION</sys:String>
+    <sys:String x:Key="NetMon_StatusWhitelisted">FREIGEGEBEN</sys:String>
+    <sys:String x:Key="NetMon_StatusBlocked">BLOCKIERT</sys:String>
+    <sys:String x:Key="NetMon_StatusException">SYSTEM-AUSNAHME</sys:String>
+    <sys:String x:Key="NetMon_StatusPermissive">DURCHLÄSSIG</sys:String>
+    <sys:String x:Key="NetMon_ActionAdd">+ Zur Whitelist hinzufügen</sys:String>
+    <sys:String x:Key="NetMon_CountFormat">Aktive Sockets: {0}</sys:String>
+    <sys:String x:Key="NetMon_Empty">Keine aktiven Netzwerkverbindungen gefunden.</sys:String>
+
 </ResourceDictionary>

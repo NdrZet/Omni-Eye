@@ -146,4 +146,29 @@
     <sys:String x:Key="Alert_Kill">KILL PROCESS</sys:String>
     <sys:String x:Key="Alert_Ignore">IGNORE</sys:String>
 
+    <!-- Network Monitor -->
+    <sys:String x:Key="NetMon_Title">ACTIVE NETWORK CONNECTIONS</sys:String>
+    <sys:String x:Key="NetMon_Subtitle">Live socket telemetry and process attribution correlated with Zero-Trust firewall policy</sys:String>
+    <sys:String x:Key="NetMon_SearchPlaceholder">Filter by process name, PID, IP address or port...</sys:String>
+    <sys:String x:Key="NetMon_FilterAll">All Protocols</sys:String>
+    <sys:String x:Key="NetMon_FilterTcp">TCP Only</sys:String>
+    <sys:String x:Key="NetMon_FilterUdp">UDP Only</sys:String>
+    <sys:String x:Key="NetMon_AutoRefresh">Auto-refresh (3s)</sys:String>
+    <sys:String x:Key="NetMon_Paused">Paused</sys:String>
+    <sys:String x:Key="NetMon_BtnRefresh">Refresh</sys:String>
+    <sys:String x:Key="NetMon_ColProcess">PROCESS</sys:String>
+    <sys:String x:Key="NetMon_ColProtocol">PROTOCOL</sys:String>
+    <sys:String x:Key="NetMon_ColLocal">LOCAL ENDPOINT</sys:String>
+    <sys:String x:Key="NetMon_ColRemote">REMOTE ENDPOINT</sys:String>
+    <sys:String x:Key="NetMon_ColState">STATE</sys:String>
+    <sys:String x:Key="NetMon_ColStatus">STATUS</sys:String>
+    <sys:String x:Key="NetMon_ColAction">ACTION</sys:String>
+    <sys:String x:Key="NetMon_StatusWhitelisted">WHITELISTED</sys:String>
+    <sys:String x:Key="NetMon_StatusBlocked">BLOCKED</sys:String>
+    <sys:String x:Key="NetMon_StatusException">SYSTEM EXCEPTION</sys:String>
+    <sys:String x:Key="NetMon_StatusPermissive">PERMISSIVE</sys:String>
+    <sys:String x:Key="NetMon_ActionAdd">+ Add to Whitelist</sys:String>
+    <sys:String x:Key="NetMon_CountFormat">Active sockets: {0}</sys:String>
+    <sys:String x:Key="NetMon_Empty">No active network connections matching criteria.</sys:String>
+
 </ResourceDictionary>

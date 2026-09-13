@@ -146,4 +146,29 @@
     <sys:String x:Key="Alert_Kill">プロセスを強制終了</sys:String>
     <sys:String x:Key="Alert_Ignore">無視する</sys:String>
 
+    <!-- Network Monitor -->
+    <sys:String x:Key="NetMon_Title">アクティブなネットワーク接続</sys:String>
+    <sys:String x:Key="NetMon_Subtitle">ゼロトラストファイアウォールポリシーと連動したソケットテレメトリとプロセス特定</sys:String>
+    <sys:String x:Key="NetMon_SearchPlaceholder">プロセス名、PID、IPアドレスまたはポートで検索...</sys:String>
+    <sys:String x:Key="NetMon_FilterAll">すべてのプロトコル</sys:String>
+    <sys:String x:Key="NetMon_FilterTcp">TCP のみ</sys:String>
+    <sys:String x:Key="NetMon_FilterUdp">UDP のみ</sys:String>
+    <sys:String x:Key="NetMon_AutoRefresh">自動更新 (3秒)</sys:String>
+    <sys:String x:Key="NetMon_Paused">一時停止中</sys:String>
+    <sys:String x:Key="NetMon_BtnRefresh">更新</sys:String>
+    <sys:String x:Key="NetMon_ColProcess">プロセス</sys:String>
+    <sys:String x:Key="NetMon_ColProtocol">プロトコル</sys:String>
+    <sys:String x:Key="NetMon_ColLocal">ローカルエンドポイント</sys:String>
+    <sys:String x:Key="NetMon_ColRemote">リモートエンドポイント</sys:String>
+    <sys:String x:Key="NetMon_ColState">状態</sys:String>
+    <sys:String x:Key="NetMon_ColStatus">ステータス</sys:String>
+    <sys:String x:Key="NetMon_ColAction">アクション</sys:String>
+    <sys:String x:Key="NetMon_StatusWhitelisted">ホワイトリスト</sys:String>
+    <sys:String x:Key="NetMon_StatusBlocked">ブロック中</sys:String>
+    <sys:String x:Key="NetMon_StatusException">システム例外</sys:String>
+    <sys:String x:Key="NetMon_StatusPermissive">許可モード</sys:String>
+    <sys:String x:Key="NetMon_ActionAdd">+ ホワイトリストに追加</sys:String>
+    <sys:String x:Key="NetMon_CountFormat">アクティブソケット: {0}</sys:String>
+    <sys:String x:Key="NetMon_Empty">条件に一致するアクティブなネットワーク接続はありません。</sys:String>
+
 </ResourceDictionary>

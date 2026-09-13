@@ -31,10 +31,13 @@ public partial class MainWindow : FluentWindow
     private bool _isOutboundBlocked = true;
     private bool _reallyExit = false;
     private readonly ICollectionView _whitelistView;
+    private readonly ICollectionView _connectionsView;
+    private readonly System.Windows.Threading.DispatcherTimer _netMonTimer;
     private string _currentTab = "Dashboard";
     private int _lastBlockedAttempts = 0;
 
     public ObservableCollection<WhitelistEntry> WhitelistEntries { get; set; } = new();
+    public ObservableCollection<NetworkConnectionInfo> NetworkConnections { get; set; } = new();
 
     public MainWindow()
     {
@@ -48,6 +51,16 @@ public partial class MainWindow : FluentWindow
         _whitelistView.SortDescriptions.Add(new SortDescription(nameof(WhitelistEntry.AppGroup), ListSortDirection.Ascending));
         _whitelistView.SortDescriptions.Add(new SortDescription(nameof(WhitelistEntry.FileName), ListSortDirection.Ascending));
         ListAppGroups.ItemsSource = _whitelistView;
+
+        _connectionsView = CollectionViewSource.GetDefaultView(NetworkConnections);
+        _connectionsView.Filter = FilterConnections;
+        DgConnections.ItemsSource = _connectionsView;
+
+        _netMonTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(3)
+        };
+        _netMonTimer.Tick += async (s, e) => await RefreshNetworkConnectionsAsync();
 
         InitializeTrayIcon();
 
@@ -112,6 +125,13 @@ public partial class MainWindow : FluentWindow
             }
 
             UpdateFirewallPolicyUI(_isOutboundBlocked);
+
+            foreach (var conn in NetworkConnections)
+            {
+                conn.StatusText = LocalizationManager.GetString(conn.StatusResourceKey);
+            }
+            _connectionsView?.Refresh();
+            UpdateConnectionsCountBadge();
 
             int groupCount = WhitelistEntries.Select(x => x.AppGroup).Distinct(StringComparer.OrdinalIgnoreCase).Count();
             TxtCardWhitelistCount.Text = LocalizationManager.GetString("Metric_WhitelistCountFormat", groupCount, WhitelistEntries.Count);
@@ -261,7 +281,27 @@ public partial class MainWindow : FluentWindow
         if (dialog.ShowDialog() != true)
             return;
 
-        var primaryFilePath = dialog.FileName;
+        await AddExecutableToWhitelistWithDiscoveryAsync(dialog.FileName);
+    }
+
+    private async void BtnAddConnectionToWhitelist_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.FrameworkElement elem && elem.Tag is string exePath && !string.IsNullOrEmpty(exePath))
+        {
+            if (File.Exists(exePath))
+            {
+                await AddExecutableToWhitelistWithDiscoveryAsync(exePath);
+                await RefreshNetworkConnectionsAsync();
+            }
+            else
+            {
+                MessageBox.Show($"File not found: {exePath}", LocalizationManager.GetString("Msg_ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+    }
+
+    private async Task AddExecutableToWhitelistWithDiscoveryAsync(string primaryFilePath)
+    {
         var appName = Path.GetFileNameWithoutExtension(primaryFilePath);
 
         // 1. Discover companion binaries in the same application directory tree
@@ -592,6 +632,11 @@ public partial class MainWindow : FluentWindow
             TxtFirewallPolicyDesc.Text = LocalizationManager.GetString("Firewall_PolicyDescAllow");
             BtnTogglePolicy.Content = LocalizationManager.GetString("Firewall_BtnBlockAll");
         }
+
+        if (_currentTab == "Firewall")
+        {
+            _ = RefreshNetworkConnectionsAsync();
+        }
     }
 
     private async void BtnTogglePolicy_Click(object sender, RoutedEventArgs e)
@@ -646,7 +691,114 @@ public partial class MainWindow : FluentWindow
         view.Visibility = Visibility.Visible;
         TxtPageTitle.Text = title;
         TxtPageSubtitle.Text = subtitle;
+
+        if (view == ViewFirewall)
+        {
+            _netMonTimer.Start();
+            _ = RefreshNetworkConnectionsAsync();
+        }
+        else
+        {
+            _netMonTimer.Stop();
+        }
     }
+
+    #region Network Monitor Handlers
+
+    private bool FilterConnections(object item)
+    {
+        if (item is not NetworkConnectionInfo conn) return false;
+
+        // Protocol filter
+        if (CmbProtocolFilter?.SelectedItem is ComboBoxItem selectedProtocol)
+        {
+            string tag = selectedProtocol.Tag?.ToString() ?? "ALL";
+            if (tag == "TCP" && conn.Protocol != NetworkProtocol.Tcp) return false;
+            if (tag == "UDP" && conn.Protocol != NetworkProtocol.Udp) return false;
+        }
+
+        // Search filter (ProcessName, PID, LocalEndpoint, RemoteEndpoint, State)
+        string search = TxtConnectionSearch?.Text?.Trim() ?? string.Empty;
+        if (!string.IsNullOrEmpty(search))
+        {
+            bool match = conn.ProcessName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                         conn.ProcessId.ToString().Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                         conn.LocalEndpoint.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                         conn.RemoteEndpoint.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                         conn.State.Contains(search, StringComparison.OrdinalIgnoreCase);
+
+            if (!match) return false;
+        }
+
+        return true;
+    }
+
+    private void TxtConnectionSearch_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        _connectionsView?.Refresh();
+        UpdateConnectionsCountBadge();
+    }
+
+    private void CmbProtocolFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _connectionsView?.Refresh();
+        UpdateConnectionsCountBadge();
+    }
+
+    private void UpdateConnectionsCountBadge()
+    {
+        if (TxtConnectionsCount == null) return;
+        int count = _connectionsView?.Cast<object>().Count() ?? NetworkConnections.Count;
+        string fmt = LocalizationManager.GetString("NetMon_CountFormat");
+        TxtConnectionsCount.Text = string.Format(fmt, count);
+    }
+
+    private async void BtnRefreshConnections_Click(object sender, RoutedEventArgs e)
+    {
+        BtnRefreshConnections.IsEnabled = false;
+        try
+        {
+            await RefreshNetworkConnectionsAsync();
+        }
+        finally
+        {
+            BtnRefreshConnections.IsEnabled = true;
+        }
+    }
+
+    private async Task RefreshNetworkConnectionsAsync()
+    {
+        try
+        {
+            var whitelistedPaths = WhitelistEntries
+                .Select(e => e.FilePath)
+                .Where(p => !string.IsNullOrEmpty(p))
+                .ToList();
+
+            var connections = await Task.Run(() => 
+                NetworkMonitorService.GetActiveConnections(whitelistedPaths, _isOutboundBlocked));
+
+            foreach (var conn in connections)
+            {
+                conn.StatusText = LocalizationManager.GetString(conn.StatusResourceKey);
+            }
+
+            NetworkConnections.Clear();
+            foreach (var c in connections)
+            {
+                NetworkConnections.Add(c);
+            }
+
+            _connectionsView?.Refresh();
+            UpdateConnectionsCountBadge();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[NetMon] Refresh error: {ex.Message}");
+        }
+    }
+
+    #endregion
 
     private void BtnMinimizeToTray_Click(object sender, RoutedEventArgs e)
     {

@@ -17,6 +17,8 @@
         RenderOptions.ClearTypeHint="Enabled">
 
     <ui:FluentWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+
         <!-- Windows 11 Navigation Item Style -->
         <Style x:Key="Win11NavItem" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
@@ -485,50 +487,230 @@
 
             <!-- ================= VIEW 2: FIREWALL ================= -->
             <Grid x:Name="ViewFirewall" Grid.Row="1" Visibility="Collapsed">
-                <Border Background="#1CFFFFFF" CornerRadius="8" Padding="22" BorderBrush="#20FFFFFF" BorderThickness="1">
-                    <StackPanel>
-                        <TextBlock Text="{DynamicResource Firewall_Header}" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
-                        <TextBlock Text="{DynamicResource Firewall_HeaderDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,18"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <TextBlock Text="{DynamicResource Firewall_PolicyTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                    <TextBlock x:Name="TxtFirewallPolicyDesc" 
-                                               Text="DefaultOutboundAction: BLOCK" 
-                                               FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                                </StackPanel>
+                <!-- TOP SECTION: Policy Card + Exceptions & Watchdog -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                    <TextBlock Text="{DynamicResource Firewall_Header}" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Firewall_HeaderDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,10"/>
+
+                    <!-- Policy Card -->
+                    <Border Background="#1CFFFFFF" CornerRadius="8" Padding="14,10" Margin="0,0,0,8" BorderBrush="#20FFFFFF" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Text="{DynamicResource Firewall_PolicyTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                <TextBlock x:Name="TxtFirewallPolicyDesc" 
+                                           Text="DefaultOutboundAction: BLOCK" 
+                                           FontSize="11" Foreground="#9E9E9E" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border x:Name="BadgeFirewallPolicy" Background="#26FF99A4" BorderBrush="#60FF99A4" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtFirewallPolicyBadge" Text="BLOCKED (BLOCK)" FontWeight="SemiBold" FontSize="11" Foreground="#FF99A4"/>
+                                </Border>
                                 
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border x:Name="BadgeFirewallPolicy" Background="#26FF99A4" BorderBrush="#60FF99A4" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0" VerticalAlignment="Center">
-                                        <TextBlock x:Name="TxtFirewallPolicyBadge" Text="BLOCKED (BLOCK)" FontWeight="SemiBold" FontSize="11" Foreground="#FF99A4"/>
-                                    </Border>
-                                    
-                                    <ui:Button x:Name="BtnTogglePolicy" Content="Allow All" 
-                                               Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}" 
-                                               Click="BtnTogglePolicy_Click" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
+                                <ui:Button x:Name="BtnTogglePolicy" Content="Allow All" 
+                                           Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}" 
+                                           Click="BtnTogglePolicy_Click" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                    <!-- Compact 2-Column Exceptions & Watchdog -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="#14FFFFFF" CornerRadius="8" Padding="12,8" Margin="0,0,4,0" BorderBrush="#16FFFFFF" BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="{DynamicResource Firewall_ExceptionsTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                <TextBlock Text="{DynamicResource Firewall_ExceptionsDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                <TextBlock Text="{DynamicResource Firewall_ExceptionsTitle}" FontWeight="SemiBold" FontSize="11" Foreground="#FFFFFF"/>
+                                <TextBlock Text="{DynamicResource Firewall_ExceptionsDesc}" FontSize="10" Foreground="#8E8E8E" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Border>
-
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Grid.Column="1" Background="#14FFFFFF" CornerRadius="8" Padding="12,8" Margin="4,0,0,0" BorderBrush="#16FFFFFF" BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="{DynamicResource Firewall_WatchdogTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                <TextBlock Text="{DynamicResource Firewall_WatchdogDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                <TextBlock Text="{DynamicResource Firewall_WatchdogTitle}" FontWeight="SemiBold" FontSize="11" Foreground="#FFFFFF"/>
+                                <TextBlock Text="{DynamicResource Firewall_WatchdogDesc}" FontSize="10" Foreground="#8E8E8E" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Border>
-                    </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <!-- BOTTOM SECTION: Active Network Connections Monitor -->
+                <Border Grid.Row="1" Background="#18FFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#20FFFFFF" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Monitor Header & Live Info -->
+                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{DynamicResource NetMon_Title}" FontSize="13" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="{DynamicResource NetMon_Subtitle}" FontSize="11" Foreground="#8E8E8E" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Background="#1A4CC2FF" BorderBrush="#404CC2FF" BorderThickness="1" CornerRadius="10" Padding="10,4" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtConnectionsCount" Text="Active sockets: 0" FontWeight="SemiBold" FontSize="11" Foreground="#4CC2FF"/>
+                                </Border>
+                                <ui:Button x:Name="BtnRefreshConnections" Content="{DynamicResource NetMon_BtnRefresh}"
+                                           Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}"
+                                           Click="BtnRefreshConnections_Click" VerticalAlignment="Center" Height="30"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Filter & Search Controls -->
+                        <Grid Grid.Row="1" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ui:TextBox x:Name="TxtConnectionSearch" 
+                                        PlaceholderText="{DynamicResource NetMon_SearchPlaceholder}"
+                                        TextChanged="TxtConnectionSearch_TextChanged"
+                                        Icon="{ui:SymbolIcon Symbol=Search24}"
+                                        Height="32" Margin="0,0,8,0" VerticalAlignment="Center"/>
+
+                            <ComboBox x:Name="CmbProtocolFilter" Grid.Column="1" Width="140" Height="32" 
+                                      SelectionChanged="CmbProtocolFilter_SelectionChanged" VerticalAlignment="Center">
+                                <ComboBoxItem Content="{DynamicResource NetMon_FilterAll}" IsSelected="True" Tag="ALL"/>
+                                <ComboBoxItem Content="{DynamicResource NetMon_FilterTcp}" Tag="TCP"/>
+                                <ComboBoxItem Content="{DynamicResource NetMon_FilterUdp}" Tag="UDP"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <!-- Connections DataGrid -->
+                        <DataGrid x:Name="DgConnections" Grid.Row="2" AutoGenerateColumns="False" 
+                                  CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False"
+                                  Background="Transparent" RowBackground="#14FFFFFF" 
+                                  AlternatingRowBackground="#0AFFFFFF"
+                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#14FFFFFF"
+                                  HeadersVisibility="Column" BorderThickness="1" BorderBrush="#1CFFFFFF"
+                                  Foreground="#FFFFFF" SelectionMode="Single"
+                                  ScrollViewer.CanContentScroll="True"
+                                  VirtualizingPanel.IsVirtualizing="True"
+                                  VirtualizingPanel.VirtualizationMode="Recycling">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#1E1E1E"/>
+                                    <Setter Property="Foreground" Value="#A0A0A0"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontSize" Value="10"/>
+                                    <Setter Property="Padding" Value="10,6"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#25FFFFFF"/>
+                                </Style>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Padding" Value="8,4"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridCell">
+                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGrid.Resources>
+
+                            <DataGrid.Columns>
+                                <!-- Process -->
+                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColProcess}" Width="190">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding ProcessPath}">
+                                                <ui:SymbolIcon Symbol="AppGeneric24" FontSize="14" Foreground="#4CC2FF" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding ProcessName}" FontWeight="SemiBold" FontSize="11" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis" MaxWidth="140"/>
+                                                    <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="10" Foreground="#8E8E8E"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Protocol Badge -->
+                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColProtocol}" Width="70">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding ProtocolBadgeBackground}" BorderBrush="{Binding ProtocolBadgeBorder}" BorderThickness="1" CornerRadius="4" Padding="5,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ProtocolName}" FontSize="10" FontWeight="Bold" Foreground="{Binding ProtocolBadgeForeground}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Local Endpoint -->
+                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColLocal}" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding LocalEndpoint}" FontFamily="Consolas, Segoe UI" FontSize="11" Foreground="#D0D0D0" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Remote Endpoint -->
+                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColRemote}" Width="170">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding RemoteEndpoint}" FontFamily="Consolas, Segoe UI" FontSize="11" Foreground="#CCCCCC" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- State -->
+                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColState}" Width="95">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding State}" FontSize="11" Foreground="#A8A8A8" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Policy Status Badge -->
+                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColStatus}" Width="140">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding StatusBadgeBackground}" BorderBrush="{Binding StatusBadgeBorder}" BorderThickness="1" CornerRadius="8" Padding="6,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding StatusText}" FontSize="10" FontWeight="SemiBold" Foreground="{Binding StatusBadgeForeground}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Quick Whitelist Action -->
+                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColAction}" Width="135">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ui:Button Content="{DynamicResource NetMon_ActionAdd}" 
+                                                       FontSize="10" Padding="6,2" Height="24"
+                                                       Appearance="Secondary"
+                                                       Visibility="{Binding CanAddToWhitelist, Converter={StaticResource BoolToVisConverter}}"
+                                                       Click="BtnAddConnectionToWhitelist_Click"
+                                                       Tag="{Binding ProcessPath}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
                 </Border>
             </Grid>
 
