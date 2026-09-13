@@ -35,6 +35,7 @@ public partial class MainWindow : FluentWindow
     private readonly System.Windows.Threading.DispatcherTimer _netMonTimer;
     private string _currentTab = "Dashboard";
     private int _lastBlockedAttempts = 0;
+    private bool _isNetMonExpanded = false;
 
     public ObservableCollection<WhitelistEntry> WhitelistEntries { get; set; } = new();
     public ObservableCollection<NetworkConnectionInfo> NetworkConnections { get; set; } = new();
@@ -796,6 +797,59 @@ public partial class MainWindow : FluentWindow
         {
             System.Diagnostics.Debug.WriteLine($"[NetMon] Refresh error: {ex.Message}");
         }
+    }
+
+    private void NetMonHeader_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        OpenNetworkMonitorFullScreen();
+    }
+
+    private void BtnNetMonFullScreen_Click(object sender, RoutedEventArgs e)
+    {
+        OpenNetworkMonitorFullScreen();
+    }
+
+    private void DgConnections_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        OpenNetworkMonitorFullScreen();
+    }
+
+    private void BtnToggleNetMonExpand_Click(object sender, RoutedEventArgs e)
+    {
+        _isNetMonExpanded = !_isNetMonExpanded;
+        if (_isNetMonExpanded)
+        {
+            PanelFirewallTop.Visibility = Visibility.Collapsed;
+            if (BtnToggleNetMonExpand.Icon is SymbolIcon sym)
+            {
+                sym.Symbol = SymbolRegular.FullScreenMinimize24;
+            }
+            BtnToggleNetMonExpand.ToolTip = LocalizationManager.GetString("NetMon_BtnCollapse");
+        }
+        else
+        {
+            PanelFirewallTop.Visibility = Visibility.Visible;
+            if (BtnToggleNetMonExpand.Icon is SymbolIcon sym)
+            {
+                sym.Symbol = SymbolRegular.FullScreenMaximize24;
+            }
+            BtnToggleNetMonExpand.ToolTip = LocalizationManager.GetString("NetMon_BtnExpand");
+        }
+    }
+
+    private void OpenNetworkMonitorFullScreen()
+    {
+        var fullWindow = new NetworkMonitorWindow(
+            _ipcClient,
+            WhitelistEntries,
+            _isOutboundBlocked,
+            AddExecutableToWhitelistWithDiscoveryAsync)
+        {
+            Owner = this
+        };
+
+        fullWindow.ShowDialog();
+        _ = RefreshNetworkConnectionsAsync();
     }
 
     #endregion

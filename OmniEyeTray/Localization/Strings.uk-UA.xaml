@@ -170,5 +170,13 @@
     <sys:String x:Key="NetMon_ActionAdd">+ У білий список</sys:String>
     <sys:String x:Key="NetMon_CountFormat">Активних сокетів: {0}</sys:String>
     <sys:String x:Key="NetMon_Empty">Немає активних мережевих з'єднань за вказаними критеріями.</sys:String>
+    <sys:String x:Key="NetMon_BtnFullScreen">На весь екран</sys:String>
+    <sys:String x:Key="NetMon_BtnExitFullScreen">Вийти з повноекранного режиму</sys:String>
+    <sys:String x:Key="NetMon_BtnExpand">Розгорнути</sys:String>
+    <sys:String x:Key="NetMon_BtnCollapse">Згорнути</sys:String>
+    <sys:String x:Key="NetMon_FilterStatusAll">Усі статуси</sys:String>
+    <sys:String x:Key="NetMon_ColPath">ШЛЯХ ДО ФАЙЛУ</sys:String>
+    <sys:String x:Key="NetMon_WindowTitle">OmniEye — Моніторинг мережевих з'єднань та Zero-Trust</sys:String>
+    <sys:String x:Key="NetMon_StatsSummary">Усього: {0} | TCP: {1} | UDP: {2} | Заблоковано: {3} | Дозволено: {4} | Винятки: {5}</sys:String>
 
 </ResourceDictionary>

@@ -170,5 +170,13 @@
     <sys:String x:Key="NetMon_ActionAdd">+ Zur Whitelist hinzufügen</sys:String>
     <sys:String x:Key="NetMon_CountFormat">Aktive Sockets: {0}</sys:String>
     <sys:String x:Key="NetMon_Empty">Keine aktiven Netzwerkverbindungen gefunden.</sys:String>
+    <sys:String x:Key="NetMon_BtnFullScreen">Vollbild</sys:String>
+    <sys:String x:Key="NetMon_BtnExitFullScreen">Vollbild beenden</sys:String>
+    <sys:String x:Key="NetMon_BtnExpand">Erweitern</sys:String>
+    <sys:String x:Key="NetMon_BtnCollapse">Minimieren</sys:String>
+    <sys:String x:Key="NetMon_FilterStatusAll">Alle Richtlinien</sys:String>
+    <sys:String x:Key="NetMon_ColPath">DATEIPFAD</sys:String>
+    <sys:String x:Key="NetMon_WindowTitle">OmniEye — Netzwerk-Telemetrie &amp; Zero-Trust-Monitor</sys:String>
+    <sys:String x:Key="NetMon_StatsSummary">Gesamt: {0} | TCP: {1} | UDP: {2} | Blockiert: {3} | Freigegeben: {4} | Ausnahmen: {5}</sys:String>
 
 </ResourceDictionary>

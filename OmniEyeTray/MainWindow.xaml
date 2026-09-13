@@ -493,7 +493,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- TOP SECTION: Policy Card + Exceptions & Watchdog -->
-                <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                <StackPanel x:Name="PanelFirewallTop" Grid.Row="0" Margin="0,0,0,10">
                     <TextBlock Text="{DynamicResource Firewall_Header}" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,4"/>
                     <TextBlock Text="{DynamicResource Firewall_HeaderDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,10"/>
 
@@ -559,8 +559,11 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{DynamicResource NetMon_Title}" FontSize="13" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                            <StackPanel VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonUp="NetMonHeader_Click" ToolTip="{DynamicResource NetMon_BtnFullScreen}">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="{DynamicResource NetMon_Title}" FontSize="13" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                    <ui:SymbolIcon Symbol="Open24" FontSize="12" Foreground="#4CC2FF" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
                                 <TextBlock Text="{DynamicResource NetMon_Subtitle}" FontSize="11" Foreground="#8E8E8E" Margin="0,2,0,0"/>
                             </StackPanel>
 
@@ -570,7 +573,15 @@
                                 </Border>
                                 <ui:Button x:Name="BtnRefreshConnections" Content="{DynamicResource NetMon_BtnRefresh}"
                                            Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}"
-                                           Click="BtnRefreshConnections_Click" VerticalAlignment="Center" Height="30"/>
+                                           Click="BtnRefreshConnections_Click" VerticalAlignment="Center" Height="30" Margin="0,0,6,0"/>
+                                <ui:Button x:Name="BtnToggleNetMonExpand"
+                                           Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowExpand24}"
+                                           Click="BtnToggleNetMonExpand_Click" VerticalAlignment="Center" Height="30" Margin="0,0,6,0"
+                                           ToolTip="{DynamicResource NetMon_BtnExpand}"/>
+                                <ui:Button x:Name="BtnNetMonFullScreen" Content="{DynamicResource NetMon_BtnFullScreen}"
+                                           Appearance="Primary" Icon="{ui:SymbolIcon Symbol=FullScreenMaximize24}"
+                                           Click="BtnNetMonFullScreen_Click" VerticalAlignment="Center" Height="30"
+                                           ToolTip="{DynamicResource NetMon_BtnFullScreen}"/>
                             </StackPanel>
                         </Grid>
 
@@ -600,6 +611,7 @@
                                   CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False"
                                   Background="Transparent" RowBackground="#14FFFFFF" 
                                   AlternatingRowBackground="#0AFFFFFF"
+                                  MouseDoubleClick="DgConnections_MouseDoubleClick"
                                   GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#14FFFFFF"
                                   HeadersVisibility="Column" BorderThickness="1" BorderBrush="#1CFFFFFF"
                                   Foreground="#FFFFFF" SelectionMode="Single"

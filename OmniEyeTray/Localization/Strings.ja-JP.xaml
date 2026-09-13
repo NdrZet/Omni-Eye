@@ -170,5 +170,13 @@
     <sys:String x:Key="NetMon_ActionAdd">+ ホワイトリストに追加</sys:String>
     <sys:String x:Key="NetMon_CountFormat">アクティブソケット: {0}</sys:String>
     <sys:String x:Key="NetMon_Empty">条件に一致するアクティブなネットワーク接続はありません。</sys:String>
+    <sys:String x:Key="NetMon_BtnFullScreen">全画面表示</sys:String>
+    <sys:String x:Key="NetMon_BtnExitFullScreen">全画面を終了</sys:String>
+    <sys:String x:Key="NetMon_BtnExpand">展開</sys:String>
+    <sys:String x:Key="NetMon_BtnCollapse">折りたたむ</sys:String>
+    <sys:String x:Key="NetMon_FilterStatusAll">すべてのステータス</sys:String>
+    <sys:String x:Key="NetMon_ColPath">実行ファイルパス</sys:String>
+    <sys:String x:Key="NetMon_WindowTitle">OmniEye — ネットワークテレメトリ＆ゼロトラストモニター</sys:String>
+    <sys:String x:Key="NetMon_StatsSummary">合計: {0} | TCP: {1} | UDP: {2} | ブロック: {3} | 許可済み: {4} | システム例外: {5}</sys:String>
 
 </ResourceDictionary>
