@@ -216,6 +216,10 @@
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
+
+        <Style x:Key="Win11SettingsExpanderStyle" TargetType="Expander">
+            <Setter Property="Template" Value="{StaticResource Win11SettingsExpanderTemplate}"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -401,7 +405,7 @@
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                    <Expander IsExpanded="True" Style="{StaticResource Win11SettingsExpanderTemplate}">
+                                                    <Expander IsExpanded="True" Style="{StaticResource Win11SettingsExpanderStyle}">
                                                         <ItemsPresenter />
                                                     </Expander>
                                                 </ControlTemplate>
