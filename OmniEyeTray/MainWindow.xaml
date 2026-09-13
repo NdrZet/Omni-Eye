@@ -491,10 +491,28 @@
                         <TextBlock Text="OmniEye использует прямое COM-взаимодействие с интерфейсом INetFwPolicy2 Windows." FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,18"/>
 
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="Политика по умолчанию" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                <TextBlock Text="DefaultOutboundAction: BLOCK (все исходящие соединения заблокированы на уровне ядра NDIS)." FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
-                            </StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="Политика по умолчанию" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                    <TextBlock x:Name="TxtFirewallPolicyDesc" 
+                                               Text="DefaultOutboundAction: BLOCK (все исходящие соединения заблокированы на уровне ядра NDIS)." 
+                                               FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border x:Name="BadgeFirewallPolicy" Background="#26FF99A4" BorderBrush="#60FF99A4" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtFirewallPolicyBadge" Text="БЛОКИРОВАН (BLOCK)" FontWeight="SemiBold" FontSize="11" Foreground="#FF99A4"/>
+                                    </Border>
+                                    
+                                    <ui:Button x:Name="BtnTogglePolicy" Content="Разрешить все" 
+                                               Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}" 
+                                               Click="BtnTogglePolicy_Click" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
                         </Border>
 
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">

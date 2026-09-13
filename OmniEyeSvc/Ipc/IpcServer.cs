@@ -227,6 +227,40 @@ public class IpcServer : IDisposable
                     Message = removed ? "Application removed from whitelist." : "Entry not found."
                 }, request.CorrelationId);
 
+            case IpcMessageTypes.SetFirewallPolicyRequest:
+                var polReq = request.GetPayload<SetFirewallPolicyRequest>();
+                if (polReq == null)
+                {
+                    return IpcMessage.Create(IpcMessageTypes.SetFirewallPolicyResponse, new SetFirewallPolicyResponse
+                    {
+                        Success = false,
+                        OutboundBlocked = _firewall.IsEnforced,
+                        Message = "Invalid firewall policy request."
+                    }, request.CorrelationId);
+                }
+
+                try
+                {
+                    _firewall.SetOutboundBlocked(polReq.BlockOutbound);
+                    return IpcMessage.Create(IpcMessageTypes.SetFirewallPolicyResponse, new SetFirewallPolicyResponse
+                    {
+                        Success = true,
+                        OutboundBlocked = _firewall.IsEnforced,
+                        Message = polReq.BlockOutbound 
+                            ? "Default outbound policy set to BLOCK (Zero-Trust)." 
+                            : "Default outbound policy set to ALLOW (Permissive)."
+                    }, request.CorrelationId);
+                }
+                catch (Exception ex)
+                {
+                    return IpcMessage.Create(IpcMessageTypes.SetFirewallPolicyResponse, new SetFirewallPolicyResponse
+                    {
+                        Success = false,
+                        OutboundBlocked = _firewall.IsEnforced,
+                        Message = ex.Message
+                    }, request.CorrelationId);
+                }
+
             case IpcMessageTypes.InjectionPromptAction:
                 var action = request.GetPayload<InjectionPromptAction>();
                 if (action != null && !string.IsNullOrEmpty(action.PromptId))

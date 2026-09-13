@@ -137,6 +137,16 @@ public class IpcClient : IDisposable
         return res;
     }
 
+    public async Task<SetFirewallPolicyResponse?> SetFirewallPolicyAsync(bool blockOutbound, int timeoutMs = 4000)
+    {
+        var req = IpcMessage.Create(IpcMessageTypes.SetFirewallPolicyRequest, new SetFirewallPolicyRequest
+        {
+            BlockOutbound = blockOutbound
+        });
+        var res = await SendRequestAsync<SetFirewallPolicyResponse>(req, IpcMessageTypes.SetFirewallPolicyResponse, timeoutMs);
+        return res;
+    }
+
     public async Task SendPromptDecisionAsync(string promptId, string action)
     {
         if (!IsConnected || _writer == null)

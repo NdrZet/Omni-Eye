@@ -46,6 +46,21 @@ public static class IpcMessageTypes
 
     public const string InjectionPromptNotification = "injection.prompt.notification";
     public const string InjectionPromptAction = "injection.prompt.action";
+
+    public const string SetFirewallPolicyRequest = "firewall.set_policy.request";
+    public const string SetFirewallPolicyResponse = "firewall.set_policy.response";
+}
+
+public class SetFirewallPolicyRequest
+{
+    public bool BlockOutbound { get; set; }
+}
+
+public class SetFirewallPolicyResponse
+{
+    public bool Success { get; set; }
+    public bool OutboundBlocked { get; set; }
+    public string Message { get; set; } = string.Empty;
 }
 
 public class StatusResponse

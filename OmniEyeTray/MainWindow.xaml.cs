@@ -27,6 +27,7 @@ public partial class MainWindow : FluentWindow
     private readonly IpcClient _ipcClient;
     private NotifyIcon? _notifyIcon;
     private bool _isDeveloperMode = true;
+    private bool _isOutboundBlocked = true;
     private bool _reallyExit = false;
     private readonly ICollectionView _whitelistView;
 
@@ -148,8 +149,8 @@ public partial class MainWindow : FluentWindow
         {
             _isDeveloperMode = status.DeveloperMode;
             TxtDevMode.Text = status.DeveloperMode ? "DEVELOPER MODE" : "STRICT ZERO-TRUST";
-            TxtCardOutbound.Text = status.OutboundBlocked ? "БЛОКИРОВАН (BLOCK)" : "РАЗРЕШЕН (ALLOW)";
             TxtCardAttempts.Text = $"{status.BlockedAttemptsCount} попыток заблокировано";
+            UpdateFirewallPolicyUI(status.OutboundBlocked);
         }
 
         var wl = await _ipcClient.GetWhitelistAsync();
@@ -477,6 +478,80 @@ public partial class MainWindow : FluentWindow
     private void NavSettings_Click(object sender, RoutedEventArgs e)
     {
         ShowView(ViewSettings, "Параметры", "Режимы работы, шифрование базы данных и IPC");
+    }
+
+    private void UpdateFirewallPolicyUI(bool isBlocked)
+    {
+        _isOutboundBlocked = isBlocked;
+
+        if (isBlocked)
+        {
+            TxtCardOutbound.Text = "БЛОКИРОВАН (BLOCK)";
+            TxtCardOutbound.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 153, 164));
+
+            TxtFirewallPolicyBadge.Text = "БЛОКИРОВАН (BLOCK)";
+            TxtFirewallPolicyBadge.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 153, 164));
+            BadgeFirewallPolicy.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x26, 255, 153, 164));
+            BadgeFirewallPolicy.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x60, 255, 153, 164));
+
+            TxtFirewallPolicyDesc.Text = "DefaultOutboundAction: BLOCK (все исходящие соединения заблокированы на уровне ядра NDIS, кроме Белого списка).";
+            BtnTogglePolicy.Content = "Разрешить все";
+        }
+        else
+        {
+            TxtCardOutbound.Text = "РАЗРЕШЕН (ALLOW)";
+            TxtCardOutbound.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 203, 95));
+
+            TxtFirewallPolicyBadge.Text = "РАЗРЕШЕН (ALLOW)";
+            TxtFirewallPolicyBadge.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 203, 95));
+            BadgeFirewallPolicy.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 108, 203, 95));
+            BadgeFirewallPolicy.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x50, 108, 203, 95));
+
+            TxtFirewallPolicyDesc.Text = "DefaultOutboundAction: ALLOW (исходящие соединения разрешены по умолчанию для всех приложений).";
+            BtnTogglePolicy.Content = "Блокировать все";
+        }
+    }
+
+    private async void BtnTogglePolicy_Click(object sender, RoutedEventArgs e)
+    {
+        bool targetBlock = !_isOutboundBlocked;
+
+        if (!targetBlock)
+        {
+            var choice = MessageBox.Show(
+                "Переключить политику брандмауэра по умолчанию на «РАЗРЕШАТЬ ВСЕ (Permissive)»?\n\nИсходящий трафик для всех программ будет разрешен по умолчанию на уровне ядра Windows Defender Firewall.",
+                "Смена политики сетевого фильтра",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (choice != MessageBoxResult.Yes)
+                return;
+        }
+
+        BtnTogglePolicy.IsEnabled = false;
+        try
+        {
+            var resp = await _ipcClient.SetFirewallPolicyAsync(targetBlock);
+            if (resp != null && resp.Success)
+            {
+                UpdateFirewallPolicyUI(resp.OutboundBlocked);
+                MessageBox.Show(
+                    targetBlock
+                        ? "Политика брандмауэра переключена: БЛОКИРОВАТЬ ВСЕ (Zero-Trust).\nВсе исходящие соединения заблокированы, кроме Белого списка."
+                        : "Политика брандмауэра переключена: РАЗРЕШАТЬ ВСЕ (Permissive).\nИсходящие соединения разрешены по умолчанию.",
+                    "Политика изменена",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show($"Не удалось изменить политику: {resp?.Message ?? "Нет ответа от службы"}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        finally
+        {
+            BtnTogglePolicy.IsEnabled = true;
+        }
     }
 
     private void ShowView(UIElement view, string title, string subtitle)

@@ -85,14 +85,18 @@ public class FirewallEnforcer : IDisposable
             dynamic policy = GetPolicy();
 
             // 1. Remove previous OmniEye rules to ensure a clean state
-            RemoveOmniEyeRules(policy);
+            try { RemoveOmniEyeRules(policy); } catch (Exception ex) { _logger.LogWarning(ex, "Could not remove old rules: {Message}", ex.Message); }
 
             // 2. Add System Rules (DNS, DHCP, Windows Update)
-            AddSystemRules(policy);
+            try { AddSystemRules(policy); } catch (Exception ex) { _logger.LogWarning(ex, "Could not add system rules: {Message}", ex.Message); }
 
             // 3. Add Whitelist Rules
-            var whitelist = _dbManager.GetWhitelist();
-            ApplyWhitelistRules(policy, whitelist);
+            try
+            {
+                var whitelist = _dbManager.GetWhitelist();
+                ApplyWhitelistRules(policy, whitelist);
+            }
+            catch (Exception ex) { _logger.LogWarning(ex, "Could not apply whitelist rules: {Message}", ex.Message); }
 
             // 4. Set Default Outbound Action = Block
             SetDefaultOutboundAction(policy, NET_FW_ACTION_BLOCK);
@@ -136,7 +140,7 @@ public class FirewallEnforcer : IDisposable
             SetDefaultOutboundAction(policy, NET_FW_ACTION_ALLOW);
 
             // 2. Remove all OmniEye rules
-            RemoveOmniEyeRules(policy);
+            try { RemoveOmniEyeRules(policy); } catch (Exception ex) { _logger.LogWarning(ex, "Could not remove rules on rollback: {Message}", ex.Message); }
 
             _isEnforced = false;
             _logger.LogInformation("Firewall policy successfully reverted to standard default.");
@@ -144,6 +148,56 @@ public class FirewallEnforcer : IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error while rolling back firewall policy: {Message}", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Dynamically switches the default outbound policy between Zero-Trust BLOCK and Permissive ALLOW.
+    /// </summary>
+    public void SetOutboundBlocked(bool blockOutbound)
+    {
+        try
+        {
+            dynamic policy = GetPolicy();
+
+            if (blockOutbound)
+            {
+                _logger.LogInformation("Setting Default Outbound Action to BLOCK (Zero-Trust)...");
+                _isEnforced = true;
+
+                try { AddSystemRules(policy); } catch (Exception ex) { _logger.LogWarning(ex, "Could not add system rules: {Message}", ex.Message); }
+                try
+                {
+                    var whitelist = _dbManager.GetWhitelist();
+                    ApplyWhitelistRules(policy, whitelist);
+                }
+                catch (Exception ex) { _logger.LogWarning(ex, "Could not apply whitelist rules: {Message}", ex.Message); }
+
+                SetDefaultOutboundAction(policy, NET_FW_ACTION_BLOCK);
+
+                if (!_config.DeveloperMode)
+                {
+                    StartSelfHealing();
+                }
+                _logger.LogInformation("Default Outbound Policy set to BLOCK successfully.");
+            }
+            else
+            {
+                _logger.LogInformation("Setting Default Outbound Action to ALLOW (Permissive)...");
+                StopSelfHealing();
+                SetDefaultOutboundAction(policy, NET_FW_ACTION_ALLOW);
+                _isEnforced = false;
+                _logger.LogInformation("Default Outbound Policy set to ALLOW successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to switch default outbound policy to {Mode}: {Message}", blockOutbound ? "BLOCK" : "ALLOW", ex.Message);
+            if (!_config.DeveloperMode)
+            {
+                _isEnforced = false;
+                throw;
+            }
         }
     }
 
@@ -383,6 +437,9 @@ public class FirewallEnforcer : IDisposable
 
     private void VerifyAndHeal()
     {
+        if (!_isEnforced)
+            return;
+
         try
         {
             dynamic policy = GetPolicy();

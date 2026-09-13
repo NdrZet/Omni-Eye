@@ -32,6 +32,7 @@ public class Program
         await RunTestAsync("TEST 3: Process Freeze & Resume (NtSuspendProcess / NtResumeProcess)", Test3_ProcessFreezeAndResume);
         await RunTestAsync("TEST 4: Named Pipe IPC Server/Client Protocol & Security Prompts", Test4_NamedPipeIpcAndPrompts);
         await RunTestAsync("TEST 5: DeveloperMode Lifecycle & Graceful Rollback", Test5_DeveloperModeLifecycle);
+        await RunTestAsync("TEST 6: Dynamic Firewall Policy Switching via IPC", Test6_DynamicFirewallPolicySwitching);
 
         Console.WriteLine();
         Console.WriteLine("------------------------------------------------------------------");
@@ -336,5 +337,66 @@ public class Program
 
         try { Directory.Delete(testDir, recursive: true); } catch { }
         return Task.CompletedTask;
+    }
+
+    private static async Task Test6_DynamicFirewallPolicySwitching()
+    {
+        var testPipeName = "OmniEyePolicyPipe_" + Guid.NewGuid().ToString("N");
+        var testDir = Path.Combine(Path.GetTempPath(), "OmniEyePolTest_" + Guid.NewGuid().ToString("N"));
+
+        var config = new OmniEyeConfig
+        {
+            DeveloperMode = true,
+            DbDirectory = testDir,
+            PipeName = testPipeName
+        };
+
+        using var dbManager = new DatabaseManager(config);
+        dbManager.Initialize();
+
+        var fwLogger = NullLogger<FirewallEnforcer>.Instance;
+        var ipcLogger = NullLogger<IpcServer>.Instance;
+
+        using var fwEnforcer = new FirewallEnforcer(config, dbManager, fwLogger);
+        using var ipcServer = new IpcServer(config, dbManager, fwEnforcer, ipcLogger);
+        ipcServer.Start();
+
+        using var client = new OmniEye.Core.Ipc.IpcClient(config);
+        bool connected = await client.ConnectAsync(3000);
+        if (!connected)
+            throw new Exception("Failed to connect IpcClient to test server pipe.");
+
+        // 1. Initial status
+        var statusInit = await client.GetStatusAsync();
+        if (statusInit == null)
+            throw new Exception("GetStatusAsync returned null.");
+        Console.WriteLine($" -> Initial policy: OutboundBlocked={statusInit.OutboundBlocked}");
+
+        // 2. Switch to ALLOW (blockOutbound = false)
+        var allowResp = await client.SetFirewallPolicyAsync(false);
+        if (allowResp == null || !allowResp.Success)
+            throw new Exception($"Failed to switch policy to ALLOW: {allowResp?.Message}");
+        if (allowResp.OutboundBlocked)
+            throw new Exception("Expected OutboundBlocked=false after setting policy to ALLOW.");
+
+        var statusAfterAllow = await client.GetStatusAsync();
+        if (statusAfterAllow == null || statusAfterAllow.OutboundBlocked)
+            throw new Exception("GetStatusAsync reported OutboundBlocked=true after switching to ALLOW.");
+        Console.WriteLine($" -> Switched to ALLOW: OutboundBlocked={statusAfterAllow.OutboundBlocked}, Msg: {allowResp.Message}");
+
+        // 3. Switch back to BLOCK (blockOutbound = true)
+        var blockResp = await client.SetFirewallPolicyAsync(true);
+        if (blockResp == null || !blockResp.Success)
+            throw new Exception($"Failed to switch policy to BLOCK: {blockResp?.Message}");
+        if (!blockResp.OutboundBlocked)
+            throw new Exception("Expected OutboundBlocked=true after setting policy to BLOCK.");
+
+        var statusAfterBlock = await client.GetStatusAsync();
+        if (statusAfterBlock == null || !statusAfterBlock.OutboundBlocked)
+            throw new Exception("GetStatusAsync reported OutboundBlocked=false after switching to BLOCK.");
+        Console.WriteLine($" -> Switched to BLOCK: OutboundBlocked={statusAfterBlock.OutboundBlocked}, Msg: {blockResp.Message}");
+
+        ipcServer.Stop();
+        try { Directory.Delete(testDir, recursive: true); } catch { }
     }
 }
