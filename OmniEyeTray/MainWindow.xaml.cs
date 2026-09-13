@@ -40,7 +40,7 @@ public partial class MainWindow : Window
         _whitelistView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(WhitelistEntry.AppGroup)));
         _whitelistView.SortDescriptions.Add(new SortDescription(nameof(WhitelistEntry.AppGroup), ListSortDirection.Ascending));
         _whitelistView.SortDescriptions.Add(new SortDescription(nameof(WhitelistEntry.FileName), ListSortDirection.Ascending));
-        DgWhitelist.ItemsSource = _whitelistView;
+        ListAppGroups.ItemsSource = _whitelistView;
 
         InitializeTrayIcon();
 
@@ -401,33 +401,9 @@ public partial class MainWindow : Window
         return "Сопутствующий компонент";
     }
 
-    private async void BtnRemove_Click(object sender, RoutedEventArgs e)
+    private void BtnRemove_Click(object sender, RoutedEventArgs e)
     {
-        if (DgWhitelist.SelectedItem is WhitelistEntry selected)
-        {
-            var choice = MessageBox.Show(
-                $"Удалить {selected.FileName} из Белого списка?\nИсходящие соединения для него будут заблокированы.",
-                "Подтверждение удаления",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (choice == MessageBoxResult.Yes)
-            {
-                var resp = await _ipcClient.RemoveFromWhitelistAsync(selected.Id);
-                if (resp != null && resp.Success)
-                {
-                    await RefreshDataAsync();
-                }
-                else
-                {
-                    MessageBox.Show($"Ошибка при удалении: {resp?.Message ?? "Нет ответа"}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-        else
-        {
-            MessageBox.Show("Выберите приложение из таблицы для удаления.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
+        MessageBox.Show("Для удаления приложения нажмите кнопку «✕» напротив нужного файла или кнопку «Удалить группу» в заголовке карточки приложения.", "Удаление", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void BtnDeleteGroup_Click(object sender, RoutedEventArgs e)
@@ -453,6 +429,63 @@ public partial class MainWindow : Window
                 await RefreshDataAsync();
             }
         }
+    }
+
+    private async void BtnDeleteEntry_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button btn && btn.DataContext is WhitelistEntry entry)
+        {
+            var choice = MessageBox.Show(
+                $"Удалить {entry.FileName} из Белого списка?\nИсходящие сетевые соединения для него будут заблокированы.",
+                "Подтверждение удаления",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (choice == MessageBoxResult.Yes)
+            {
+                var resp = await _ipcClient.RemoveFromWhitelistAsync(entry.Id);
+                if (resp != null && resp.Success)
+                {
+                    await RefreshDataAsync();
+                }
+                else
+                {
+                    MessageBox.Show($"Ошибка при удалении: {resp?.Message ?? "Нет ответа"}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+    }
+
+    private void NavDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        ShowView(ViewDashboard, "Главная", "Мониторинг исходящего сетевого трафика и изоляция процессов");
+    }
+
+    private void NavFirewall_Click(object sender, RoutedEventArgs e)
+    {
+        ShowView(ViewFirewall, "Сетевой экран", "Параметры и правила блокировки Windows Defender Firewall");
+    }
+
+    private void NavInjection_Click(object sender, RoutedEventArgs e)
+    {
+        ShowView(ViewInjection, "Защита ядра", "Мониторинг инъекций через ETW и заморозка NtSuspendProcess");
+    }
+
+    private void NavSettings_Click(object sender, RoutedEventArgs e)
+    {
+        ShowView(ViewSettings, "Параметры", "Режимы работы, шифрование базы данных и IPC");
+    }
+
+    private void ShowView(UIElement view, string title, string subtitle)
+    {
+        ViewDashboard.Visibility = Visibility.Collapsed;
+        ViewFirewall.Visibility = Visibility.Collapsed;
+        ViewInjection.Visibility = Visibility.Collapsed;
+        ViewSettings.Visibility = Visibility.Collapsed;
+
+        view.Visibility = Visibility.Visible;
+        TxtPageTitle.Text = title;
+        TxtPageSubtitle.Text = subtitle;
     }
 
     private void BtnMinimizeToTray_Click(object sender, RoutedEventArgs e)
