@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="OmniEye.Core/OmniEye.Core.csproj" />
+  <Project Path="OmniEye.Tests/OmniEye.Tests.csproj" />
+  <Project Path="OmniEyeSvc/OmniEyeSvc.csproj" />
+  <Project Path="OmniEyeTray/OmniEyeTray.csproj" />
+</Solution>

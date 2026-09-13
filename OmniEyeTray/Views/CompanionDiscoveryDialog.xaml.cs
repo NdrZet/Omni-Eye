@@ -1,0 +1,72 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
+using OmniEyeTray.Models;
+
+namespace OmniEyeTray.Views;
+
+public partial class CompanionDiscoveryDialog : Window
+{
+    public ObservableCollection<DiscoveredBinaryItem> Components { get; } = new();
+
+    public List<DiscoveredBinaryItem> SelectedItems => Components.Where(x => x.IsSelected).ToList();
+
+    public CompanionDiscoveryDialog(string appName, IEnumerable<DiscoveredBinaryItem> discoveredItems)
+    {
+        InitializeComponent();
+
+        TxtSubtitle.Text = $"Программа «{appName}» содержит сопутствующие модули (службы, туннели, апдейтеры).";
+
+        foreach (var item in discoveredItems)
+        {
+            item.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(DiscoveredBinaryItem.IsSelected))
+                {
+                    UpdateSelectionCount();
+                }
+            };
+            Components.Add(item);
+        }
+
+        DgComponents.ItemsSource = Components;
+        UpdateSelectionCount();
+    }
+
+    private void UpdateSelectionCount()
+    {
+        int count = Components.Count(x => x.IsSelected);
+        TxtSelectionCount.Text = $"Выбрано: {count} из {Components.Count} файлов";
+        BtnConfirm.Content = $"Добавить выбранные ({count}) в Белый список";
+        BtnConfirm.IsEnabled = count > 0;
+    }
+
+    private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
+    {
+        foreach (var item in Components)
+        {
+            item.IsSelected = true;
+        }
+    }
+
+    private void BtnUnselectAll_Click(object sender, RoutedEventArgs e)
+    {
+        foreach (var item in Components)
+        {
+            item.IsSelected = false;
+        }
+    }
+
+    private void BtnConfirm_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = true;
+        Close();
+    }
+
+    private void BtnCancel_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        Close();
+    }
+}
