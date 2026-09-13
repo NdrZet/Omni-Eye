@@ -2,21 +2,22 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="OmniEye Security Alert" 
-        Height="420" Width="560"
+        Height="430" Width="580"
         WindowStartupLocation="CenterScreen"
         Topmost="True"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        FontFamily="Segoe UI Variable, Segoe UI, -apple-system, sans-serif">
 
-    <Border Background="#12131A" 
-            BorderBrush="#FF334B" 
-            BorderThickness="2" 
-            CornerRadius="12" 
+    <Border Background="#202020" 
+            BorderBrush="#C42B1C" 
+            BorderThickness="1.5" 
+            CornerRadius="8" 
             Padding="24">
         <Border.Effect>
-            <DropShadowEffect Color="#FF334B" BlurRadius="30" ShadowDepth="0" Opacity="0.45" />
+            <DropShadowEffect Color="#000000" BlurRadius="28" ShadowDepth="4" Opacity="0.65" />
         </Border.Effect>
 
         <Grid>
@@ -29,68 +30,72 @@
 
             <!-- Header -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                <Border Background="#33FF334B" CornerRadius="8" Width="42" Height="42" Margin="0,0,14,0">
+                <Border Background="#3B171A" BorderBrush="#6B2329" BorderThickness="1" CornerRadius="8" Width="42" Height="42" Margin="0,0,12,0">
                     <TextBlock Text="🛡️" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="ОБНАРУЖЕНА ПОПЫТКА ВНЕДРЕНИЯ (ANTI-INJECTION)" 
-                               FontWeight="Bold" FontSize="15" Foreground="#FF4D63" />
-                    <TextBlock Text="Подозрительный процесс немедленно заморожен (NtSuspendProcess)" 
-                               FontSize="12" Foreground="#8E92A4" Margin="0,2,0,0" />
+                               FontWeight="Bold" FontSize="14" Foreground="#FF99A4" />
+                    <TextBlock Text="Подозрительный процесс немедленно заморожен ядром (NtSuspendProcess)" 
+                               FontSize="11" Foreground="#A0A0A0" Margin="0,2,0,0" />
                 </StackPanel>
             </StackPanel>
 
             <!-- Details Card -->
-            <Border Grid.Row="1" Background="#1A1C26" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+            <Border Grid.Row="1" Background="#2B2B2B" CornerRadius="8" Padding="14" BorderBrush="#383838" BorderThickness="1" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="ПОДОЗРИТЕЛЬНЫЙ ПРОЦЕСС (АТАКУЮЩИЙ):" FontSize="11" FontWeight="SemiBold" Foreground="#8E92A4" />
+                    <TextBlock Text="ПОДОЗРИТЕЛЬНЫЙ ПРОЦЕСС (АТАКУЮЩИЙ):" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
                     <TextBlock x:Name="TxtSourcePath" Text="C:\Unknown\MaliciousProcess.exe" 
-                               FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" TextWrapping="Wrap" Margin="0,4,0,0" />
-                    <TextBlock x:Name="TxtSourcePid" Text="PID: 1234" FontSize="12" Foreground="#FF7081" Margin="0,2,0,14" />
+                               FontSize="13" FontWeight="SemiBold" Foreground="#FFFFFF" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <Border Background="#3B171A" BorderBrush="#6B2329" BorderThickness="1" CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" Margin="0,4,0,12">
+                        <TextBlock x:Name="TxtSourcePid" Text="PID: 1234" FontSize="11" FontWeight="SemiBold" Foreground="#FF99A4" />
+                    </Border>
 
-                    <TextBlock Text="ЦЕЛЕВОЙ ЗАЩИЩАЕМЫЙ ПРОЦЕСС:" FontSize="11" FontWeight="SemiBold" Foreground="#8E92A4" />
+                    <TextBlock Text="ЦЕЛЕВОЙ ЗАЩИЩАЕМЫЙ ПРОЦЕСС:" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
                     <TextBlock x:Name="TxtTargetPath" Text="C:\Program Files\App\ProtectedApp.exe" 
-                               FontSize="13" FontWeight="Bold" Foreground="#6BE585" TextWrapping="Wrap" Margin="0,4,0,0" />
-                    <TextBlock x:Name="TxtTargetPid" Text="PID: 5678" FontSize="12" Foreground="#8E92A4" Margin="0,2,0,0" />
+                               FontSize="13" FontWeight="SemiBold" Foreground="#6CCB5F" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <Border Background="#133821" BorderBrush="#1E6135" BorderThickness="1" CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" Margin="0,4,0,0">
+                        <TextBlock x:Name="TxtTargetPid" Text="PID: 5678" FontSize="11" FontWeight="SemiBold" Foreground="#6CCB5F" />
+                    </Border>
                 </StackPanel>
             </Border>
 
             <!-- Countdown Timer Bar -->
-            <StackPanel Grid.Row="2" Margin="0,0,0,20">
+            <StackPanel Grid.Row="2" Margin="0,0,0,18">
                 <Grid Margin="0,0,0,6">
-                    <TextBlock Text="Автоматическое завершение через:" FontSize="12" Foreground="#8E92A4" HorizontalAlignment="Left" />
-                    <TextBlock x:Name="TxtTimer" Text="60 сек." FontSize="12" FontWeight="Bold" Foreground="#FF334B" HorizontalAlignment="Right" />
+                    <TextBlock Text="Автоматическое завершение через:" FontSize="11" Foreground="#A0A0A0" HorizontalAlignment="Left" />
+                    <TextBlock x:Name="TxtTimer" Text="60 сек." FontSize="11" FontWeight="Bold" Foreground="#FF99A4" HorizontalAlignment="Right" />
                 </Grid>
-                <ProgressBar x:Name="PbCountdown" Height="6" Value="60" Maximum="60" 
-                             Foreground="#FF334B" Background="#2A2D3D" BorderThickness="0" />
+                <ProgressBar x:Name="PbCountdown" Height="4" Value="60" Maximum="60" 
+                             Foreground="#C42B1C" Background="#2B2B2B" BorderThickness="0" />
             </StackPanel>
 
-            <!-- Actions -->
+            <!-- Actions (Windows 11 Fluent Buttons) -->
             <Grid Grid.Row="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="12" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <Button x:Name="BtnKill" Grid.Column="0" Content="УБИТЬ ПРОЦЕСС" 
-                        Height="44" Background="#E62E44" Foreground="#FFFFFF" 
-                        FontWeight="Bold" FontSize="13" BorderThickness="0" 
+                        Height="38" Background="#C42B1C" Foreground="#FFFFFF" 
+                        FontWeight="SemiBold" FontSize="12" BorderThickness="0" 
                         Cursor="Hand" Click="BtnKill_Click">
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="8"/>
+                            <Setter Property="CornerRadius" Value="4"/>
                         </Style>
                     </Button.Resources>
                 </Button>
 
                 <Button x:Name="BtnIgnore" Grid.Column="2" Content="ИГНОРИРОВАТЬ" 
-                        Height="44" Background="#262A38" Foreground="#C5C9DB" 
-                        FontWeight="SemiBold" FontSize="13" BorderThickness="0" 
+                        Height="38" Background="#2D2D2D" Foreground="#FFFFFF" 
+                        FontWeight="SemiBold" FontSize="12" BorderThickness="1" BorderBrush="#383838" 
                         Cursor="Hand" Click="BtnIgnore_Click">
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="8"/>
+                            <Setter Property="CornerRadius" Value="4"/>
                         </Style>
                     </Button.Resources>
                 </Button>

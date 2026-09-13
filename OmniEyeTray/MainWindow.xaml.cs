@@ -4,8 +4,10 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -42,6 +44,7 @@ public partial class MainWindow : Window
 
         InitializeTrayIcon();
 
+        SourceInitialized += (s, e) => ApplyWindows11Style(this);
         Loaded += MainWindow_Loaded;
         Closing += MainWindow_Closing;
     }
@@ -76,8 +79,9 @@ public partial class MainWindow : Window
     private async Task ConnectAndRefreshAsync()
     {
         TxtServiceStatus.Text = "ПОДКЛЮЧЕНИЕ К СЛУЖБЕ...";
-        BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(38, 30, 14));
-        BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 158, 11));
+        BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 37, 8));
+        BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(110, 77, 12));
+        TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 200, 59));
 
         bool connected = await _ipcClient.ConnectAsync();
         if (connected)
@@ -87,9 +91,9 @@ public partial class MainWindow : Window
         else
         {
             TxtServiceStatus.Text = "СЛУЖБА НЕ ЗАПУЩЕНА (OFFLINE)";
-            BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(50, 18, 24));
-            BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68));
-            TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 113, 113));
+            BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 23, 26));
+            BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(107, 35, 41));
+            TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 153, 164));
         }
     }
 
@@ -100,16 +104,16 @@ public partial class MainWindow : Window
             if (isConnected)
             {
                 TxtServiceStatus.Text = "СЛУЖБА ПОДКЛЮЧЕНА";
-                BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(12, 37, 24));
-                BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(16, 185, 129));
-                TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(52, 211, 153));
+                BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(19, 56, 33));
+                BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 97, 53));
+                TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 203, 95));
             }
             else
             {
                 TxtServiceStatus.Text = "СЛУЖБА ОТКЛЮЧЕНА";
-                BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(50, 18, 24));
-                BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68));
-                TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 113, 113));
+                BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 23, 26));
+                BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(107, 35, 41));
+                TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 153, 164));
             }
         });
     }
@@ -476,5 +480,54 @@ public partial class MainWindow : Window
             _notifyIcon?.Dispose();
             _ipcClient.Dispose();
         }
+    }
+
+    private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var filter = TxtSearch.Text.Trim();
+        _whitelistView.Filter = obj =>
+        {
+            if (string.IsNullOrEmpty(filter))
+                return true;
+
+            if (obj is WhitelistEntry entry)
+            {
+                return entry.FileName.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                       entry.FilePath.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                       entry.AppGroup.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                       (entry.SignerSubject?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false);
+            }
+            return true;
+        };
+    }
+
+    [DllImport("dwmapi.dll", PreserveSig = true)]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+    private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+    private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
+    private const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
+
+    public static void ApplyWindows11Style(Window window)
+    {
+        try
+        {
+            var helper = new System.Windows.Interop.WindowInteropHelper(window);
+            var hwnd = helper.Handle;
+            if (hwnd == IntPtr.Zero) return;
+
+            // 1. Dark Mode Title Bar
+            int darkMode = 1;
+            DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref darkMode, sizeof(int));
+
+            // 2. Windows 11 Rounded Corners (2 = DWMWCP_ROUND)
+            int cornerPref = 2;
+            DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref cornerPref, sizeof(int));
+
+            // 3. System Backdrop Mica
+            int backdrop = 2;
+            DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int));
+        }
+        catch { }
     }
 }

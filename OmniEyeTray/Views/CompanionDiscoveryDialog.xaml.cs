@@ -15,6 +15,7 @@ public partial class CompanionDiscoveryDialog : Window
     public CompanionDiscoveryDialog(string appName, IEnumerable<DiscoveredBinaryItem> discoveredItems)
     {
         InitializeComponent();
+        SourceInitialized += (s, e) => MainWindow.ApplyWindows11Style(this);
 
         TxtSubtitle.Text = $"Программа «{appName}» содержит сопутствующие модули (службы, туннели, апдейтеры).";
 
