@@ -3,15 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:OmniEye.Core.Models;assembly=OmniEye.Core"
         Title="OmniEye — Консоль Безопасности" 
-        Height="680" Width="1040"
-        MinHeight="560" MinWidth="840"
+        Height="700" Width="1080"
+        MinHeight="580" MinWidth="860"
         WindowStartupLocation="CenterScreen"
         Background="#202020"
         Foreground="#FFFFFF"
         FontFamily="Segoe UI Variable, Segoe UI, -apple-system, sans-serif">
 
     <Window.Resources>
-        <!-- Windows 11 Button Base -->
+        <!-- Windows 11 Standard Button -->
         <Style x:Key="FluentButton" TargetType="Button">
             <Setter Property="Background" Value="#2D2D2D"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
@@ -79,45 +79,15 @@
             </Setter>
         </Style>
 
-        <!-- Windows 11 Danger Button -->
-        <Style x:Key="FluentDangerButton" TargetType="Button" BasedOn="{StaticResource FluentButton}">
-            <Setter Property="Background" Value="#2D1C20"/>
-            <Setter Property="BorderBrush" Value="#5E262E"/>
-            <Setter Property="Foreground" Value="#FF99A4"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="BtnBorder" 
-                                Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4" 
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BtnBorder" Property="Background" Value="#3D2026"/>
-                                <Setter TargetName="BtnBorder" Property="BorderBrush" Value="#752D37"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="BtnBorder" Property="Background" Value="#221518"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <!-- Windows 11 Navigation Item Style -->
         <Style x:Key="Win11NavItem" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="Normal"/>
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="Margin" Value="0,2"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -128,9 +98,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <!-- Selected Blue Pill Indicator -->
+                                <!-- Left Blue Selection Indicator Pill (Win11 Settings Signature) -->
                                 <Border x:Name="Indicator" Width="3" Height="16" Background="#4CC2FF" CornerRadius="1.5" 
-                                        HorizontalAlignment="Left" Visibility="Collapsed" Margin="-6,0,8,0"/>
+                                        HorizontalAlignment="Left" Visibility="Collapsed" Margin="-8,0,10,0"/>
                                 <ContentPresenter Grid.Column="1" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
@@ -150,12 +120,108 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Windows 11 SettingsExpander Header Template -->
+        <ControlTemplate x:Key="Win11SettingsExpanderHeaderTemplate" TargetType="ToggleButton">
+            <Border x:Name="HBorder" Background="#2B2B2B" Padding="14,10" CornerRadius="8,8,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Icon Container -->
+                    <Border Grid.Column="0" Background="#202020" BorderBrush="#383838" BorderThickness="1" 
+                            CornerRadius="6" Width="36" Height="36" Margin="0,0,12,0">
+                        <TextBlock Text="📁" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Suite Name and Details -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="Набор исполняемых файлов и фоновых служб" FontSize="11" Foreground="#808080" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- Count pill -->
+                    <Border Grid.Column="2" Background="#142B1D" BorderBrush="#1E6135" BorderThickness="1" 
+                            CornerRadius="10" Padding="8,2" VerticalAlignment="Center" Margin="0,0,10,0">
+                        <TextBlock Text="{Binding ItemCount, StringFormat='{}{0} файлов'}" 
+                                   FontSize="11" FontWeight="SemiBold" Foreground="#6CCB5F"/>
+                    </Border>
+
+                    <!-- Delete whole group button -->
+                    <Button Grid.Column="3" Content="Удалить группу" Click="BtnDeleteGroup_Click" 
+                            Margin="0,0,12,0" Padding="8,4" FontSize="11" FontWeight="SemiBold"
+                            Background="#2D1C20" Foreground="#FF99A4" BorderBrush="#5E262E" BorderThickness="1"
+                            Cursor="Hand" VerticalAlignment="Center">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="4"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <!-- Clean Windows 11 Chevron (Rotates smoothly, NO Aero Circle!) -->
+                    <Path Grid.Column="4" x:Name="Chevron" Data="M 0 0 L 4.5 4.5 L 9 0" Stroke="#A0A0A0" StrokeThickness="1.5"
+                          VerticalAlignment="Center" Margin="4,0,8,0" RenderTransformOrigin="0.5,0.5">
+                        <Path.RenderTransform>
+                            <RotateTransform x:Name="ChevronRotation" Angle="0"/>
+                        </Path.RenderTransform>
+                    </Path>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="HBorder" Property="Background" Value="#303030"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="Chevron" Property="RenderTransform">
+                        <Setter.Value>
+                            <RotateTransform Angle="180"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <!-- Windows 11 SettingsExpander Template -->
+        <ControlTemplate x:Key="Win11SettingsExpanderTemplate" TargetType="Expander">
+            <Border Background="#2B2B2B" BorderBrush="#383838" BorderThickness="1" 
+                    CornerRadius="8" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Custom Header Toggle Button -->
+                    <ToggleButton x:Name="ExpanderHeaderBtn"
+                                  IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                  Template="{StaticResource Win11SettingsExpanderHeaderTemplate}"
+                                  Cursor="Hand"/>
+
+                    <!-- Child Items Container -->
+                    <Border Grid.Row="1" x:Name="ExpandContentBorder" Visibility="Collapsed" 
+                            Background="#262626" CornerRadius="0,0,8,8" BorderBrush="#383838" BorderThickness="0,1,0,0">
+                        <ContentPresenter/>
+                    </Border>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsExpanded" Value="True">
+                    <Setter TargetName="ExpandContentBorder" Property="Visibility" Value="Visible"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <!-- Left Navigation Sidebar (Windows 11 Settings Style) -->
-            <ColumnDefinition Width="230" />
+            <!-- Left Sidebar (Windows 11 Settings Navigation) -->
+            <ColumnDefinition Width="240" />
             <!-- Main Content Area -->
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
@@ -176,7 +242,7 @@
                             <TextBlock Text="🛡️" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="OmniEye" FontWeight="Bold" FontSize="16" Foreground="#FFFFFF" />
+                            <TextBlock Text="OmniEye" FontWeight="Bold" FontSize="15" Foreground="#FFFFFF" />
                             <TextBlock Text="Zero-Trust System" FontSize="11" Foreground="#A0A0A0"/>
                         </StackPanel>
                     </StackPanel>
@@ -335,51 +401,9 @@
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                    <Border Background="#2B2B2B" BorderBrush="#383838" BorderThickness="1" 
-                                                            CornerRadius="8" Margin="0,0,0,10">
-                                                        <Expander IsExpanded="True" Foreground="#FFFFFF" Background="Transparent" BorderThickness="0">
-                                                            <!-- Custom Windows 11 Expander Header (Clean, No Aero Circle!) -->
-                                                            <Expander.Header>
-                                                                <Grid Margin="10,8" HorizontalAlignment="Stretch">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                    </Grid.ColumnDefinitions>
-
-                                                                    <TextBlock Text="📁" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
-
-                                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" 
-                                                                               Foreground="#4CC2FF" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-
-                                                                    <!-- Item count pill -->
-                                                                    <Border Grid.Column="2" Background="#1E1E1E" BorderBrush="#383838" BorderThickness="1" 
-                                                                            CornerRadius="10" Padding="8,2" Margin="8,0">
-                                                                        <TextBlock Text="{Binding ItemCount, StringFormat='{}{0} файлов'}" 
-                                                                                   FontSize="11" FontWeight="SemiBold" Foreground="#6CCB5F"/>
-                                                                    </Border>
-
-                                                                    <!-- Delete whole group button -->
-                                                                    <Button Grid.Column="3" Content="Удалить группу" Click="BtnDeleteGroup_Click" 
-                                                                            Margin="4,0,10,0" Padding="8,2" FontSize="11" FontWeight="SemiBold"
-                                                                            Background="#2D1C20" Foreground="#FF99A4" BorderBrush="#5E262E" BorderThickness="1"
-                                                                            Cursor="Hand">
-                                                                        <Button.Resources>
-                                                                            <Style TargetType="Border">
-                                                                                <Setter Property="CornerRadius" Value="4"/>
-                                                                            </Style>
-                                                                        </Button.Resources>
-                                                                    </Button>
-                                                                </Grid>
-                                                            </Expander.Header>
-
-                                                            <!-- Child Executables List inside Card -->
-                                                            <Border BorderBrush="#383838" BorderThickness="0,1,0,0">
-                                                                <ItemsPresenter />
-                                                            </Border>
-                                                        </Expander>
-                                                    </Border>
+                                                    <Expander IsExpanded="True" Style="{StaticResource Win11SettingsExpanderTemplate}">
+                                                        <ItemsPresenter />
+                                                    </Expander>
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>
@@ -391,7 +415,7 @@
                         <!-- Item Template: Child Executable Row (Responsive Grid) -->
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:WhitelistEntry}">
-                                <Border BorderBrush="#333333" BorderThickness="0,0,0,1" Padding="14,8" Background="Transparent">
+                                <Border BorderBrush="#353535" BorderThickness="0,0,0,1" Padding="14,10" Background="Transparent">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <!-- File Name & Path -->
@@ -417,7 +441,7 @@
                                                    VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,10,0"/>
 
                                         <!-- Authenticode Badge -->
-                                        <Border Grid.Column="2" Background="#133821" BorderBrush="#1E6135" BorderThickness="1" 
+                                        <Border Grid.Column="2" Background="#142B1D" BorderBrush="#1E6135" BorderThickness="1" 
                                                 CornerRadius="10" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center">
                                             <TextBlock Text="✓ ПОДПИСАН" FontSize="10" FontWeight="SemiBold" Foreground="#6CCB5F"/>
                                         </Border>
