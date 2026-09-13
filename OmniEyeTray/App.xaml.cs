@@ -7,6 +7,19 @@ namespace OmniEyeTray;
 
 public partial class App : System.Windows.Application
 {
+    [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetProcessDpiAwarenessContext(IntPtr dpiContext);
+
+    static App()
+    {
+        try
+        {
+            // Enforce Windows 10/11 PerMonitorV2 (-4) DPI Awareness to eliminate DWM bitmap blur
+            SetProcessDpiAwarenessContext(new IntPtr(-4));
+        }
+        catch { }
+    }
+
     public App()
     {
         AppDomain.CurrentDomain.UnhandledException += (s, e) =>
