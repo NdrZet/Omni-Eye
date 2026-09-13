@@ -271,10 +271,15 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtPageTitle" Text="Главная" FontWeight="SemiBold" FontSize="26" Foreground="#FFFFFF"/>
-                    <TextBlock x:Name="TxtPageSubtitle" Text="Мониторинг исходящего сетевого трафика и изоляция процессов" 
-                               FontSize="12" Foreground="#9E9E9E" Margin="0,3,0,0"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button x:Name="BtnBackToFirewall" Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowLeft24}"
+                               Click="BtnBackToFirewall_Click" Visibility="Collapsed" Margin="0,0,12,0" VerticalAlignment="Center" Height="36" Width="40"
+                               ToolTip="{DynamicResource Nav_BackToFirewall}"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtPageTitle" Text="Главная" FontWeight="SemiBold" FontSize="26" Foreground="#FFFFFF"/>
+                        <TextBlock x:Name="TxtPageSubtitle" Text="Мониторинг исходящего сетевого трафика и изоляция процессов" 
+                                   FontSize="12" Foreground="#9E9E9E" Margin="0,3,0,0"/>
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Status Badges (Windows 11 Pills) -->
@@ -544,184 +549,257 @@
                     </Grid>
                 </StackPanel>
 
-                <!-- BOTTOM SECTION: Active Network Connections Monitor -->
-                <Border Grid.Row="1" Background="#18FFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#20FFFFFF" BorderThickness="1">
+                <!-- Active Network Connections Monitor Entry Card -->
+                <Border x:Name="CardOpenNetworkMonitor" Grid.Row="1" CornerRadius="8" Padding="18,16" 
+                        BorderBrush="#24FFFFFF" BorderThickness="1" Cursor="Hand" Margin="0,10,0,0"
+                        VerticalAlignment="Top"
+                        MouseLeftButtonUp="CardOpenNetworkMonitor_Click">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="#1CFFFFFF"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#25FFFFFF"/>
+                                    <Setter Property="BorderBrush" Value="#404CC2FF"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                        <!-- Monitor Header & Live Info -->
-                        <Grid Grid.Row="0" Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonUp="NetMonHeader_Click" ToolTip="{DynamicResource NetMon_BtnFullScreen}">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="{DynamicResource NetMon_Title}" FontSize="13" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                    <ui:SymbolIcon Symbol="Open24" FontSize="12" Foreground="#4CC2FF" Margin="6,0,0,0" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <TextBlock Text="{DynamicResource NetMon_Subtitle}" FontSize="11" Foreground="#8E8E8E" Margin="0,2,0,0"/>
-                            </StackPanel>
+                        <!-- Glowing Icon Badge -->
+                        <Border Grid.Column="0" Width="44" Height="44" CornerRadius="8" Background="#264CC2FF" BorderBrush="#404CC2FF" BorderThickness="1" Margin="0,0,16,0" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="DesktopPulse24" FontSize="22" Foreground="#4CC2FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
 
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Border Background="#1A4CC2FF" BorderBrush="#404CC2FF" BorderThickness="1" CornerRadius="10" Padding="10,4" Margin="0,0,8,0" VerticalAlignment="Center">
-                                    <TextBlock x:Name="TxtConnectionsCount" Text="Active sockets: 0" FontWeight="SemiBold" FontSize="11" Foreground="#4CC2FF"/>
+                        <!-- Title, Description & Live Counter -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{DynamicResource NetMon_Title}" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                            <TextBlock Text="{DynamicResource NetMon_Subtitle}" FontSize="11.5" Foreground="#9E9E9E" Margin="0,3,0,6" TextWrapping="Wrap"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Background="#1A4CC2FF" BorderBrush="#404CC2FF" BorderThickness="1" CornerRadius="10" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock x:Name="TxtFirewallSocketsCount" Text="Active sockets: 0" FontWeight="SemiBold" FontSize="11" Foreground="#4CC2FF"/>
                                 </Border>
-                                <ui:Button x:Name="BtnRefreshConnections" Content="{DynamicResource NetMon_BtnRefresh}"
-                                           Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}"
-                                           Click="BtnRefreshConnections_Click" VerticalAlignment="Center" Height="30" Margin="0,0,6,0"/>
-                                <ui:Button x:Name="BtnToggleNetMonExpand"
-                                           Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowExpand24}"
-                                           Click="BtnToggleNetMonExpand_Click" VerticalAlignment="Center" Height="30" Margin="0,0,6,0"
-                                           ToolTip="{DynamicResource NetMon_BtnExpand}"/>
-                                <ui:Button x:Name="BtnNetMonFullScreen" Content="{DynamicResource NetMon_BtnFullScreen}"
-                                           Appearance="Primary" Icon="{ui:SymbolIcon Symbol=FullScreenMaximize24}"
-                                           Click="BtnNetMonFullScreen_Click" VerticalAlignment="Center" Height="30"
-                                           ToolTip="{DynamicResource NetMon_BtnFullScreen}"/>
+                                <Border Background="#142B1D" BorderBrush="#1E6135" BorderThickness="1" CornerRadius="10" Padding="8,2">
+                                    <TextBlock Text="LIVE TELEMETRY" FontWeight="SemiBold" FontSize="10.5" Foreground="#6CCB5F"/>
+                                </Border>
                             </StackPanel>
-                        </Grid>
+                        </StackPanel>
 
-                        <!-- Filter & Search Controls -->
-                        <Grid Grid.Row="1" Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <!-- Open Subpage Button -->
+                        <ui:Button x:Name="BtnOpenNetMonSubpage" Grid.Column="2" 
+                                   Content="{DynamicResource NetMon_CardOpen}" 
+                                   Appearance="Primary" Icon="{ui:SymbolIcon Symbol=ArrowRight24}"
+                                   Click="BtnOpenNetMonSubpage_Click" 
+                                   VerticalAlignment="Center" Height="38" Padding="16,0"/>
+                    </Grid>
+                </Border>
+            </Grid>
 
-                            <ui:TextBox x:Name="TxtConnectionSearch" 
-                                        PlaceholderText="{DynamicResource NetMon_SearchPlaceholder}"
-                                        TextChanged="TxtConnectionSearch_TextChanged"
-                                        Icon="{ui:SymbolIcon Symbol=Search24}"
-                                        Height="32" Margin="0,0,8,0" VerticalAlignment="Center"/>
+            <!-- ================= VIEW: NETWORK MONITOR (SUBPAGE) ================= -->
+            <Grid x:Name="ViewNetworkMonitor" Grid.Row="1" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                            <ComboBox x:Name="CmbProtocolFilter" Grid.Column="1" Width="140" Height="32" 
-                                      SelectionChanged="CmbProtocolFilter_SelectionChanged" VerticalAlignment="Center">
-                                <ComboBoxItem Content="{DynamicResource NetMon_FilterAll}" IsSelected="True" Tag="ALL"/>
-                                <ComboBoxItem Content="{DynamicResource NetMon_FilterTcp}" Tag="TCP"/>
-                                <ComboBoxItem Content="{DynamicResource NetMon_FilterUdp}" Tag="UDP"/>
-                            </ComboBox>
-                        </Grid>
+                <!-- Filter & Search Controls -->
+                <Border Grid.Row="0" Background="#18FFFFFF" CornerRadius="8" Padding="12,10" Margin="0,0,0,10" BorderBrush="#20FFFFFF" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                        <!-- Connections DataGrid -->
-                        <DataGrid x:Name="DgConnections" Grid.Row="2" AutoGenerateColumns="False" 
-                                  CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False"
-                                  Background="Transparent" RowBackground="#14FFFFFF" 
-                                  AlternatingRowBackground="#0AFFFFFF"
-                                  MouseDoubleClick="DgConnections_MouseDoubleClick"
-                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#14FFFFFF"
-                                  HeadersVisibility="Column" BorderThickness="1" BorderBrush="#1CFFFFFF"
-                                  Foreground="#FFFFFF" SelectionMode="Single"
-                                  ScrollViewer.CanContentScroll="True"
-                                  VirtualizingPanel.IsVirtualizing="True"
-                                  VirtualizingPanel.VirtualizationMode="Recycling">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#1E1E1E"/>
-                                    <Setter Property="Foreground" Value="#A0A0A0"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="FontSize" Value="10"/>
-                                    <Setter Property="Padding" Value="10,6"/>
-                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                    <Setter Property="BorderBrush" Value="#25FFFFFF"/>
-                                </Style>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="Padding" Value="8,4"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="DataGridCell">
-                                                <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-                                                    <ContentPresenter VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGrid.Resources>
+                        <!-- Search -->
+                        <ui:TextBox x:Name="TxtConnectionSearch" Grid.Column="0"
+                                    PlaceholderText="{DynamicResource NetMon_SearchPlaceholder}"
+                                    TextChanged="TxtConnectionSearch_TextChanged"
+                                    Icon="{ui:SymbolIcon Symbol=Search24}"
+                                    Height="34" Margin="0,0,10,0" VerticalAlignment="Center"/>
 
-                            <DataGrid.Columns>
-                                <!-- Process -->
-                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColProcess}" Width="190">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding ProcessPath}">
-                                                <ui:SymbolIcon Symbol="AppGeneric24" FontSize="14" Foreground="#4CC2FF" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding ProcessName}" FontWeight="SemiBold" FontSize="11" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis" MaxWidth="140"/>
-                                                    <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="10" Foreground="#8E8E8E"/>
-                                                </StackPanel>
+                        <!-- Protocol Filter -->
+                        <ComboBox x:Name="CmbProtocolFilter" Grid.Column="1" Width="130" Height="34" Margin="0,0,8,0"
+                                  SelectionChanged="CmbProtocolFilter_SelectionChanged" VerticalAlignment="Center">
+                            <ComboBoxItem Content="{DynamicResource NetMon_FilterAll}" IsSelected="True" Tag="ALL"/>
+                            <ComboBoxItem Content="{DynamicResource NetMon_FilterTcp}" Tag="TCP"/>
+                            <ComboBoxItem Content="{DynamicResource NetMon_FilterUdp}" Tag="UDP"/>
+                        </ComboBox>
+
+                        <!-- Status Filter -->
+                        <ComboBox x:Name="CmbStatusFilter" Grid.Column="2" Width="145" Height="34" Margin="0,0,10,0"
+                                  SelectionChanged="CmbStatusFilter_SelectionChanged" VerticalAlignment="Center">
+                            <ComboBoxItem Content="{DynamicResource NetMon_FilterStatusAll}" IsSelected="True" Tag="ALL"/>
+                            <ComboBoxItem Content="{DynamicResource NetMon_StatusWhitelisted}" Tag="WHITELISTED"/>
+                            <ComboBoxItem Content="{DynamicResource NetMon_StatusBlocked}" Tag="BLOCKED"/>
+                            <ComboBoxItem Content="{DynamicResource NetMon_StatusException}" Tag="EXCEPTION"/>
+                        </ComboBox>
+
+                        <!-- Active Sockets Badge -->
+                        <Border Grid.Column="3" Background="#1A4CC2FF" BorderBrush="#404CC2FF" BorderThickness="1" CornerRadius="10" Padding="10,4" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtConnectionsCount" Text="Active sockets: 0" FontWeight="SemiBold" FontSize="11" Foreground="#4CC2FF"/>
+                        </Border>
+
+                        <!-- Refresh Button -->
+                        <ui:Button x:Name="BtnRefreshConnections" Grid.Column="4" Content="{DynamicResource NetMon_BtnRefresh}"
+                                   Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}"
+                                   Click="BtnRefreshConnections_Click" VerticalAlignment="Center" Height="34"/>
+                    </Grid>
+                </Border>
+
+                <!-- Full Connections DataGrid -->
+                <Border Grid.Row="1" Background="#18FFFFFF" CornerRadius="8" Padding="0" BorderBrush="#20FFFFFF" BorderThickness="1">
+                    <DataGrid x:Name="DgConnections" AutoGenerateColumns="False" 
+                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False"
+                              Background="Transparent" RowBackground="#14FFFFFF" 
+                              AlternatingRowBackground="#0AFFFFFF"
+                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#14FFFFFF"
+                              HeadersVisibility="Column" BorderThickness="0"
+                              Foreground="#FFFFFF" SelectionMode="Single"
+                              ScrollViewer.CanContentScroll="True"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#1E1E1E"/>
+                                <Setter Property="Foreground" Value="#A0A0A0"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Padding" Value="10,8"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#25FFFFFF"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="8,4"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+                            <!-- Process -->
+                            <DataGridTemplateColumn Header="{DynamicResource NetMon_ColProcess}" Width="200">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding ProcessPath}">
+                                            <ui:SymbolIcon Symbol="AppGeneric24" FontSize="16" Foreground="#4CC2FF" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ProcessName}" FontWeight="SemiBold" FontSize="12" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis" MaxWidth="145"/>
+                                                <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="10" Foreground="#8E8E8E"/>
                                             </StackPanel>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                                <!-- Protocol Badge -->
-                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColProtocol}" Width="70">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Border Background="{Binding ProtocolBadgeBackground}" BorderBrush="{Binding ProtocolBadgeBorder}" BorderThickness="1" CornerRadius="4" Padding="5,2" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding ProtocolName}" FontSize="10" FontWeight="Bold" Foreground="{Binding ProtocolBadgeForeground}"/>
-                                            </Border>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+                            <!-- Protocol Badge -->
+                            <DataGridTemplateColumn Header="{DynamicResource NetMon_ColProtocol}" Width="75">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding ProtocolBadgeBackground}" BorderBrush="{Binding ProtocolBadgeBorder}" BorderThickness="1" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ProtocolName}" FontSize="10" FontWeight="Bold" Foreground="{Binding ProtocolBadgeForeground}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                                <!-- Local Endpoint -->
-                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColLocal}" Width="150">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding LocalEndpoint}" FontFamily="Consolas, Segoe UI" FontSize="11" Foreground="#D0D0D0" VerticalAlignment="Center"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+                            <!-- Local Endpoint -->
+                            <DataGridTemplateColumn Header="{DynamicResource NetMon_ColLocal}" Width="160">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding LocalEndpoint}" FontFamily="Consolas, Segoe UI" FontSize="11" Foreground="#D0D0D0" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                                <!-- Remote Endpoint -->
-                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColRemote}" Width="170">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding RemoteEndpoint}" FontFamily="Consolas, Segoe UI" FontSize="11" Foreground="#CCCCCC" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+                            <!-- Remote Endpoint -->
+                            <DataGridTemplateColumn Header="{DynamicResource NetMon_ColRemote}" Width="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding RemoteEndpoint}" FontFamily="Consolas, Segoe UI" FontSize="11" Foreground="#CCCCCC" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                                <!-- State -->
-                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColState}" Width="95">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding State}" FontSize="11" Foreground="#A8A8A8" VerticalAlignment="Center"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+                            <!-- State -->
+                            <DataGridTemplateColumn Header="{DynamicResource NetMon_ColState}" Width="105">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding State}" FontSize="11" Foreground="#A8A8A8" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                                <!-- Policy Status Badge -->
-                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColStatus}" Width="140">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Border Background="{Binding StatusBadgeBackground}" BorderBrush="{Binding StatusBadgeBorder}" BorderThickness="1" CornerRadius="8" Padding="6,3" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding StatusText}" FontSize="10" FontWeight="SemiBold" Foreground="{Binding StatusBadgeForeground}"/>
-                                            </Border>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+                            <!-- Policy Status Badge -->
+                            <DataGridTemplateColumn Header="{DynamicResource NetMon_ColStatus}" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding StatusBadgeBackground}" BorderBrush="{Binding StatusBadgeBorder}" BorderThickness="1" CornerRadius="8" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding StatusText}" FontSize="10" FontWeight="SemiBold" Foreground="{Binding StatusBadgeForeground}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                                <!-- Quick Whitelist Action -->
-                                <DataGridTemplateColumn Header="{DynamicResource NetMon_ColAction}" Width="135">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ui:Button Content="{DynamicResource NetMon_ActionAdd}" 
-                                                       FontSize="10" Padding="6,2" Height="24"
-                                                       Appearance="Secondary"
-                                                       Visibility="{Binding CanAddToWhitelist, Converter={StaticResource BoolToVisConverter}}"
-                                                       Click="BtnAddConnectionToWhitelist_Click"
-                                                       Tag="{Binding ProcessPath}"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                            <!-- Executable Path -->
+                            <DataGridTemplateColumn Header="{DynamicResource NetMon_ColPath}" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ProcessPath}" FontSize="11" Foreground="#8E8E8E" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding ProcessPath}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Quick Whitelist Action -->
+                            <DataGridTemplateColumn Header="{DynamicResource NetMon_ColAction}" Width="135">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ui:Button Content="{DynamicResource NetMon_ActionAdd}" 
+                                                   FontSize="10" Padding="8,3" Height="26"
+                                                   Appearance="Secondary"
+                                                   Visibility="{Binding CanAddToWhitelist, Converter={StaticResource BoolToVisConverter}}"
+                                                   Click="BtnAddConnectionToWhitelist_Click"
+                                                   Tag="{Binding ProcessPath}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <!-- Bottom Telemetry Bar -->
+                <Border Grid.Row="2" Background="#14FFFFFF" CornerRadius="6" Padding="12,8" Margin="0,8,0,0" BorderBrush="#16FFFFFF" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtStatTcp" Text="TCP: 0" FontSize="11" Foreground="#4CC2FF" Margin="0,0,14,0"/>
+                            <TextBlock x:Name="TxtStatUdp" Text="UDP: 0" FontSize="11" Foreground="#6CCB5F" Margin="0,0,14,0"/>
+                            <TextBlock x:Name="TxtStatWhitelisted" Text="Whitelisted: 0" FontSize="11" Foreground="#6CCB5F" Margin="0,0,14,0"/>
+                            <TextBlock x:Name="TxtStatBlocked" Text="Blocked: 0" FontSize="11" Foreground="#FF99A4" Margin="0,0,14,0"/>
+                            <TextBlock x:Name="TxtStatExceptions" Text="System: 0" FontSize="11" Foreground="#FFC83B"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{DynamicResource NetMon_AutoRefresh}" FontSize="11" Foreground="#888888"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
             </Grid>

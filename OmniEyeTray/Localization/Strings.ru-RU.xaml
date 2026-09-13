@@ -178,5 +178,7 @@
     <sys:String x:Key="NetMon_ColPath">ПУТЬ К ФАЙЛУ</sys:String>
     <sys:String x:Key="NetMon_WindowTitle">OmniEye — Мониторинг сетевых соединений и Zero-Trust</sys:String>
     <sys:String x:Key="NetMon_StatsSummary">Всего: {0} | TCP: {1} | UDP: {2} | Заблокировано: {3} | Разрешено: {4} | Исключения: {5}</sys:String>
+    <sys:String x:Key="Nav_BackToFirewall">Назад к сетевому экрану</sys:String>
+    <sys:String x:Key="NetMon_CardOpen">Открыть мониторинг →</sys:String>
 
 </ResourceDictionary>

@@ -178,5 +178,7 @@
     <sys:String x:Key="NetMon_ColPath">DATEIPFAD</sys:String>
     <sys:String x:Key="NetMon_WindowTitle">OmniEye — Netzwerk-Telemetrie &amp; Zero-Trust-Monitor</sys:String>
     <sys:String x:Key="NetMon_StatsSummary">Gesamt: {0} | TCP: {1} | UDP: {2} | Blockiert: {3} | Freigegeben: {4} | Ausnahmen: {5}</sys:String>
+    <sys:String x:Key="Nav_BackToFirewall">Zurück zur Firewall</sys:String>
+    <sys:String x:Key="NetMon_CardOpen">Monitoring öffnen →</sys:String>
 
 </ResourceDictionary>

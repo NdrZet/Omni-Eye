@@ -178,5 +178,7 @@
     <sys:String x:Key="NetMon_ColPath">実行ファイルパス</sys:String>
     <sys:String x:Key="NetMon_WindowTitle">OmniEye — ネットワークテレメトリ＆ゼロトラストモニター</sys:String>
     <sys:String x:Key="NetMon_StatsSummary">合計: {0} | TCP: {1} | UDP: {2} | ブロック: {3} | 許可済み: {4} | システム例外: {5}</sys:String>
+    <sys:String x:Key="Nav_BackToFirewall">ファイアウォールに戻る</sys:String>
+    <sys:String x:Key="NetMon_CardOpen">モニターを開く →</sys:String>
 
 </ResourceDictionary>

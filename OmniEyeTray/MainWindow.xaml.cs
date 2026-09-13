@@ -35,7 +35,6 @@ public partial class MainWindow : FluentWindow
     private readonly System.Windows.Threading.DispatcherTimer _netMonTimer;
     private string _currentTab = "Dashboard";
     private int _lastBlockedAttempts = 0;
-    private bool _isNetMonExpanded = false;
 
     public ObservableCollection<WhitelistEntry> WhitelistEntries { get; set; } = new();
     public ObservableCollection<NetworkConnectionInfo> NetworkConnections { get; set; } = new();
@@ -101,6 +100,10 @@ public partial class MainWindow : FluentWindow
                 case "Firewall":
                     TxtPageTitle.Text = LocalizationManager.GetString("Firewall_Title");
                     TxtPageSubtitle.Text = LocalizationManager.GetString("Firewall_Subtitle");
+                    break;
+                case "NetworkMonitor":
+                    TxtPageTitle.Text = LocalizationManager.GetString("NetMon_Title");
+                    TxtPageSubtitle.Text = LocalizationManager.GetString("NetMon_Subtitle");
                     break;
                 case "Injection":
                     TxtPageTitle.Text = LocalizationManager.GetString("Injection_Title");
@@ -634,7 +637,7 @@ public partial class MainWindow : FluentWindow
             BtnTogglePolicy.Content = LocalizationManager.GetString("Firewall_BtnBlockAll");
         }
 
-        if (_currentTab == "Firewall")
+        if (_currentTab == "Firewall" || _currentTab == "NetworkMonitor")
         {
             _ = RefreshNetworkConnectionsAsync();
         }
@@ -686,6 +689,7 @@ public partial class MainWindow : FluentWindow
     {
         ViewDashboard.Visibility = Visibility.Collapsed;
         ViewFirewall.Visibility = Visibility.Collapsed;
+        ViewNetworkMonitor.Visibility = Visibility.Collapsed;
         ViewInjection.Visibility = Visibility.Collapsed;
         ViewSettings.Visibility = Visibility.Collapsed;
 
@@ -693,18 +697,50 @@ public partial class MainWindow : FluentWindow
         TxtPageTitle.Text = title;
         TxtPageSubtitle.Text = subtitle;
 
-        if (view == ViewFirewall)
+        if (view == ViewNetworkMonitor)
         {
+            BtnBackToFirewall.Visibility = Visibility.Visible;
             _netMonTimer.Start();
             _ = RefreshNetworkConnectionsAsync();
         }
         else
         {
-            _netMonTimer.Stop();
+            BtnBackToFirewall.Visibility = Visibility.Collapsed;
+            if (view == ViewFirewall)
+            {
+                _netMonTimer.Start();
+                _ = RefreshNetworkConnectionsAsync();
+            }
+            else
+            {
+                _netMonTimer.Stop();
+            }
         }
     }
 
     #region Network Monitor Handlers
+
+    public void OpenNetworkMonitorSubpage()
+    {
+        _currentTab = "NetworkMonitor";
+        ShowView(ViewNetworkMonitor, LocalizationManager.GetString("NetMon_Title"), LocalizationManager.GetString("NetMon_Subtitle"));
+    }
+
+    private void CardOpenNetworkMonitor_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        OpenNetworkMonitorSubpage();
+    }
+
+    private void BtnOpenNetMonSubpage_Click(object sender, RoutedEventArgs e)
+    {
+        OpenNetworkMonitorSubpage();
+    }
+
+    private void BtnBackToFirewall_Click(object sender, RoutedEventArgs e)
+    {
+        NavFirewall.IsChecked = true;
+        NavFirewall_Click(sender, e);
+    }
 
     private bool FilterConnections(object item)
     {
@@ -718,7 +754,16 @@ public partial class MainWindow : FluentWindow
             if (tag == "UDP" && conn.Protocol != NetworkProtocol.Udp) return false;
         }
 
-        // Search filter (ProcessName, PID, LocalEndpoint, RemoteEndpoint, State)
+        // Status filter
+        if (CmbStatusFilter?.SelectedItem is ComboBoxItem selectedStatus)
+        {
+            string sTag = selectedStatus.Tag?.ToString() ?? "ALL";
+            if (sTag == "WHITELISTED" && conn.EnforcementStatus != ZeroTrustEnforcementStatus.Whitelisted) return false;
+            if (sTag == "BLOCKED" && conn.EnforcementStatus != ZeroTrustEnforcementStatus.Blocked) return false;
+            if (sTag == "EXCEPTION" && conn.EnforcementStatus != ZeroTrustEnforcementStatus.SystemException) return false;
+        }
+
+        // Search filter (ProcessName, PID, LocalEndpoint, RemoteEndpoint, State, ProcessPath)
         string search = TxtConnectionSearch?.Text?.Trim() ?? string.Empty;
         if (!string.IsNullOrEmpty(search))
         {
@@ -726,7 +771,8 @@ public partial class MainWindow : FluentWindow
                          conn.ProcessId.ToString().Contains(search, StringComparison.OrdinalIgnoreCase) ||
                          conn.LocalEndpoint.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                          conn.RemoteEndpoint.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                         conn.State.Contains(search, StringComparison.OrdinalIgnoreCase);
+                         conn.State.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                         conn.ProcessPath.Contains(search, StringComparison.OrdinalIgnoreCase);
 
             if (!match) return false;
         }
@@ -746,12 +792,39 @@ public partial class MainWindow : FluentWindow
         UpdateConnectionsCountBadge();
     }
 
+    private void CmbStatusFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _connectionsView?.Refresh();
+        UpdateConnectionsCountBadge();
+    }
+
     private void UpdateConnectionsCountBadge()
     {
-        if (TxtConnectionsCount == null) return;
         int count = _connectionsView?.Cast<object>().Count() ?? NetworkConnections.Count;
         string fmt = LocalizationManager.GetString("NetMon_CountFormat");
-        TxtConnectionsCount.Text = string.Format(fmt, count);
+        string formattedCount = string.Format(fmt, count);
+
+        if (TxtConnectionsCount != null)
+        {
+            TxtConnectionsCount.Text = formattedCount;
+        }
+
+        if (TxtFirewallSocketsCount != null)
+        {
+            TxtFirewallSocketsCount.Text = formattedCount;
+        }
+
+        int tcpCount = NetworkConnections.Count(c => c.Protocol == NetworkProtocol.Tcp);
+        int udpCount = NetworkConnections.Count(c => c.Protocol == NetworkProtocol.Udp);
+        int whitelistedCount = NetworkConnections.Count(c => c.EnforcementStatus == ZeroTrustEnforcementStatus.Whitelisted);
+        int blockedCount = NetworkConnections.Count(c => c.EnforcementStatus == ZeroTrustEnforcementStatus.Blocked);
+        int exceptionsCount = NetworkConnections.Count(c => c.EnforcementStatus == ZeroTrustEnforcementStatus.SystemException);
+
+        if (TxtStatTcp != null) TxtStatTcp.Text = $"TCP: {tcpCount}";
+        if (TxtStatUdp != null) TxtStatUdp.Text = $"UDP: {udpCount}";
+        if (TxtStatWhitelisted != null) TxtStatWhitelisted.Text = $"Whitelisted: {whitelistedCount}";
+        if (TxtStatBlocked != null) TxtStatBlocked.Text = $"Blocked: {blockedCount}";
+        if (TxtStatExceptions != null) TxtStatExceptions.Text = $"System: {exceptionsCount}";
     }
 
     private async void BtnRefreshConnections_Click(object sender, RoutedEventArgs e)
@@ -797,59 +870,6 @@ public partial class MainWindow : FluentWindow
         {
             System.Diagnostics.Debug.WriteLine($"[NetMon] Refresh error: {ex.Message}");
         }
-    }
-
-    private void NetMonHeader_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        OpenNetworkMonitorFullScreen();
-    }
-
-    private void BtnNetMonFullScreen_Click(object sender, RoutedEventArgs e)
-    {
-        OpenNetworkMonitorFullScreen();
-    }
-
-    private void DgConnections_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        OpenNetworkMonitorFullScreen();
-    }
-
-    private void BtnToggleNetMonExpand_Click(object sender, RoutedEventArgs e)
-    {
-        _isNetMonExpanded = !_isNetMonExpanded;
-        if (_isNetMonExpanded)
-        {
-            PanelFirewallTop.Visibility = Visibility.Collapsed;
-            if (BtnToggleNetMonExpand.Icon is SymbolIcon sym)
-            {
-                sym.Symbol = SymbolRegular.FullScreenMinimize24;
-            }
-            BtnToggleNetMonExpand.ToolTip = LocalizationManager.GetString("NetMon_BtnCollapse");
-        }
-        else
-        {
-            PanelFirewallTop.Visibility = Visibility.Visible;
-            if (BtnToggleNetMonExpand.Icon is SymbolIcon sym)
-            {
-                sym.Symbol = SymbolRegular.FullScreenMaximize24;
-            }
-            BtnToggleNetMonExpand.ToolTip = LocalizationManager.GetString("NetMon_BtnExpand");
-        }
-    }
-
-    private void OpenNetworkMonitorFullScreen()
-    {
-        var fullWindow = new NetworkMonitorWindow(
-            _ipcClient,
-            WhitelistEntries,
-            _isOutboundBlocked,
-            AddExecutableToWhitelistWithDiscoveryAsync)
-        {
-            Owner = this
-        };
-
-        fullWindow.ShowDialog();
-        _ = RefreshNetworkConnectionsAsync();
     }
 
     #endregion

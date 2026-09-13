@@ -178,5 +178,7 @@
     <sys:String x:Key="NetMon_ColPath">EXECUTABLE PATH</sys:String>
     <sys:String x:Key="NetMon_WindowTitle">OmniEye — Network Telemetry &amp; Zero-Trust Monitor</sys:String>
     <sys:String x:Key="NetMon_StatsSummary">Total: {0} | TCP: {1} | UDP: {2} | Blocked: {3} | Whitelisted: {4} | Exceptions: {5}</sys:String>
+    <sys:String x:Key="Nav_BackToFirewall">Back to Firewall</sys:String>
+    <sys:String x:Key="NetMon_CardOpen">Open Monitoring →</sys:String>
 
 </ResourceDictionary>
