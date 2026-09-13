@@ -1,6 +1,12 @@
 # OmniEye — Zero-Trust Anti-Exfiltration & Endpoint Protection System
 
 <p align="center">
+  <b>Language / Язык:</b> 
+  <b>🇷🇺 Русский</b> • 
+  <a href="README.en.md">🇬🇧 English</a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/.NET-10.0%20(LTS)-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10" />
   <img src="https://img.shields.io/badge/C%23-13.0-239120?style=for-the-badge&logo=csharp&logoColor=white" alt="C# 13" />
   <img src="https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
