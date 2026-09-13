@@ -61,8 +61,9 @@
 
         <!-- Windows 11 SettingsExpander Header Template -->
         <ControlTemplate x:Key="Win11SettingsExpanderHeaderTemplate" TargetType="ToggleButton">
-            <Border x:Name="HBorder" Background="#242424" Padding="16,12" CornerRadius="7" BorderBrush="#25FFFFFF" BorderThickness="0">
-                <Grid>
+            <Border x:Name="HBorder" Background="#242424" Padding="16,12" CornerRadius="7" 
+                    BorderBrush="#25FFFFFF" BorderThickness="0" HorizontalAlignment="Stretch">
+                <Grid HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -73,12 +74,12 @@
 
                     <!-- Icon Container -->
                     <Border Grid.Column="0" Background="#18FFFFFF" BorderBrush="#26FFFFFF" BorderThickness="1" 
-                            CornerRadius="6" Width="36" Height="36" Margin="0,0,12,0">
+                            CornerRadius="6" Width="36" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Folder24" FontSize="18" Foreground="#4CC2FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
                     <!-- Suite Name and Details -->
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="Набор исполняемых файлов и фоновых служб" FontSize="11" Foreground="#888888" Margin="0,2,0,0"/>
                     </StackPanel>
@@ -123,23 +124,27 @@
         <!-- Windows 11 SettingsExpander Template -->
         <ControlTemplate x:Key="Win11SettingsExpanderTemplate" TargetType="Expander">
             <Border Background="#202020" BorderBrush="#25FFFFFF" BorderThickness="1" 
-                    CornerRadius="8" Margin="0,0,0,10">
-                <Grid>
+                    CornerRadius="8" Margin="0,0,0,10" HorizontalAlignment="Stretch">
+                <Grid HorizontalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Custom Header Toggle Button -->
+                    <!-- Custom Header Toggle Button (Forced Stretch & Style Reset) -->
                     <ToggleButton x:Name="ExpanderHeaderBtn"
+                                  Style="{x:Null}"
+                                  HorizontalAlignment="Stretch"
+                                  HorizontalContentAlignment="Stretch"
+                                  Focusable="False"
                                   IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                   Template="{StaticResource Win11SettingsExpanderHeaderTemplate}"
                                   Cursor="Hand"/>
 
                     <!-- Child Items Container -->
                     <Border Grid.Row="1" x:Name="ExpandContentBorder" Visibility="Collapsed" 
-                            Background="#1A1A1A" CornerRadius="0,0,7,7" Padding="4,4">
-                        <ContentPresenter/>
+                            Background="#1A1A1A" CornerRadius="0,0,7,7" Padding="4,4" HorizontalAlignment="Stretch">
+                        <ContentPresenter HorizontalAlignment="Stretch"/>
                     </Border>
                 </Grid>
             </Border>
@@ -151,6 +156,8 @@
         </ControlTemplate>
 
         <Style x:Key="Win11SettingsExpanderStyle" TargetType="Expander">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template" Value="{StaticResource Win11SettingsExpanderTemplate}"/>
         </Style>
     </ui:FluentWindow.Resources>
@@ -387,17 +394,22 @@
                 <!-- Application Suites (Windows 11 Responsive Cards) -->
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                               Focusable="False" PanningMode="Both" CanContentScroll="False">
-                    <ItemsControl x:Name="ListAppGroups">
+                    <ItemsControl x:Name="ListAppGroups" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                         <!-- Group Style: Each Suite is an Expandable Windows 11 Card -->
                         <ItemsControl.GroupStyle>
                             <GroupStyle>
                                 <GroupStyle.ContainerStyle>
                                     <Style TargetType="{x:Type GroupItem}">
+                                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                    <Expander IsExpanded="True" Style="{StaticResource Win11SettingsExpanderStyle}">
-                                                        <ItemsPresenter />
+                                                    <Expander IsExpanded="True" 
+                                                              Style="{StaticResource Win11SettingsExpanderStyle}"
+                                                              HorizontalAlignment="Stretch"
+                                                              HorizontalContentAlignment="Stretch">
+                                                        <ItemsPresenter HorizontalAlignment="Stretch" />
                                                     </Expander>
                                                 </ControlTemplate>
                                             </Setter.Value>
