@@ -8,7 +8,13 @@
         MinHeight="580" MinWidth="860"
         WindowStartupLocation="CenterScreen"
         WindowBackdropType="Mica"
-        ExtendsContentIntoTitleBar="True">
+        ExtendsContentIntoTitleBar="True"
+        FontFamily="Segoe UI Variable Text, Segoe UI, sans-serif"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.ClearTypeHint="Enabled">
 
     <ui:FluentWindow.Resources>
         <!-- Windows 11 Navigation Item Style -->
@@ -55,7 +61,7 @@
 
         <!-- Windows 11 SettingsExpander Header Template -->
         <ControlTemplate x:Key="Win11SettingsExpanderHeaderTemplate" TargetType="ToggleButton">
-            <Border x:Name="HBorder" Background="#242424" Padding="16,12" CornerRadius="8,8,0,0" BorderBrush="#2D2D2D" BorderThickness="0,0,0,1">
+            <Border x:Name="HBorder" Background="#242424" Padding="16,12" CornerRadius="7" BorderBrush="#25FFFFFF" BorderThickness="0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -103,6 +109,8 @@
                     <Setter TargetName="HBorder" Property="Background" Value="#2A2A2A"/>
                 </Trigger>
                 <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="HBorder" Property="CornerRadius" Value="7,7,0,0"/>
+                    <Setter TargetName="HBorder" Property="BorderThickness" Value="0,0,0,1"/>
                     <Setter TargetName="Chevron" Property="RenderTransform">
                         <Setter.Value>
                             <RotateTransform Angle="180"/>
@@ -114,7 +122,7 @@
 
         <!-- Windows 11 SettingsExpander Template -->
         <ControlTemplate x:Key="Win11SettingsExpanderTemplate" TargetType="Expander">
-            <Border Background="#202020" BorderBrush="#30FFFFFF" BorderThickness="1" 
+            <Border Background="#202020" BorderBrush="#25FFFFFF" BorderThickness="1" 
                     CornerRadius="8" Margin="0,0,0,10">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -124,13 +132,13 @@
 
                     <!-- Custom Header Toggle Button -->
                     <ToggleButton x:Name="ExpanderHeaderBtn"
-                                  IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                   Template="{StaticResource Win11SettingsExpanderHeaderTemplate}"
                                   Cursor="Hand"/>
 
                     <!-- Child Items Container -->
                     <Border Grid.Row="1" x:Name="ExpandContentBorder" Visibility="Collapsed" 
-                            Background="#181818" CornerRadius="0,0,8,8">
+                            Background="#1A1A1A" CornerRadius="0,0,7,7" Padding="4,4">
                         <ContentPresenter/>
                     </Border>
                 </Grid>
@@ -377,7 +385,8 @@
                 </Grid>
 
                 <!-- Application Suites (Windows 11 Responsive Cards) -->
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              Focusable="False" PanningMode="Both" CanContentScroll="False">
                     <ItemsControl x:Name="ListAppGroups">
                         <!-- Group Style: Each Suite is an Expandable Windows 11 Card -->
                         <ItemsControl.GroupStyle>
@@ -398,38 +407,61 @@
                             </GroupStyle>
                         </ItemsControl.GroupStyle>
 
-                        <!-- Item Template: Child Executable Row (Responsive layout, never drifts) -->
+                        <!-- Item Template: Child Executable Row (Responsive layout with hover feedback) -->
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:WhitelistEntry}">
-                                <Border BorderBrush="#18FFFFFF" BorderThickness="0,0,0,1" Padding="16,10" Background="Transparent">
+                                <Border Margin="4,2" CornerRadius="6" Padding="12,8">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#0FFFFFFF"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- Left: File Details & Signer Info -->
-                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF" Margin="0,0,10,0"/>
+                                        <!-- Executable File Icon Badge -->
+                                        <Border Grid.Column="0" Width="32" Height="32" CornerRadius="6" 
+                                                Background="#14FFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1"
+                                                VerticalAlignment="Center" Margin="0,0,12,0">
+                                            <ui:SymbolIcon Symbol="Document20" FontSize="16" Foreground="#99D5FF" 
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <!-- Left: File Details & Signer Info (Responsive) -->
+                                        <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="12.5" Foreground="#FFFFFF" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                                 <Border Background="#142B1D" BorderBrush="#1E6135" BorderThickness="1" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
                                                     <TextBlock Text="✓ ПОДПИСАН" FontSize="10" FontWeight="SemiBold" Foreground="#6CCB5F"/>
                                                 </Border>
                                             </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                                <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis" MaxWidth="500"/>
-                                                <TextBlock Text=" • " FontSize="11" Foreground="#555555" Margin="4,0"/>
-                                                <TextBlock Text="{Binding SignerSubject}" FontSize="11" Foreground="#AAAAAA" TextTrimming="CharacterEllipsis" MaxWidth="320"/>
-                                            </StackPanel>
-                                        </StackPanel>
+                                            <TextBlock Grid.Row="1" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis" Margin="0,3,0,0">
+                                                <Run Text="{Binding FilePath, Mode=OneWay}" Foreground="#888888"/>
+                                                <Run Text="  •  " Foreground="#555555"/>
+                                                <Run Text="{Binding SignerSubject, Mode=OneWay}" Foreground="#AAAAAA"/>
+                                            </TextBlock>
+                                        </Grid>
 
                                         <!-- Right: Date and Action Button -->
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding CreatedAt, StringFormat=\{0:dd.MM.yyyy HH:mm\}}" 
-                                                       FontSize="11" Foreground="#777777" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                                       FontSize="11" Foreground="#777777" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                             <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon Symbol=Dismiss16}" 
                                                        Padding="6" Click="BtnDeleteEntry_Click" ToolTip="Удалить из Белого списка" 
-                                                       Foreground="#FF99A4"/>
+                                                       Foreground="#FF99A4" Cursor="Hand"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
