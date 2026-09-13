@@ -1,9 +1,12 @@
 # OmniEye — Zero-Trust Anti-Exfiltration & Endpoint Protection System
 
 <p align="center">
-  <b>Language / Язык:</b> 
+  <b>Language:</b> 
   <a href="README.md">🇷🇺 Русский</a> • 
-  <b>🇬🇧 English</b>
+  <b>🇬🇧 English</b> • 
+  <a href="README.uk.md">🇺🇦 Українська</a> • 
+  <a href="README.de.md">🇩🇪 Deutsch</a> • 
+  <a href="README.ja.md">🇯🇵 日本語</a>
 </p>
 
 <p align="center">
