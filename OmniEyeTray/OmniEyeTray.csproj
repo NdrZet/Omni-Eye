@@ -4,6 +4,10 @@
     <ProjectReference Include="..\OmniEye.Core\OmniEye.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>

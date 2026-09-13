@@ -15,11 +15,14 @@ using OmniEye.Core.Ipc;
 using OmniEye.Core.Models;
 using OmniEye.Core.Security;
 using OmniEyeTray.Views;
+using Wpf.Ui.Controls;
 using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxResult = System.Windows.MessageBoxResult;
 
 namespace OmniEyeTray;
 
-public partial class MainWindow : Window
+public partial class MainWindow : FluentWindow
 {
     private readonly IpcClient _ipcClient;
     private NotifyIcon? _notifyIcon;
