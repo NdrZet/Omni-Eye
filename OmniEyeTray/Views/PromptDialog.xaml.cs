@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Threading;
 using OmniEye.Core.Models;
+using OmniEyeTray.Services;
 
 namespace OmniEyeTray.Views;
 
@@ -19,14 +20,14 @@ public partial class PromptDialog : Window
         _notification = notification;
         _remainingSeconds = notification.TimeoutSeconds > 0 ? notification.TimeoutSeconds : 60;
 
-        TxtSourcePath.Text = string.IsNullOrEmpty(notification.SourcePath) ? "[Неизвестный путь]" : notification.SourcePath;
+        TxtSourcePath.Text = string.IsNullOrEmpty(notification.SourcePath) ? "[Unknown]" : notification.SourcePath;
         TxtSourcePid.Text = $"PID: {notification.SourcePid}";
-        TxtTargetPath.Text = string.IsNullOrEmpty(notification.TargetPath) ? "[Защищаемый процесс]" : notification.TargetPath;
+        TxtTargetPath.Text = string.IsNullOrEmpty(notification.TargetPath) ? "[Protected Process]" : notification.TargetPath;
         TxtTargetPid.Text = $"PID: {notification.TargetPid}";
 
         PbCountdown.Maximum = _remainingSeconds;
         PbCountdown.Value = _remainingSeconds;
-        TxtTimer.Text = $"{_remainingSeconds} сек.";
+        TxtTimer.Text = LocalizationManager.GetString("Alert_TimerFormat", _remainingSeconds);
 
         _timer = new DispatcherTimer
         {
@@ -40,7 +41,7 @@ public partial class PromptDialog : Window
     {
         _remainingSeconds--;
         PbCountdown.Value = Math.Max(0, _remainingSeconds);
-        TxtTimer.Text = $"{_remainingSeconds} сек.";
+        TxtTimer.Text = LocalizationManager.GetString("Alert_TimerFormat", _remainingSeconds);
 
         if (_remainingSeconds <= 0)
         {

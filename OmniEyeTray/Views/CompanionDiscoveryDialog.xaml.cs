@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using OmniEyeTray.Models;
+using OmniEyeTray.Services;
 
 namespace OmniEyeTray.Views;
 
@@ -17,7 +18,7 @@ public partial class CompanionDiscoveryDialog : Window
         InitializeComponent();
         SourceInitialized += (s, e) => MainWindow.ApplyWindows11Style(this);
 
-        TxtSubtitle.Text = $"Программа «{appName}» содержит сопутствующие модули (службы, туннели, апдейтеры).";
+        TxtSubtitle.Text = $"{appName} — {LocalizationManager.GetString("Comp_Subtitle")}";
 
         foreach (var item in discoveredItems)
         {
@@ -38,8 +39,8 @@ public partial class CompanionDiscoveryDialog : Window
     private void UpdateSelectionCount()
     {
         int count = Components.Count(x => x.IsSelected);
-        TxtSelectionCount.Text = $"Выбрано: {count} из {Components.Count} файлов";
-        BtnConfirm.Content = $"Добавить выбранные ({count}) в Белый список";
+        TxtSelectionCount.Text = LocalizationManager.GetString("Comp_SelectionFormat", count);
+        BtnConfirm.Content = $"{LocalizationManager.GetString("Comp_Confirm")} ({count})";
         BtnConfirm.IsEnabled = count > 0;
     }
 

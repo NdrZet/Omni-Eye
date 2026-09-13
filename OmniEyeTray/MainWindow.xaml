@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:models="clr-namespace:OmniEye.Core.Models;assembly=OmniEye.Core"
-        Title="OmniEye — Консоль Безопасности" 
+        Title="{DynamicResource App_Title}" 
         Height="720" Width="1100"
         MinHeight="580" MinWidth="860"
         WindowStartupLocation="CenterScreen"
@@ -81,18 +81,18 @@
                     <!-- Suite Name and Details -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="Набор исполняемых файлов и фоновых служб" FontSize="11" Foreground="#888888" Margin="0,2,0,0"/>
+                        <TextBlock Text="{DynamicResource Dash_GroupSubtitle}" FontSize="11" Foreground="#888888" Margin="0,2,0,0"/>
                     </StackPanel>
 
                     <!-- Count pill -->
                     <Border Grid.Column="2" Background="#142B1D" BorderBrush="#1E6135" BorderThickness="1" 
                             CornerRadius="10" Padding="8,2" VerticalAlignment="Center" Margin="0,0,12,0">
-                        <TextBlock Text="{Binding ItemCount, StringFormat='{}{0} файлов'}" 
+                        <TextBlock Text="{Binding ItemCount, StringFormat='{}{0} files'}" 
                                    FontSize="11" FontWeight="SemiBold" Foreground="#6CCB5F"/>
                     </Border>
 
                     <!-- Delete whole group button -->
-                    <ui:Button Grid.Column="3" Content="Удалить группу" Click="BtnDeleteGroup_Click" 
+                    <ui:Button Grid.Column="3" Content="{DynamicResource Action_DeleteGroup}" Click="BtnDeleteGroup_Click" 
                                Appearance="Danger" Margin="0,0,12,0" Padding="10,4" FontSize="11" FontWeight="SemiBold"
                                VerticalAlignment="Center"/>
 
@@ -170,7 +170,7 @@
 
         <!-- Windows 11 Fluent Native TitleBar -->
         <ui:TitleBar Grid.Row="0" x:Name="AppTitleBar" 
-                     Title="OmniEye — Консоль Zero-Trust Защиты" 
+                     Title="{DynamicResource App_Title}" 
                      ShowMaximize="True" ShowMinimize="True" />
 
         <Grid Grid.Row="1">
@@ -199,7 +199,7 @@
                         </Border>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="OmniEye" FontWeight="SemiBold" FontSize="16" Foreground="#FFFFFF" />
-                            <TextBlock Text="Zero-Trust System" FontSize="11" Foreground="#8E8E8E" Margin="0,1,0,0"/>
+                            <TextBlock Text="{DynamicResource App_ZeroTrust}" FontSize="11" Foreground="#8E8E8E" Margin="0,1,0,0"/>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
@@ -209,25 +209,25 @@
                     <RadioButton x:Name="NavDashboard" Style="{StaticResource Win11NavItem}" IsChecked="True" Click="NavDashboard_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Home24" FontSize="16" Margin="0,0,12,0" Foreground="#4CC2FF" />
-                            <TextBlock Text="Главная" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource Nav_Dashboard}" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="NavFirewall" Style="{StaticResource Win11NavItem}" Click="NavFirewall_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="ShieldGlobe24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
-                            <TextBlock Text="Сетевой экран" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource Nav_Firewall}" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="NavInjection" Style="{StaticResource Win11NavItem}" Click="NavInjection_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
-                            <TextBlock Text="Защита ядра" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource Nav_Injection}" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="NavSettings" Style="{StaticResource Win11NavItem}" Click="NavSettings_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Settings24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
-                            <TextBlock Text="Параметры" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource Nav_Settings}" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                 </StackPanel>
@@ -242,8 +242,8 @@
                             </Grid.ColumnDefinitions>
                             <ui:SymbolIcon Symbol="Key20" FontSize="16" Foreground="#6CCB5F" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Хранилище AES-256" FontSize="11" FontWeight="SemiBold" Foreground="#6CCB5F"/>
-                                <TextBlock Text="SQLCipher • DPAPI Machine" FontSize="10" Foreground="#888888" Margin="0,2,0,0"/>
+                                <TextBlock Text="{DynamicResource Storage_Aes256}" FontSize="11" FontWeight="SemiBold" Foreground="#6CCB5F"/>
+                                <TextBlock Text="{DynamicResource Storage_Provider}" FontSize="10" Foreground="#888888" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -318,9 +318,9 @@
                                 <ui:SymbolIcon Symbol="ShieldGlobe24" FontSize="18" Foreground="#FF99A4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="СЕТЕВОЙ ФИЛЬТР (FIREWALL)" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
+                                <TextBlock Text="{DynamicResource Metric_FirewallTitle}" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
                                 <TextBlock x:Name="TxtCardOutbound" Text="БЛОКИРОВАН (BLOCK)" FontSize="14" FontWeight="Bold" Foreground="#FF99A4" Margin="0,3,0,2" />
-                                <TextBlock Text="DNS (53), DHCP, WinUpdate разрешены" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{DynamicResource Metric_FirewallDesc}" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -336,9 +336,9 @@
                                 <ui:SymbolIcon Symbol="Apps24" FontSize="18" Foreground="#4CC2FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="БЕЛЫЙ СПИСОК (WHITELIST)" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
-                                <TextBlock x:Name="TxtCardWhitelistCount" Text="0 приложений" FontSize="14" FontWeight="Bold" Foreground="#4CC2FF" Margin="0,3,0,2" />
-                                <TextBlock Text="Сквозная проверка Authenticode" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{DynamicResource Metric_WhitelistTitle}" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
+                                <TextBlock x:Name="TxtCardWhitelistCount" Text="0 apps" FontSize="14" FontWeight="Bold" Foreground="#4CC2FF" Margin="0,3,0,2" />
+                                <TextBlock Text="{DynamicResource Metric_WhitelistDesc}" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -354,9 +354,9 @@
                                 <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="18" Foreground="#6CCB5F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="ЗАЩИТА ЯДРА (ANTI-INJECTION)" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
-                                <TextBlock x:Name="TxtCardInjection" Text="АКТИВЕН (ETW)" FontSize="14" FontWeight="Bold" Foreground="#6CCB5F" Margin="0,3,0,2" />
-                                <TextBlock x:Name="TxtCardAttempts" Text="0 попыток заблокировано" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{DynamicResource Metric_InjectionTitle}" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
+                                <TextBlock x:Name="TxtCardInjection" Text="ACTIVE (ETW)" FontSize="14" FontWeight="Bold" Foreground="#6CCB5F" Margin="0,3,0,2" />
+                                <TextBlock x:Name="TxtCardAttempts" Text="0 attempts blocked" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -370,22 +370,22 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Разрешенные программы" 
+                    <TextBlock Grid.Column="0" Text="{DynamicResource Dash_AllowedApps}" 
                                FontWeight="SemiBold" FontSize="16" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,16,0" />
 
                     <!-- Windows 11 Search Box with real-time filtering -->
                     <ui:TextBox x:Name="TxtSearch" Grid.Column="1" 
-                                PlaceholderText="Поиск программы или пути..." 
+                                PlaceholderText="{DynamicResource Dash_SearchPlaceholder}" 
                                 Icon="{ui:SymbolIcon Symbol=Search24}"
                                 Height="34" Margin="0,0,16,0" HorizontalAlignment="Stretch" MaxWidth="380"
                                 TextChanged="TxtSearch_TextChanged"/>
 
                     <!-- Buttons -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <ui:Button x:Name="BtnAdd" Content="Добавить программу" 
+                        <ui:Button x:Name="BtnAdd" Content="{DynamicResource Action_AddApp}" 
                                    Appearance="Primary" Icon="{ui:SymbolIcon Symbol=Add24}" 
                                    Margin="0,0,8,0" Click="BtnAdd_Click"/>
-                        <ui:Button x:Name="BtnRefresh" Content="Обновить" 
+                        <ui:Button x:Name="BtnRefresh" Content="{DynamicResource Action_Refresh}" 
                                    Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowCounterclockwise24}" 
                                    Click="BtnRefresh_Click"/>
                     </StackPanel>
@@ -403,7 +403,7 @@
                                         <Setter Property="HorizontalAlignment" Value="Stretch"/>
                                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                         <Setter Property="Template">
-                                            <Setter.Value>
+                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type GroupItem}">
                                                     <Expander IsExpanded="True" 
                                                               Style="{StaticResource Win11SettingsExpanderStyle}"
@@ -457,7 +457,7 @@
                                             <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" FontSize="12.5" Foreground="#FFFFFF" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                                 <Border Background="#142B1D" BorderBrush="#1E6135" BorderThickness="1" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
-                                                    <TextBlock Text="✓ ПОДПИСАН" FontSize="10" FontWeight="SemiBold" Foreground="#6CCB5F"/>
+                                                    <TextBlock Text="{DynamicResource App_Signed}" FontSize="10" FontWeight="SemiBold" Foreground="#6CCB5F"/>
                                                 </Border>
                                             </StackPanel>
                                             <TextBlock Grid.Row="1" FontSize="11" Foreground="#888888" TextTrimming="CharacterEllipsis" Margin="0,3,0,0">
@@ -472,7 +472,7 @@
                                             <TextBlock Text="{Binding CreatedAt, StringFormat=\{0:dd.MM.yyyy HH:mm\}}" 
                                                        FontSize="11" Foreground="#777777" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                             <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon Symbol=Dismiss16}" 
-                                                       Padding="6" Click="BtnDeleteEntry_Click" ToolTip="Удалить из Белого списка" 
+                                                       Padding="6" Click="BtnDeleteEntry_Click" ToolTip="{DynamicResource Action_DeleteEntryTooltip}" 
                                                        Foreground="#FF99A4" Cursor="Hand"/>
                                         </StackPanel>
                                     </Grid>
@@ -487,8 +487,8 @@
             <Grid x:Name="ViewFirewall" Grid.Row="1" Visibility="Collapsed">
                 <Border Background="#1CFFFFFF" CornerRadius="8" Padding="22" BorderBrush="#20FFFFFF" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Параметры Сетевого Фильтра Windows Defender Firewall" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
-                        <TextBlock Text="OmniEye использует прямое COM-взаимодействие с интерфейсом INetFwPolicy2 Windows." FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,18"/>
+                        <TextBlock Text="{DynamicResource Firewall_Header}" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
+                        <TextBlock Text="{DynamicResource Firewall_HeaderDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,18"/>
 
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
                             <Grid>
@@ -497,18 +497,18 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <TextBlock Text="Политика по умолчанию" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                    <TextBlock Text="{DynamicResource Firewall_PolicyTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
                                     <TextBlock x:Name="TxtFirewallPolicyDesc" 
-                                               Text="DefaultOutboundAction: BLOCK (все исходящие соединения заблокированы на уровне ядра NDIS)." 
+                                               Text="DefaultOutboundAction: BLOCK" 
                                                FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
                                 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Border x:Name="BadgeFirewallPolicy" Background="#26FF99A4" BorderBrush="#60FF99A4" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0" VerticalAlignment="Center">
-                                        <TextBlock x:Name="TxtFirewallPolicyBadge" Text="БЛОКИРОВАН (BLOCK)" FontWeight="SemiBold" FontSize="11" Foreground="#FF99A4"/>
+                                        <TextBlock x:Name="TxtFirewallPolicyBadge" Text="BLOCKED (BLOCK)" FontWeight="SemiBold" FontSize="11" Foreground="#FF99A4"/>
                                     </Border>
                                     
-                                    <ui:Button x:Name="BtnTogglePolicy" Content="Разрешить все" 
+                                    <ui:Button x:Name="BtnTogglePolicy" Content="Allow All" 
                                                Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}" 
                                                Click="BtnTogglePolicy_Click" VerticalAlignment="Center"/>
                                 </StackPanel>
@@ -517,15 +517,15 @@
 
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="Системные исключения" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                <TextBlock Text="DNS (UDP/TCP 53), DHCP (UDP 67/68), Windows Update Services." FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                <TextBlock Text="{DynamicResource Firewall_ExceptionsTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                <TextBlock Text="{DynamicResource Firewall_ExceptionsDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
 
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="Сторожевой таймер (Self-Healing Watchdog)" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                <TextBlock Text="Период опроса: каждые 3000 мс. При удалении правил брандмауэра сторонним ПО правила немедленно пересоздаются." FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                <TextBlock Text="{DynamicResource Firewall_WatchdogTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                <TextBlock Text="{DynamicResource Firewall_WatchdogDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -536,20 +536,20 @@
             <Grid x:Name="ViewInjection" Grid.Row="1" Visibility="Collapsed">
                 <Border Background="#1CFFFFFF" CornerRadius="8" Padding="22" BorderBrush="#20FFFFFF" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Мониторинг внедрения кода и целостности процессов" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
-                        <TextBlock Text="Использует Kernel ETW (Event Tracing for Windows) Microsoft-Windows-Kernel-Process." FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,18"/>
+                        <TextBlock Text="{DynamicResource Injection_Header}" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
+                        <TextBlock Text="{DynamicResource Injection_HeaderDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,18"/>
 
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="Механизм заморозки процессов" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                <TextBlock Text="При обнаружении подозрительного запуска атакующий процесс немедленно останавливается через NtSuspendProcess." FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                <TextBlock Text="{DynamicResource Injection_FreezeTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                <TextBlock Text="{DynamicResource Injection_FreezeDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
 
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="Таймер безопасности" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                <TextBlock Text="Если пользователь не принял решение в окне тревоги за 60 секунд, процесс автоматически уничтожается." FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                <TextBlock Text="{DynamicResource Injection_TimerTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                <TextBlock Text="{DynamicResource Injection_TimerDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -560,8 +560,25 @@
             <Grid x:Name="ViewSettings" Grid.Row="1" Visibility="Collapsed">
                 <Border Background="#1CFFFFFF" CornerRadius="8" Padding="22" BorderBrush="#20FFFFFF" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Параметры и режимы работы OmniEye" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
+                        <TextBlock Text="{DynamicResource Settings_Header}" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
                         
+                        <!-- Language Selection Card -->
+                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{DynamicResource Settings_LanguageTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                    <TextBlock Text="{DynamicResource Settings_LanguageDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <ComboBox x:Name="CmbLanguage" Grid.Column="1" Width="180" Height="36" VerticalAlignment="Center"
+                                          SelectionChanged="CmbLanguage_SelectionChanged"
+                                          DisplayMemberPath="DisplayName" SelectedValuePath="Code" />
+                            </Grid>
+                        </Border>
+
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -569,20 +586,20 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="Режим разработчика (Developer Mode)" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                    <TextBlock Text="Разрешает откат правил брандмауэра при выходе и добавление неподписанных файлов с подтверждением." FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                    <TextBlock Text="{DynamicResource Settings_DevModeTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                    <TextBlock Text="{DynamicResource Settings_DevModeDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" Background="#26FFC83B" BorderBrush="#60FFC83B" BorderThickness="1" CornerRadius="10" Padding="10,4" VerticalAlignment="Center">
-                                    <TextBlock Text="АКТИВЕН" FontSize="11" FontWeight="SemiBold" Foreground="#FFC83B"/>
+                                    <TextBlock Text="{DynamicResource Status_Active}" FontSize="11" FontWeight="SemiBold" Foreground="#FFC83B"/>
                                 </Border>
                             </Grid>
                         </Border>
 
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="Защищенная база данных" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
-                                <TextBlock Text="Путь: C:\ProgramData\OmniEye\config.db" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
-                                <TextBlock Text="Алгоритм: AES-256 (SQLCipher) + аппаратный ключ Windows DPAPI (LocalMachine)." FontSize="11" Foreground="#6CCB5F" Margin="0,2,0,0"/>
+                                <TextBlock Text="{DynamicResource Settings_DbTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                <TextBlock Text="{DynamicResource Settings_DbPath}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
+                                <TextBlock Text="{DynamicResource Settings_DbCrypto}" FontSize="11" Foreground="#6CCB5F" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -596,10 +613,10 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="OmniEye Zero-Trust Engine • Windows 11 Fluent Design" 
+                <TextBlock Text="{DynamicResource Footer_Engine}" 
                            FontSize="11" Foreground="#707070" VerticalAlignment="Center" />
 
-                <ui:Button x:Name="BtnMinimizeToTray" Grid.Column="1" Content="Свернуть в трей" 
+                <ui:Button x:Name="BtnMinimizeToTray" Grid.Column="1" Content="{DynamicResource Action_MinimizeToTray}" 
                            Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowMinimize24}" Click="BtnMinimizeToTray_Click" />
             </Grid>
         </Grid>

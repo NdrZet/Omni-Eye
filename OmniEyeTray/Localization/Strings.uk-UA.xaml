@@ -1,0 +1,149 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- General & App -->
+    <sys:String x:Key="App_Title">OmniEye — Консоль Захисту Zero-Trust</sys:String>
+    <sys:String x:Key="App_ZeroTrust">Zero-Trust System</sys:String>
+    <sys:String x:Key="Storage_Aes256">Сховище AES-256</sys:String>
+    <sys:String x:Key="Storage_Provider">SQLCipher • DPAPI Machine</sys:String>
+    <sys:String x:Key="Footer_Engine">OmniEye Zero-Trust Engine • Windows 11 Fluent Design</sys:String>
+    <sys:String x:Key="Action_MinimizeToTray">Згорнути в трей</sys:String>
+
+    <!-- Navigation -->
+    <sys:String x:Key="Nav_Dashboard">Головна</sys:String>
+    <sys:String x:Key="Nav_Firewall">Мережевий екран</sys:String>
+    <sys:String x:Key="Nav_Injection">Захист ядра</sys:String>
+    <sys:String x:Key="Nav_Settings">Параметри</sys:String>
+
+    <!-- Status Badges -->
+    <sys:String x:Key="Status_ServiceConnected">СЛУЖБА ПІДКЛЮЧЕНА</sys:String>
+    <sys:String x:Key="Status_ServiceOffline">СЛУЖБА ВІДКЛЮЧЕНА</sys:String>
+    <sys:String x:Key="Status_Connecting">ПІДКЛЮЧЕННЯ ДО СЛУЖБИ...</sys:String>
+    <sys:String x:Key="Status_DevMode">DEVELOPER MODE</sys:String>
+    <sys:String x:Key="Status_StrictZeroTrust">STRICT ZERO-TRUST</sys:String>
+    <sys:String x:Key="Status_Active">АКТИВНИЙ</sys:String>
+
+    <!-- Dashboard (ViewDashboard) -->
+    <sys:String x:Key="Dash_Title">Головна</sys:String>
+    <sys:String x:Key="Dash_Subtitle">Моніторинг вихідного мережевого трафіку та ізоляція процесів</sys:String>
+    <sys:String x:Key="Metric_FirewallTitle">МЕРЕЖЕВИЙ ФІЛЬТР (FIREWALL)</sys:String>
+    <sys:String x:Key="Metric_FirewallBlocked">БЛОКОВАНО (BLOCK)</sys:String>
+    <sys:String x:Key="Metric_FirewallAllowed">ДОЗВОЛЕНО (ALLOW)</sys:String>
+    <sys:String x:Key="Metric_FirewallDesc">DNS (53), DHCP, WinUpdate дозволені</sys:String>
+    <sys:String x:Key="Metric_WhitelistTitle">БІЛИЙ СПИСОК (WHITELIST)</sys:String>
+    <sys:String x:Key="Metric_WhitelistDesc">Наскрізна перевірка Authenticode</sys:String>
+    <sys:String x:Key="Metric_WhitelistCountFormat">{0} груп ({1} файлів)</sys:String>
+    <sys:String x:Key="Metric_InjectionTitle">ЗАХИСТ ЯДРА (ANTI-INJECTION)</sys:String>
+    <sys:String x:Key="Metric_InjectionActive">АКТИВНИЙ (ETW)</sys:String>
+    <sys:String x:Key="Metric_BlockedAttemptsFormat">{0} спроб заблоковано</sys:String>
+    <sys:String x:Key="Dash_AllowedApps">Дозволені програми</sys:String>
+    <sys:String x:Key="Dash_GroupSubtitle">Набір виконуваних файлів та фонових служб</sys:String>
+    <sys:String x:Key="Dash_FilesCount">{0} файлів</sys:String>
+    <sys:String x:Key="Dash_SearchPlaceholder">Пошук програми або шляху...</sys:String>
+    <sys:String x:Key="Action_AddApp">Додати програму</sys:String>
+    <sys:String x:Key="Action_Refresh">Оновити</sys:String>
+    <sys:String x:Key="App_Signed">✓ ПІДПИСАНИЙ</sys:String>
+    <sys:String x:Key="Action_DeleteEntryTooltip">Видалити з Білого списку</sys:String>
+    <sys:String x:Key="Action_DeleteGroup">Видалити групу</sys:String>
+
+    <!-- Firewall (ViewFirewall) -->
+    <sys:String x:Key="Firewall_Title">Мережевий екран</sys:String>
+    <sys:String x:Key="Firewall_Subtitle">Параметри та правила блокування Windows Defender Firewall</sys:String>
+    <sys:String x:Key="Firewall_Header">Параметри Мережевого Фільтра Windows Defender Firewall</sys:String>
+    <sys:String x:Key="Firewall_HeaderDesc">OmniEye використовує пряму COM-взаємодію з інтерфейсом INetFwPolicy2 Windows.</sys:String>
+    <sys:String x:Key="Firewall_PolicyTitle">Політика за замовчуванням</sys:String>
+    <sys:String x:Key="Firewall_PolicyDescBlock">DefaultOutboundAction: BLOCK (усі вихідні з'єднання заблоковані на рівні ядра NDIS, крім Білого списку).</sys:String>
+    <sys:String x:Key="Firewall_PolicyDescAllow">DefaultOutboundAction: ALLOW (вихідні з'єднання дозволені за замовчуванням для всіх застосунків).</sys:String>
+    <sys:String x:Key="Firewall_BtnAllowAll">Дозволити все</sys:String>
+    <sys:String x:Key="Firewall_BtnBlockAll">Блокувати все</sys:String>
+    <sys:String x:Key="Firewall_ExceptionsTitle">Системні винятки</sys:String>
+    <sys:String x:Key="Firewall_ExceptionsDesc">DNS (UDP/TCP 53), DHCP (UDP 67/68), Windows Update Services.</sys:String>
+    <sys:String x:Key="Firewall_WatchdogTitle">Сторожовий таймер (Self-Healing Watchdog)</sys:String>
+    <sys:String x:Key="Firewall_WatchdogDesc">Період опитування: кожні 3000 мс. У разі видалення правил стороннім ПЗ правила негайно перестворюються.</sys:String>
+
+    <!-- Kernel Guard (ViewInjection) -->
+    <sys:String x:Key="Injection_Title">Захист ядра</sys:String>
+    <sys:String x:Key="Injection_Subtitle">Моніторинг ін'єкцій через ETW та заморожування NtSuspendProcess</sys:String>
+    <sys:String x:Key="Injection_Header">Моніторинг впровадження коду та цілісності процесів</sys:String>
+    <sys:String x:Key="Injection_HeaderDesc">Використовує Kernel ETW (Event Tracing for Windows) Microsoft-Windows-Kernel-Process.</sys:String>
+    <sys:String x:Key="Injection_FreezeTitle">Механізм заморожування процесів</sys:String>
+    <sys:String x:Key="Injection_FreezeDesc">При виявленні підозрілого запуску атакуючий процес негайно зупиняється через NtSuspendProcess.</sys:String>
+    <sys:String x:Key="Injection_TimerTitle">Таймер безпеки</sys:String>
+    <sys:String x:Key="Injection_TimerDesc">Якщо користувач не прийняв рішення у вікні тривоги за 60 секунд, процес автоматично знищується.</sys:String>
+
+    <!-- Settings (ViewSettings) -->
+    <sys:String x:Key="Settings_Title">Параметри</sys:String>
+    <sys:String x:Key="Settings_Subtitle">Режими роботи, шифрування бази даних та IPC</sys:String>
+    <sys:String x:Key="Settings_Header">Параметри та режими роботи OmniEye</sys:String>
+    <sys:String x:Key="Settings_LanguageTitle">Мова інтерфейсу</sys:String>
+    <sys:String x:Key="Settings_LanguageDesc">Виберіть мову відображення інтерфейсу та сповіщень.</sys:String>
+    <sys:String x:Key="Settings_DevModeTitle">Режим розробника (Developer Mode)</sys:String>
+    <sys:String x:Key="Settings_DevModeDesc">Дозволяє відкат правил брандмауера при виході та додавання непідписаних файлів із підтвердженням.</sys:String>
+    <sys:String x:Key="Settings_DbTitle">Захищена база даних</sys:String>
+    <sys:String x:Key="Settings_DbPath">Шлях: C:\ProgramData\OmniEye\config.db</sys:String>
+    <sys:String x:Key="Settings_DbCrypto">Алгоритм: AES-256 (SQLCipher) + апаратний ключ Windows DPAPI (LocalMachine).</sys:String>
+
+    <!-- Tray & Notifications -->
+    <sys:String x:Key="Tray_OpenDashboard">Відкрити Dashboard</sys:String>
+    <sys:String x:Key="Tray_Exit">Вихід</sys:String>
+    <sys:String x:Key="Tray_MinimizedTitle">OmniEye</sys:String>
+    <sys:String x:Key="Tray_MinimizedMsg">Застосунок згорнуто в трей, захист продовжується.</sys:String>
+    <sys:String x:Key="Tray_AlertTitle">OmniEye: Спроба впровадження коду!</sys:String>
+    <sys:String x:Key="Tray_AlertMsg">Процес PID {0} намагається впровадитися в {1}</sys:String>
+
+    <!-- Messages & Dialogs -->
+    <sys:String x:Key="Msg_ConfirmPolicyAllow">Перемкнути політику брандмауера за замовчуванням на «ДОЗВОЛЯТИ ВСЕ (Permissive)»?&#x0a;&#x0a;Вихідний трафік для всіх програм буде дозволено за замовчуванням на рівні ядра Windows Defender Firewall.</sys:String>
+    <sys:String x:Key="Msg_PolicyAllowSwitched">Політику брандмауера змінено: ДОЗВОЛЯТИ ВСЕ (Permissive).&#x0a;Вихідні з'єднання дозволені за замовчуванням.</sys:String>
+    <sys:String x:Key="Msg_PolicyBlockSwitched">Політику брандмауера змінено: БЛОКУВАТИ ВСЕ (Zero-Trust).&#x0a;Усі вихідні з'єднання заблоковані, крім Білого списку.</sys:String>
+    <sys:String x:Key="Msg_PolicyChangeTitle">Політику змінено</sys:String>
+    <sys:String x:Key="Msg_DeleteGroupConfirm">Видалити всю групу «{0}» ({1} файлів) із Білого списку?&#x0a;Вихідні мережеві з'єднання для них буде заблоковано.</sys:String>
+    <sys:String x:Key="Msg_DeleteGroupTitle">Видалення групи застосунків</sys:String>
+    <sys:String x:Key="Msg_DeleteEntryConfirm">Видалити {0} із Білого списку?&#x0a;Вихідні мережеві з'єднання для нього буде заблоковано.</sys:String>
+    <sys:String x:Key="Msg_DeleteEntryTitle">Підтвердження видалення</sys:String>
+    <sys:String x:Key="Msg_UnsignedStrictError">Файл не має валідного цифрового підпису Authenticode ({0}).&#x0a;&#x0a;У режимі Strict Zero-Trust додавання непідписаних файлів заборонено!</sys:String>
+    <sys:String x:Key="Msg_UnsignedDevWarning">Файл не має довіреного цифрового підпису Authenticode ({0}).&#x0a;&#x0a;Увімкнено Developer Mode. Ви впевнені, що хочете додати цей файл до Білого списку?</sys:String>
+    <sys:String x:Key="Msg_SignatureValid">Файл успішно перевірено:&#x0a;Видавець: {0}&#x0a;Сертифікат валідний.&#x0a;&#x0a;Додати до Білого списку?</sys:String>
+    <sys:String x:Key="Msg_SignatureValidTitle">Перевірку підпису пройдено</sys:String>
+    <sys:String x:Key="Msg_AddedSuccess">Застосунок успішно додано до Білого списку та Firewall!</sys:String>
+    <sys:String x:Key="Msg_AddedGroupSuccess">Успішно додано {0} компонентів застосунку «{1}» (включаючи служби та тунелі) до Білого списку та Firewall!</sys:String>
+    <sys:String x:Key="Msg_SuccessTitle">Успішно</sys:String>
+    <sys:String x:Key="Msg_ErrorTitle">Помилка</sys:String>
+    <sys:String x:Key="Msg_SecurityErrorTitle">Помилка безпеки</sys:String>
+    <sys:String x:Key="Msg_DevConfirmTitle">Підтвердження (Developer Mode)</sys:String>
+
+    <!-- Companion Discovery Dialog -->
+    <sys:String x:Key="Comp_WindowTitle">OmniEye — Виявлення компонентів застосунку</sys:String>
+    <sys:String x:Key="Comp_Header">ВИЯВЛЕНО СУПУТНІ КОМПОНЕНТИ</sys:String>
+    <sys:String x:Key="Comp_Subtitle">Програма використовує кілька модулів (фонові служби, тунелі, апдейтери).</sys:String>
+    <sys:String x:Key="Comp_Instruction">Виберіть виконувані файли, яким дозволено вихід у мережу:</sys:String>
+    <sys:String x:Key="Comp_SelectAll">Вибрати все</sys:String>
+    <sys:String x:Key="Comp_UnselectAll">Зняти виділення</sys:String>
+    <sys:String x:Key="Comp_ColFile">ФАЙЛ</sys:String>
+    <sys:String x:Key="Comp_ColRole">ПРИЗНАЧЕННЯ</sys:String>
+    <sys:String x:Key="Comp_ColSignature">ПІДПИС</sys:String>
+    <sys:String x:Key="Comp_ColPath">ШЛЯХ ДО ФАЙЛУ</sys:String>
+    <sys:String x:Key="Comp_Cancel">Скасувати</sys:String>
+    <sys:String x:Key="Comp_Confirm">Додати вибрані до Білого списку</sys:String>
+    <sys:String x:Key="Comp_SelectionFormat">Вибрано: {0} файлів</sys:String>
+    <sys:String x:Key="Role_PrimaryApp">Основний застосунок</sys:String>
+    <sys:String x:Key="Role_Service">Фонова служба</sys:String>
+    <sys:String x:Key="Role_Tunnel">Мережевий тунель / VPN</sys:String>
+    <sys:String x:Key="Role_Update">Служба оновлення</sys:String>
+    <sys:String x:Key="Role_Helper">Допоміжний процес</sys:String>
+    <sys:String x:Key="Role_Uninstaller">Деінсталятор</sys:String>
+    <sys:String x:Key="Role_Companion">Супутній компонент</sys:String>
+    <sys:String x:Key="Role_AlreadyInList">(Вже у списку)</sys:String>
+
+    <!-- Prompt Dialog (Alert) -->
+    <sys:String x:Key="Alert_WindowTitle">OmniEye Security Alert</sys:String>
+    <sys:String x:Key="Alert_Header">ВИЯВЛЕНО СПРОБУ ВПРОВАДЖЕННЯ (ANTI-INJECTION)</sys:String>
+    <sys:String x:Key="Alert_Subtitle">Підозрілий процес негайно заморожено ядром (NtSuspendProcess)</sys:String>
+    <sys:String x:Key="Alert_SourceLabel">ПІДОЗРІЛИЙ ПРОЦЕС (АТАКУЮЧИЙ):</sys:String>
+    <sys:String x:Key="Alert_TargetLabel">ЦІЛЬОВИЙ ЗАХИЩУВАНИЙ ПРОЦЕС:</sys:String>
+    <sys:String x:Key="Alert_TimerLabel">Автоматичне завершення через:</sys:String>
+    <sys:String x:Key="Alert_TimerFormat">{0} сек.</sys:String>
+    <sys:String x:Key="Alert_Kill">ЗНИЩИТИ ПРОЦЕС</sys:String>
+    <sys:String x:Key="Alert_Ignore">ІГНОРУВАТИ</sys:String>
+
+</ResourceDictionary>

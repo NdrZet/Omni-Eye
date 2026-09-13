@@ -1,0 +1,149 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- General & App -->
+    <sys:String x:Key="App_Title">OmniEye — ゼロトラスト・セキュリティコンソール</sys:String>
+    <sys:String x:Key="App_ZeroTrust">ゼロトラスト・システム</sys:String>
+    <sys:String x:Key="Storage_Aes256">AES-256 ストレージ</sys:String>
+    <sys:String x:Key="Storage_Provider">SQLCipher • DPAPI Machine</sys:String>
+    <sys:String x:Key="Footer_Engine">OmniEye ゼロトラストエンジン • Windows 11 Fluent Design</sys:String>
+    <sys:String x:Key="Action_MinimizeToTray">タスクトレイに最小化</sys:String>
+
+    <!-- Navigation -->
+    <sys:String x:Key="Nav_Dashboard">ダッシュボード</sys:String>
+    <sys:String x:Key="Nav_Firewall">ファイアウォール</sys:String>
+    <sys:String x:Key="Nav_Injection">カーネルガード</sys:String>
+    <sys:String x:Key="Nav_Settings">設定</sys:String>
+
+    <!-- Status Badges -->
+    <sys:String x:Key="Status_ServiceConnected">サービス接続中</sys:String>
+    <sys:String x:Key="Status_ServiceOffline">サービス停止中</sys:String>
+    <sys:String x:Key="Status_Connecting">サービスに接続中...</sys:String>
+    <sys:String x:Key="Status_DevMode">開発者モード</sys:String>
+    <sys:String x:Key="Status_StrictZeroTrust">厳格なゼロトラスト</sys:String>
+    <sys:String x:Key="Status_Active">有効</sys:String>
+
+    <!-- Dashboard (ViewDashboard) -->
+    <sys:String x:Key="Dash_Title">ダッシュボード</sys:String>
+    <sys:String x:Key="Dash_Subtitle">送信ネットワークトラフィックの監視とプロセスの隔離</sys:String>
+    <sys:String x:Key="Metric_FirewallTitle">ネットワークフィルター (ファイアウォール)</sys:String>
+    <sys:String x:Key="Metric_FirewallBlocked">ブロック中 (BLOCK)</sys:String>
+    <sys:String x:Key="Metric_FirewallAllowed">全許可 (ALLOW)</sys:String>
+    <sys:String x:Key="Metric_FirewallDesc">DNS (53), DHCP, WinUpdate は許可</sys:String>
+    <sys:String x:Key="Metric_WhitelistTitle">ホワイトリスト</sys:String>
+    <sys:String x:Key="Metric_WhitelistDesc">Authenticode 電子署名のエンドツーエンド検証</sys:String>
+    <sys:String x:Key="Metric_WhitelistCountFormat">{0} グループ ({1} ファイル)</sys:String>
+    <sys:String x:Key="Metric_InjectionTitle">カーネル保護 (インジェクション防止)</sys:String>
+    <sys:String x:Key="Metric_InjectionActive">監視中 (ETW)</sys:String>
+    <sys:String x:Key="Metric_BlockedAttemptsFormat">{0} 件の試行を阻止</sys:String>
+    <sys:String x:Key="Dash_AllowedApps">許可されたアプリケーション</sys:String>
+    <sys:String x:Key="Dash_GroupSubtitle">実行可能ファイルおよびバックグラウンドサービスのセット</sys:String>
+    <sys:String x:Key="Dash_FilesCount">{0} ファイル</sys:String>
+    <sys:String x:Key="Dash_SearchPlaceholder">プログラム名またはパスを検索...</sys:String>
+    <sys:String x:Key="Action_AddApp">プログラムを追加</sys:String>
+    <sys:String x:Key="Action_Refresh">更新</sys:String>
+    <sys:String x:Key="App_Signed">✓ 署名確認済</sys:String>
+    <sys:String x:Key="Action_DeleteEntryTooltip">ホワイトリストから削除</sys:String>
+    <sys:String x:Key="Action_DeleteGroup">グループを削除</sys:String>
+
+    <!-- Firewall (ViewFirewall) -->
+    <sys:String x:Key="Firewall_Title">ファイアウォール</sys:String>
+    <sys:String x:Key="Firewall_Subtitle">Windows Defender ファイアウォール遮断パラメーターおよびルール設定</sys:String>
+    <sys:String x:Key="Firewall_Header">Windows Defender ファイアウォール ネットワークフィルター設定</sys:String>
+    <sys:String x:Key="Firewall_HeaderDesc">OmniEye は Windows の INetFwPolicy2 インターフェースとの直接 COM 連携を使用します。</sys:String>
+    <sys:String x:Key="Firewall_PolicyTitle">デフォルト送信ポリシー</sys:String>
+    <sys:String x:Key="Firewall_PolicyDescBlock">DefaultOutboundAction: BLOCK (ホワイトリストを除き、すべての送信接続が NDIS カーネルレベルで遮断されます)。</sys:String>
+    <sys:String x:Key="Firewall_PolicyDescAllow">DefaultOutboundAction: ALLOW (すべてのアプリケーションの送信接続がデフォルトで許可されます)。</sys:String>
+    <sys:String x:Key="Firewall_BtnAllowAll">すべて許可</sys:String>
+    <sys:String x:Key="Firewall_BtnBlockAll">すべて遮断</sys:String>
+    <sys:String x:Key="Firewall_ExceptionsTitle">システム例外</sys:String>
+    <sys:String x:Key="Firewall_ExceptionsDesc">DNS (UDP/TCP 53), DHCP (UDP 67/68), Windows Update サービス。</sys:String>
+    <sys:String x:Key="Firewall_WatchdogTitle">自己修復ウォッチドッグ</sys:String>
+    <sys:String x:Key="Firewall_WatchdogDesc">ポーリング間隔: 3000 ms 毎。サードパーティによりルールが削除された場合、直ちに再生成されます。</sys:String>
+
+    <!-- Kernel Guard (ViewInjection) -->
+    <sys:String x:Key="Injection_Title">カーネルガード</sys:String>
+    <sys:String x:Key="Injection_Subtitle">ETW カーネルインジェクション監視と NtSuspendProcess による即時凍結</sys:String>
+    <sys:String x:Key="Injection_Header">コードインジェクション監視とプロセスの整合性保護</sys:String>
+    <sys:String x:Key="Injection_HeaderDesc">カーネル ETW (Event Tracing for Windows) Microsoft-Windows-Kernel-Process を使用。</sys:String>
+    <sys:String x:Key="Injection_FreezeTitle">プロセス凍結メカニズム</sys:String>
+    <sys:String x:Key="Injection_FreezeDesc">不審な実行を検知すると、NtSuspendProcess を介して攻撃側プロセスが即座に停止されます。</sys:String>
+    <sys:String x:Key="Injection_TimerTitle">セーフティタイマー</sys:String>
+    <sys:String x:Key="Injection_TimerDesc">警告ダイアログで 60 秒以内にユーザーの決定がない場合、プロセスは自動的に強制終了されます。</sys:String>
+
+    <!-- Settings (ViewSettings) -->
+    <sys:String x:Key="Settings_Title">設定</sys:String>
+    <sys:String x:Key="Settings_Subtitle">動作モード、データベース暗号化、および IPC 設定</sys:String>
+    <sys:String x:Key="Settings_Header">OmniEye パラメーターおよび動作モード</sys:String>
+    <sys:String x:Key="Settings_LanguageTitle">表示言語</sys:String>
+    <sys:String x:Key="Settings_LanguageDesc">アプリケーションインターフェースおよび通知の表示言語を選択します。</sys:String>
+    <sys:String x:Key="Settings_DevModeTitle">開発者モード</sys:String>
+    <sys:String x:Key="Settings_DevModeDesc">終了時のファイアウォールルールのロールバックおよび未署名ファイルの確認付き追加を許可します。</sys:String>
+    <sys:String x:Key="Settings_DbTitle">保護されたデータベース</sys:String>
+    <sys:String x:Key="Settings_DbPath">パス: C:\ProgramData\OmniEye\config.db</sys:String>
+    <sys:String x:Key="Settings_DbCrypto">アルゴリズム: AES-256 (SQLCipher) + Windows DPAPI (LocalMachine) ハードウェアキー。</sys:String>
+
+    <!-- Tray & Notifications -->
+    <sys:String x:Key="Tray_OpenDashboard">ダッシュボードを開く</sys:String>
+    <sys:String x:Key="Tray_Exit">終了</sys:String>
+    <sys:String x:Key="Tray_MinimizedTitle">OmniEye</sys:String>
+    <sys:String x:Key="Tray_MinimizedMsg">タスクトレイに最小化されました。バックグラウンド保護を継続します。</sys:String>
+    <sys:String x:Key="Tray_AlertTitle">OmniEye: コードインジェクション試行検知！</sys:String>
+    <sys:String x:Key="Tray_AlertMsg">プロセス PID {0} が {1} へのコードインジェクションを試行しています</sys:String>
+
+    <!-- Messages & Dialogs -->
+    <sys:String x:Key="Msg_ConfirmPolicyAllow">デフォルトポリシーを「すべて許可 (Permissive)」に変更しますか？&#x0a;&#x0a;Windows Defender ファイアウォールのカーネルレベルで、すべてのプログラムの送信通信がデフォルトで許可されます。</sys:String>
+    <sys:String x:Key="Msg_PolicyAllowSwitched">ファイアウォールポリシーを変更しました: すべて許可 (Permissive)。&#x0a;送信接続がデフォルトで許可されます。</sys:String>
+    <sys:String x:Key="Msg_PolicyBlockSwitched">ファイアウォールポリシーを変更しました: すべて遮断 (Zero-Trust)。&#x0a;ホワイトリストを除くすべての送信接続が遮断されます。</sys:String>
+    <sys:String x:Key="Msg_PolicyChangeTitle">ポリシー変更完了</sys:String>
+    <sys:String x:Key="Msg_DeleteGroupConfirm">グループ「{0}」({1} ファイル) 全体をホワイトリストから削除しますか？&#x0a;これらの送信ネットワーク接続は遮断されます。</sys:String>
+    <sys:String x:Key="Msg_DeleteGroupTitle">アプリケーショングループの削除</sys:String>
+    <sys:String x:Key="Msg_DeleteEntryConfirm">{0} をホワイトリストから削除しますか？&#x0a;送信ネットワーク接続は遮断されます。</sys:String>
+    <sys:String x:Key="Msg_DeleteEntryTitle">削除の確認</sys:String>
+    <sys:String x:Key="Msg_UnsignedStrictError">ファイルに有効な Authenticode 電子署名がありません ({0})。&#x0a;&#x0a;厳格なゼロトラストモードでは、未署名ファイルの追加は禁止されています！</sys:String>
+    <sys:String x:Key="Msg_UnsignedDevWarning">ファイルに信頼できる Authenticode 署名がありません ({0})。&#x0a;&#x0a;開発者モードが有効です。このファイルをホワイトリストに追加してもよろしいですか？</sys:String>
+    <sys:String x:Key="Msg_SignatureValid">ファイルの検証に成功しました:&#x0a;発行元: {0}&#x0a;証明書は有効です。&#x0a;&#x0a;ホワイトリストに追加しますか？</sys:String>
+    <sys:String x:Key="Msg_SignatureValidTitle">署名検証完了</sys:String>
+    <sys:String x:Key="Msg_AddedSuccess">アプリケーションがホワイトリストおよびファイアウォールに正常に追加されました！</sys:String>
+    <sys:String x:Key="Msg_AddedGroupSuccess">「{1}」のコンポーネント {0} 個 (サービスおよびトンネルを含む) をホワイトリストおよびファイアウォールに追加しました！</sys:String>
+    <sys:String x:Key="Msg_SuccessTitle">成功</sys:String>
+    <sys:String x:Key="Msg_ErrorTitle">エラー</sys:String>
+    <sys:String x:Key="Msg_SecurityErrorTitle">セキュリティエラー</sys:String>
+    <sys:String x:Key="Msg_DevConfirmTitle">確認 (開発者モード)</sys:String>
+
+    <!-- Companion Discovery Dialog -->
+    <sys:String x:Key="Comp_WindowTitle">OmniEye — 関連コンポーネントの検出</sys:String>
+    <sys:String x:Key="Comp_Header">関連コンポーネントを検出しました</sys:String>
+    <sys:String x:Key="Comp_Subtitle">このアプリケーションは複数のモジュール (バックグラウンドサービス、トンネル、アップデータ等) を使用しています。</sys:String>
+    <sys:String x:Key="Comp_Instruction">送信ネットワークアクセスを許可する実行ファイルを選択してください:</sys:String>
+    <sys:String x:Key="Comp_SelectAll">すべて選択</sys:String>
+    <sys:String x:Key="Comp_UnselectAll">選択解除</sys:String>
+    <sys:String x:Key="Comp_ColFile">ファイル</sys:String>
+    <sys:String x:Key="Comp_ColRole">役割</sys:String>
+    <sys:String x:Key="Comp_ColSignature">署名状態</sys:String>
+    <sys:String x:Key="Comp_ColPath">ファイルパス</sys:String>
+    <sys:String x:Key="Comp_Cancel">キャンセル</sys:String>
+    <sys:String x:Key="Comp_Confirm">選択項目をホワイトリストに追加</sys:String>
+    <sys:String x:Key="Comp_SelectionFormat">選択中: {0} ファイル</sys:String>
+    <sys:String x:Key="Role_PrimaryApp">メインアプリケーション</sys:String>
+    <sys:String x:Key="Role_Service">バックグラウンドサービス</sys:String>
+    <sys:String x:Key="Role_Tunnel">ネットワークトンネル / VPN</sys:String>
+    <sys:String x:Key="Role_Update">アップデーター</sys:String>
+    <sys:String x:Key="Role_Helper">ヘルパープロセス</sys:String>
+    <sys:String x:Key="Role_Uninstaller">アンインストーラー</sys:String>
+    <sys:String x:Key="Role_Companion">関連コンポーネント</sys:String>
+    <sys:String x:Key="Role_AlreadyInList">(既に追加済み)</sys:String>
+
+    <!-- Prompt Dialog (Alert) -->
+    <sys:String x:Key="Alert_WindowTitle">OmniEye セキュリティ警告</sys:String>
+    <sys:String x:Key="Alert_Header">コードインジェクション試行を検知 (ANTI-INJECTION)</sys:String>
+    <sys:String x:Key="Alert_Subtitle">不審なプロセスはカーネルにより即座に凍結されました (NtSuspendProcess)</sys:String>
+    <sys:String x:Key="Alert_SourceLabel">不審な呼び出し元 (攻撃プロセス):</sys:String>
+    <sys:String x:Key="Alert_TargetLabel">保護対象プロセス:</sys:String>
+    <sys:String x:Key="Alert_TimerLabel">自動強制終了まで:</sys:String>
+    <sys:String x:Key="Alert_TimerFormat">{0} 秒</sys:String>
+    <sys:String x:Key="Alert_Kill">プロセスを強制終了</sys:String>
+    <sys:String x:Key="Alert_Ignore">無視する</sys:String>
+
+</ResourceDictionary>

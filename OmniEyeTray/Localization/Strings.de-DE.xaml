@@ -1,0 +1,149 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- General & App -->
+    <sys:String x:Key="App_Title">OmniEye — Zero-Trust-Sicherheitskonsole</sys:String>
+    <sys:String x:Key="App_ZeroTrust">Zero-Trust-System</sys:String>
+    <sys:String x:Key="Storage_Aes256">AES-256 Speicher</sys:String>
+    <sys:String x:Key="Storage_Provider">SQLCipher • DPAPI Machine</sys:String>
+    <sys:String x:Key="Footer_Engine">OmniEye Zero-Trust Engine • Windows 11 Fluent Design</sys:String>
+    <sys:String x:Key="Action_MinimizeToTray">In den Infobereich minimieren</sys:String>
+
+    <!-- Navigation -->
+    <sys:String x:Key="Nav_Dashboard">Übersicht</sys:String>
+    <sys:String x:Key="Nav_Firewall">Firewall</sys:String>
+    <sys:String x:Key="Nav_Injection">Kernel Guard</sys:String>
+    <sys:String x:Key="Nav_Settings">Einstellungen</sys:String>
+
+    <!-- Status Badges -->
+    <sys:String x:Key="Status_ServiceConnected">DIENST VERBUNDEN</sys:String>
+    <sys:String x:Key="Status_ServiceOffline">DIENST OFFLINE</sys:String>
+    <sys:String x:Key="Status_Connecting">VERBINDUNG ZUM DIENST...</sys:String>
+    <sys:String x:Key="Status_DevMode">ENTWICKLERMODUS</sys:String>
+    <sys:String x:Key="Status_StrictZeroTrust">STRIKTES ZERO-TRUST</sys:String>
+    <sys:String x:Key="Status_Active">AKTIV</sys:String>
+
+    <!-- Dashboard (ViewDashboard) -->
+    <sys:String x:Key="Dash_Title">Übersicht</sys:String>
+    <sys:String x:Key="Dash_Subtitle">Überwachung des ausgehenden Netzwerkverkehrs und Prozessisolierung</sys:String>
+    <sys:String x:Key="Metric_FirewallTitle">NETZWERKFILTER (FIREWALL)</sys:String>
+    <sys:String x:Key="Metric_FirewallBlocked">BLOCKIERT (BLOCK)</sys:String>
+    <sys:String x:Key="Metric_FirewallAllowed">ERLAUBT (ALLOW)</sys:String>
+    <sys:String x:Key="Metric_FirewallDesc">DNS (53), DHCP, WinUpdate erlaubt</sys:String>
+    <sys:String x:Key="Metric_WhitelistTitle">POSITIVLISTE (WHITELIST)</sys:String>
+    <sys:String x:Key="Metric_WhitelistDesc">End-to-End-Authenticode-Verifizierung</sys:String>
+    <sys:String x:Key="Metric_WhitelistCountFormat">{0} Gruppen ({1} Dateien)</sys:String>
+    <sys:String x:Key="Metric_InjectionTitle">KERNEL-SCHUTZ (ANTI-INJECTION)</sys:String>
+    <sys:String x:Key="Metric_InjectionActive">AKTIV (ETW)</sys:String>
+    <sys:String x:Key="Metric_BlockedAttemptsFormat">{0} Versuche blockiert</sys:String>
+    <sys:String x:Key="Dash_AllowedApps">Zugelassene Programme</sys:String>
+    <sys:String x:Key="Dash_GroupSubtitle">Sammlung von ausführbaren Dateien und Hintergrunddiensten</sys:String>
+    <sys:String x:Key="Dash_FilesCount">{0} Dateien</sys:String>
+    <sys:String x:Key="Dash_SearchPlaceholder">Programmname oder Pfad suchen...</sys:String>
+    <sys:String x:Key="Action_AddApp">Programm hinzufügen</sys:String>
+    <sys:String x:Key="Action_Refresh">Aktualisieren</sys:String>
+    <sys:String x:Key="App_Signed">✓ SIGNIERT</sys:String>
+    <sys:String x:Key="Action_DeleteEntryTooltip">Aus Positivliste entfernen</sys:String>
+    <sys:String x:Key="Action_DeleteGroup">Gruppe löschen</sys:String>
+
+    <!-- Firewall (ViewFirewall) -->
+    <sys:String x:Key="Firewall_Title">Firewall</sys:String>
+    <sys:String x:Key="Firewall_Subtitle">Windows Defender Firewall Blockierparameter und Regeln</sys:String>
+    <sys:String x:Key="Firewall_Header">Optionen des Windows Defender Firewall Netzwerkfilters</sys:String>
+    <sys:String x:Key="Firewall_HeaderDesc">OmniEye nutzt direkte COM-Interaktion mit der Schnittstelle Windows INetFwPolicy2.</sys:String>
+    <sys:String x:Key="Firewall_PolicyTitle">Standard-Ausgangsrichtlinie</sys:String>
+    <sys:String x:Key="Firewall_PolicyDescBlock">DefaultOutboundAction: BLOCK (alle ausgehenden Verbindungen werden auf NDIS-Kernel-Ebene blockiert, außer Positivliste).</sys:String>
+    <sys:String x:Key="Firewall_PolicyDescAllow">DefaultOutboundAction: ALLOW (ausgehende Verbindungen sind standardmäßig für alle Anwendungen zugelassen).</sys:String>
+    <sys:String x:Key="Firewall_BtnAllowAll">Alle erlauben</sys:String>
+    <sys:String x:Key="Firewall_BtnBlockAll">Alle blockieren</sys:String>
+    <sys:String x:Key="Firewall_ExceptionsTitle">Systemausnahmen</sys:String>
+    <sys:String x:Key="Firewall_ExceptionsDesc">DNS (UDP/TCP 53), DHCP (UDP 67/68), Windows Update-Dienste.</sys:String>
+    <sys:String x:Key="Firewall_WatchdogTitle">Selbstheilender Watchdog</sys:String>
+    <sys:String x:Key="Firewall_WatchdogDesc">Abfrageintervall: alle 3000 ms. Werden Firewall-Regeln durch Drittanbieter entfernt, werden sie sofort neu erstellt.</sys:String>
+
+    <!-- Kernel Guard (ViewInjection) -->
+    <sys:String x:Key="Injection_Title">Kernel Guard</sys:String>
+    <sys:String x:Key="Injection_Subtitle">ETW-Kernel-Injektionsüberwachung und NtSuspendProcess-Einfrieren</sys:String>
+    <sys:String x:Key="Injection_Header">Code-Injektionsüberwachung und Prozessintegrität</sys:String>
+    <sys:String x:Key="Injection_HeaderDesc">Verwendet Kernel ETW (Event Tracing for Windows) Microsoft-Windows-Kernel-Process.</sys:String>
+    <sys:String x:Key="Injection_FreezeTitle">Prozesseinfriermechanismus</sys:String>
+    <sys:String x:Key="Injection_FreezeDesc">Bei Erkennung verdächtiger Ausführung wird der angreifende Prozess über NtSuspendProcess sofort angehalten.</sys:String>
+    <sys:String x:Key="Injection_TimerTitle">Sicherheitstimer</sys:String>
+    <sys:String x:Key="Injection_TimerDesc">Trifft der Benutzer innerhalb von 60 Sekunden keine Entscheidung, wird der Prozess automatisch beendet.</sys:String>
+
+    <!-- Settings (ViewSettings) -->
+    <sys:String x:Key="Settings_Title">Einstellungen</sys:String>
+    <sys:String x:Key="Settings_Subtitle">Betriebsmodi, Datenbankverschlüsselung und IPC</sys:String>
+    <sys:String x:Key="Settings_Header">OmniEye Parameter und Betriebsmodi</sys:String>
+    <sys:String x:Key="Settings_LanguageTitle">Anzeigesprache</sys:String>
+    <sys:String x:Key="Settings_LanguageDesc">Wählen Sie die Anzeigesprache für die Programmoberfläche und Benachrichtigungen.</sys:String>
+    <sys:String x:Key="Settings_DevModeTitle">Entwicklermodus</sys:String>
+    <sys:String x:Key="Settings_DevModeDesc">Ermöglicht das Zurücksetzen von Firewall-Regeln beim Beenden und das Hinzufügen unsignierter Dateien mit Bestätigung.</sys:String>
+    <sys:String x:Key="Settings_DbTitle">Geschützte Datenbank</sys:String>
+    <sys:String x:Key="Settings_DbPath">Pfad: C:\ProgramData\OmniEye\config.db</sys:String>
+    <sys:String x:Key="Settings_DbCrypto">Algorithmus: AES-256 (SQLCipher) + Windows DPAPI (LocalMachine) Hardwareschlüssel.</sys:String>
+
+    <!-- Tray & Notifications -->
+    <sys:String x:Key="Tray_OpenDashboard">Dashboard öffnen</sys:String>
+    <sys:String x:Key="Tray_Exit">Beenden</sys:String>
+    <sys:String x:Key="Tray_MinimizedTitle">OmniEye</sys:String>
+    <sys:String x:Key="Tray_MinimizedMsg">Anwendung in den Infobereich minimiert und Schutz bleibt aktiv.</sys:String>
+    <sys:String x:Key="Tray_AlertTitle">OmniEye: Code-Injektionsversuch!</sys:String>
+    <sys:String x:Key="Tray_AlertMsg">Prozess PID {0} versucht, Code in {1} zu injizieren</sys:String>
+
+    <!-- Messages & Dialogs -->
+    <sys:String x:Key="Msg_ConfirmPolicyAllow">Standard-Firewall-Richtlinie auf «ALLE ERLAUBEN (Permissiv)» umstellen?&#x0a;&#x0a;Ausgehender Datenverkehr wird auf Windows Defender Firewall Kernel-Ebene standardmäßig für alle Programme zugelassen.</sys:String>
+    <sys:String x:Key="Msg_PolicyAllowSwitched">Firewall-Richtlinie geändert: ALLE ERLAUBEN (Permissiv).&#x0a;Ausgehende Verbindungen sind standardmäßig zugelassen.</sys:String>
+    <sys:String x:Key="Msg_PolicyBlockSwitched">Firewall-Richtlinie geändert: ALLE BLOCKIEREN (Zero-Trust).&#x0a;Alle ausgehenden Verbindungen werden blockiert, außer Positivliste.</sys:String>
+    <sys:String x:Key="Msg_PolicyChangeTitle">Richtlinie geändert</sys:String>
+    <sys:String x:Key="Msg_DeleteGroupConfirm">Gesamte Gruppe «{0}» ({1} Dateien) aus der Positivliste entfernen?&#x0a;Ausgehende Netzwerkverbindungen werden für diese blockiert.</sys:String>
+    <sys:String x:Key="Msg_DeleteGroupTitle">Programmgruppe löschen</sys:String>
+    <sys:String x:Key="Msg_DeleteEntryConfirm">{0} aus der Positivliste entfernen?&#x0a;Ausgehende Netzwerkverbindungen werden dafür blockiert.</sys:String>
+    <sys:String x:Key="Msg_DeleteEntryTitle">Entfernen bestätigen</sys:String>
+    <sys:String x:Key="Msg_UnsignedStrictError">Datei besitzt keine gültige digitale Authenticode-Signatur ({0}).&#x0a;&#x0a;Im strikten Zero-Trust-Modus ist das Hinzufügen unsignierter Dateien untersagt!</sys:String>
+    <sys:String x:Key="Msg_UnsignedDevWarning">Datei besitzt keine vertrauenswürdige Authenticode-Signatur ({0}).&#x0a;&#x0a;Entwicklermodus ist aktiv. Möchten Sie diese Datei wirklich zur Positivliste hinzufügen?</sys:String>
+    <sys:String x:Key="Msg_SignatureValid">Datei erfolgreich verifiziert:&#x0a;Herausgeber: {0}&#x0a;Zertifikat ist gültig.&#x0a;&#x0a;Zur Positivliste hinzufügen?</sys:String>
+    <sys:String x:Key="Msg_SignatureValidTitle">Signatur verifiziert</sys:String>
+    <sys:String x:Key="Msg_AddedSuccess">Anwendung erfolgreich zur Positivliste und Firewall hinzugefügt!</sys:String>
+    <sys:String x:Key="Msg_AddedGroupSuccess">Erfolgreich {0} Komponenten von «{1}» (inklusive Dienste und Tunnel) zur Positivliste und Firewall hinzugefügt!</sys:String>
+    <sys:String x:Key="Msg_SuccessTitle">Erfolg</sys:String>
+    <sys:String x:Key="Msg_ErrorTitle">Fehler</sys:String>
+    <sys:String x:Key="Msg_SecurityErrorTitle">Sicherheitsfehler</sys:String>
+    <sys:String x:Key="Msg_DevConfirmTitle">Bestätigung (Entwicklermodus)</sys:String>
+
+    <!-- Companion Discovery Dialog -->
+    <sys:String x:Key="Comp_WindowTitle">OmniEye — Erkennung von Begleitkomponenten</sys:String>
+    <sys:String x:Key="Comp_Header">BEGLEITKOMPONENTEN ERKANNT</sys:String>
+    <sys:String x:Key="Comp_Subtitle">Die Anwendung verwendet mehrere Module (Hintergrunddienste, Tunnel, Updater).</sys:String>
+    <sys:String x:Key="Comp_Instruction">Wählen Sie ausführbare Dateien aus, denen ausgehender Netzwerkzugriff gewährt werden soll:</sys:String>
+    <sys:String x:Key="Comp_SelectAll">Alle auswählen</sys:String>
+    <sys:String x:Key="Comp_UnselectAll">Auswahl aufheben</sys:String>
+    <sys:String x:Key="Comp_ColFile">DATEI</sys:String>
+    <sys:String x:Key="Comp_ColRole">ROLLE</sys:String>
+    <sys:String x:Key="Comp_ColSignature">SIGNATUR</sys:String>
+    <sys:String x:Key="Comp_ColPath">DATEIPFAD</sys:String>
+    <sys:String x:Key="Comp_Cancel">Abbrechen</sys:String>
+    <sys:String x:Key="Comp_Confirm">Ausgewählte zur Positivliste hinzufügen</sys:String>
+    <sys:String x:Key="Comp_SelectionFormat">Ausgewählt: {0} Dateien</sys:String>
+    <sys:String x:Key="Role_PrimaryApp">Hauptanwendung</sys:String>
+    <sys:String x:Key="Role_Service">Hintergrunddienst</sys:String>
+    <sys:String x:Key="Role_Tunnel">Netzwerktunnel / VPN</sys:String>
+    <sys:String x:Key="Role_Update">Aktualisierungsprogramm</sys:String>
+    <sys:String x:Key="Role_Helper">Hilfsprozess</sys:String>
+    <sys:String x:Key="Role_Uninstaller">Deinstallationsprogramm</sys:String>
+    <sys:String x:Key="Role_Companion">Begleitkomponente</sys:String>
+    <sys:String x:Key="Role_AlreadyInList">(Bereits in Liste)</sys:String>
+
+    <!-- Prompt Dialog (Alert) -->
+    <sys:String x:Key="Alert_WindowTitle">OmniEye Sicherheitswarnung</sys:String>
+    <sys:String x:Key="Alert_Header">CODE-INJEKTIONSVERSUCH ERKANNT (ANTI-INJECTION)</sys:String>
+    <sys:String x:Key="Alert_Subtitle">Verdächtiger Prozess sofort durch Kernel eingefroren (NtSuspendProcess)</sys:String>
+    <sys:String x:Key="Alert_SourceLabel">VERDÄCHTIGER AUFRUFER (ANGREIFER):</sys:String>
+    <sys:String x:Key="Alert_TargetLabel">GESCHÜTZTER ZIELPROZESS:</sys:String>
+    <sys:String x:Key="Alert_TimerLabel">Automatische Beendigung in:</sys:String>
+    <sys:String x:Key="Alert_TimerFormat">{0} Sek.</sys:String>
+    <sys:String x:Key="Alert_Kill">PROZESS BEENDEN</sys:String>
+    <sys:String x:Key="Alert_Ignore">IGNORIEREN</sys:String>
+
+</ResourceDictionary>

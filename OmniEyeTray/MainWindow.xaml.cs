@@ -14,6 +14,7 @@ using Microsoft.Win32;
 using OmniEye.Core.Ipc;
 using OmniEye.Core.Models;
 using OmniEye.Core.Security;
+using OmniEyeTray.Services;
 using OmniEyeTray.Views;
 using Wpf.Ui.Controls;
 using MessageBox = System.Windows.MessageBox;
@@ -30,6 +31,8 @@ public partial class MainWindow : FluentWindow
     private bool _isOutboundBlocked = true;
     private bool _reallyExit = false;
     private readonly ICollectionView _whitelistView;
+    private string _currentTab = "Dashboard";
+    private int _lastBlockedAttempts = 0;
 
     public ObservableCollection<WhitelistEntry> WhitelistEntries { get; set; } = new();
 
@@ -48,9 +51,88 @@ public partial class MainWindow : FluentWindow
 
         InitializeTrayIcon();
 
+        // Language selector
+        CmbLanguage.ItemsSource = LocalizationManager.SupportedLanguages;
+        CmbLanguage.SelectedValue = LocalizationManager.CurrentLanguage;
+        LocalizationManager.LanguageChanged += OnLanguageChanged;
+
         SourceInitialized += (s, e) => ApplyWindows11Style(this);
         Loaded += MainWindow_Loaded;
         Closing += MainWindow_Closing;
+    }
+
+    private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CmbLanguage.SelectedValue is string code)
+        {
+            LocalizationManager.SetLanguage(code);
+        }
+    }
+
+    private void OnLanguageChanged()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (CmbLanguage.SelectedValue as string != LocalizationManager.CurrentLanguage)
+            {
+                CmbLanguage.SelectedValue = LocalizationManager.CurrentLanguage;
+            }
+
+            switch (_currentTab)
+            {
+                case "Dashboard":
+                    TxtPageTitle.Text = LocalizationManager.GetString("Dash_Title");
+                    TxtPageSubtitle.Text = LocalizationManager.GetString("Dash_Subtitle");
+                    break;
+                case "Firewall":
+                    TxtPageTitle.Text = LocalizationManager.GetString("Firewall_Title");
+                    TxtPageSubtitle.Text = LocalizationManager.GetString("Firewall_Subtitle");
+                    break;
+                case "Injection":
+                    TxtPageTitle.Text = LocalizationManager.GetString("Injection_Title");
+                    TxtPageSubtitle.Text = LocalizationManager.GetString("Injection_Subtitle");
+                    break;
+                case "Settings":
+                    TxtPageTitle.Text = LocalizationManager.GetString("Settings_Title");
+                    TxtPageSubtitle.Text = LocalizationManager.GetString("Settings_Subtitle");
+                    break;
+            }
+
+            TxtDevMode.Text = _isDeveloperMode
+                ? LocalizationManager.GetString("Status_DevMode")
+                : LocalizationManager.GetString("Status_StrictZeroTrust");
+
+            if (_ipcClient.IsConnected)
+            {
+                TxtServiceStatus.Text = LocalizationManager.GetString("Status_ServiceConnected");
+            }
+            else
+            {
+                TxtServiceStatus.Text = LocalizationManager.GetString("Status_ServiceOffline");
+            }
+
+            UpdateFirewallPolicyUI(_isOutboundBlocked);
+
+            int groupCount = WhitelistEntries.Select(x => x.AppGroup).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            TxtCardWhitelistCount.Text = LocalizationManager.GetString("Metric_WhitelistCountFormat", groupCount, WhitelistEntries.Count);
+            TxtCardAttempts.Text = LocalizationManager.GetString("Metric_BlockedAttemptsFormat", _lastBlockedAttempts);
+
+            UpdateTrayMenu();
+        });
+    }
+
+    private void UpdateTrayMenu()
+    {
+        if (_notifyIcon?.ContextMenuStrip == null) return;
+        var menu = _notifyIcon.ContextMenuStrip;
+        menu.Items.Clear();
+        menu.Items.Add(LocalizationManager.GetString("Tray_OpenDashboard"), null, (s, e) => ShowAndActivate());
+        menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add(LocalizationManager.GetString("Tray_Exit"), null, (s, e) =>
+        {
+            _reallyExit = true;
+            Close();
+        });
     }
 
     private void InitializeTrayIcon()
@@ -63,15 +145,8 @@ public partial class MainWindow : FluentWindow
         };
 
         var contextMenu = new ContextMenuStrip();
-        contextMenu.Items.Add("Открыть Dashboard", null, (s, e) => ShowAndActivate());
-        contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("Выход", null, (s, e) =>
-        {
-            _reallyExit = true;
-            Close();
-        });
-
         _notifyIcon.ContextMenuStrip = contextMenu;
+        UpdateTrayMenu();
         _notifyIcon.DoubleClick += (s, e) => ShowAndActivate();
     }
 
@@ -82,7 +157,7 @@ public partial class MainWindow : FluentWindow
 
     private async Task ConnectAndRefreshAsync()
     {
-        TxtServiceStatus.Text = "ПОДКЛЮЧЕНИЕ К СЛУЖБЕ...";
+        TxtServiceStatus.Text = LocalizationManager.GetString("Status_Connecting");
         BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 37, 8));
         BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(110, 77, 12));
         TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 200, 59));
@@ -94,7 +169,7 @@ public partial class MainWindow : FluentWindow
         }
         else
         {
-            TxtServiceStatus.Text = "СЛУЖБА НЕ ЗАПУЩЕНА (OFFLINE)";
+            TxtServiceStatus.Text = LocalizationManager.GetString("Status_ServiceOffline");
             BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 23, 26));
             BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(107, 35, 41));
             TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 153, 164));
@@ -107,14 +182,14 @@ public partial class MainWindow : FluentWindow
         {
             if (isConnected)
             {
-                TxtServiceStatus.Text = "СЛУЖБА ПОДКЛЮЧЕНА";
+                TxtServiceStatus.Text = LocalizationManager.GetString("Status_ServiceConnected");
                 BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(19, 56, 33));
                 BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 97, 53));
                 TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 203, 95));
             }
             else
             {
-                TxtServiceStatus.Text = "СЛУЖБА ОТКЛЮЧЕНА";
+                TxtServiceStatus.Text = LocalizationManager.GetString("Status_ServiceOffline");
                 BadgeStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 23, 26));
                 BadgeStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(107, 35, 41));
                 TxtServiceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 153, 164));
@@ -129,8 +204,8 @@ public partial class MainWindow : FluentWindow
             // Show alert in tray
             _notifyIcon?.ShowBalloonTip(
                 5000,
-                "OmniEye: Попытка внедрения кода!",
-                $"Процесс PID {notification.SourcePid} пытается внедриться в {Path.GetFileName(notification.TargetPath)}",
+                LocalizationManager.GetString("Tray_AlertTitle"),
+                LocalizationManager.GetString("Tray_AlertMsg", notification.SourcePid, Path.GetFileName(notification.TargetPath)),
                 ToolTipIcon.Warning);
 
             // Display Topmost Prompt Dialog
@@ -148,8 +223,11 @@ public partial class MainWindow : FluentWindow
         if (status != null)
         {
             _isDeveloperMode = status.DeveloperMode;
-            TxtDevMode.Text = status.DeveloperMode ? "DEVELOPER MODE" : "STRICT ZERO-TRUST";
-            TxtCardAttempts.Text = $"{status.BlockedAttemptsCount} попыток заблокировано";
+            _lastBlockedAttempts = status.BlockedAttemptsCount;
+            TxtDevMode.Text = status.DeveloperMode 
+                ? LocalizationManager.GetString("Status_DevMode") 
+                : LocalizationManager.GetString("Status_StrictZeroTrust");
+            TxtCardAttempts.Text = LocalizationManager.GetString("Metric_BlockedAttemptsFormat", status.BlockedAttemptsCount);
             UpdateFirewallPolicyUI(status.OutboundBlocked);
         }
 
@@ -163,7 +241,7 @@ public partial class MainWindow : FluentWindow
             }
             _whitelistView?.Refresh();
             int groupCount = WhitelistEntries.Select(x => x.AppGroup).Distinct(StringComparer.OrdinalIgnoreCase).Count();
-            TxtCardWhitelistCount.Text = $"{groupCount} групп ({WhitelistEntries.Count} файлов)";
+            TxtCardWhitelistCount.Text = LocalizationManager.GetString("Metric_WhitelistCountFormat", groupCount, WhitelistEntries.Count);
         }
     }
 
@@ -176,8 +254,8 @@ public partial class MainWindow : FluentWindow
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Выберите исполняемый файл для Белого списка",
-            Filter = "Исполняемые файлы (*.exe)|*.exe|Все файлы (*.*)|*.*"
+            Title = LocalizationManager.GetString("Action_AddApp"),
+            Filter = "Executables (*.exe)|*.exe|All Files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog() != true)
@@ -230,16 +308,16 @@ public partial class MainWindow : FluentWindow
                 if (errors.Length == 0)
                 {
                     MessageBox.Show(
-                        $"Успешно добавлено {addedCount} компонентов приложения «{appName}» (включая службы и туннели) в Белый список и Firewall!",
-                        "Группа успешно добавлена",
+                        LocalizationManager.GetString("Msg_AddedGroupSuccess", addedCount, appName),
+                        LocalizationManager.GetString("Msg_SuccessTitle"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }
                 else
                 {
                     MessageBox.Show(
-                        $"Добавлено компонентов: {addedCount}.\nОшибки:\n{errors}",
-                        "Результат добавления",
+                        $"Added: {addedCount}.\nErrors:\n{errors}",
+                        LocalizationManager.GetString("Msg_ErrorTitle"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                 }
@@ -255,8 +333,8 @@ public partial class MainWindow : FluentWindow
             if (!_isDeveloperMode)
             {
                 MessageBox.Show(
-                    $"Файл не имеет валидной цифровой подписи Authenticode ({sig.StatusMessage}).\n\nВ режиме Strict Zero-Trust добавление неподписанных файлов запрещено!",
-                    "Ошибка безопасности",
+                    LocalizationManager.GetString("Msg_UnsignedStrictError", sig.StatusMessage),
+                    LocalizationManager.GetString("Msg_SecurityErrorTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 return;
@@ -264,8 +342,8 @@ public partial class MainWindow : FluentWindow
             else
             {
                 var choice = MessageBox.Show(
-                    $"Файл не имеет доверенной цифровой подписи Authenticode ({sig.StatusMessage}).\n\nВключен Developer Mode. Вы уверены, что хотите добавить этот файл в Белый список?",
-                    "Подтверждение (Developer Mode)",
+                    LocalizationManager.GetString("Msg_UnsignedDevWarning", sig.StatusMessage),
+                    LocalizationManager.GetString("Msg_DevConfirmTitle"),
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning);
 
@@ -278,8 +356,8 @@ public partial class MainWindow : FluentWindow
         else
         {
             var choice = MessageBox.Show(
-                $"Файл успешно проверен:\nИздатель: {sig.SignerSubject}\nСертификат валиден.\n\nДобавить в Белый список?",
-                "Проверка подписи пройдена",
+                LocalizationManager.GetString("Msg_SignatureValid", sig.SignerSubject),
+                LocalizationManager.GetString("Msg_SignatureValidTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Information);
 
@@ -290,12 +368,12 @@ public partial class MainWindow : FluentWindow
         var singleResp = await _ipcClient.AddToWhitelistAsync(primaryFilePath, bypassSignature);
         if (singleResp != null && singleResp.Success)
         {
-            MessageBox.Show("Приложение успешно добавлено в Белый список и Firewall!", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationManager.GetString("Msg_AddedSuccess"), LocalizationManager.GetString("Msg_SuccessTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
             await RefreshDataAsync();
         }
         else
         {
-            MessageBox.Show($"Не удалось добавить файл: {singleResp?.Message ?? "Нет ответа от службы"}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"{LocalizationManager.GetString("Msg_ErrorTitle")}: {singleResp?.Message ?? "No response"}", LocalizationManager.GetString("Msg_ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -372,7 +450,7 @@ public partial class MainWindow : FluentWindow
             {
                 FilePath = fullCandidate,
                 FileName = fileName,
-                Role = role + (isAlreadyAdded ? " (Уже в списке)" : ""),
+                Role = role + (isAlreadyAdded ? $" {LocalizationManager.GetString("Role_AlreadyInList")}" : ""),
                 IsSigned = sig.IsValid,
                 SignerSubject = sig.SignerSubject,
                 IsAlreadyWhitelisted = isAlreadyAdded,
@@ -388,26 +466,26 @@ public partial class MainWindow : FluentWindow
     private static string DetermineBinaryRole(string fileName, bool isPrimary)
     {
         if (isPrimary)
-            return "Основное приложение";
+            return LocalizationManager.GetString("Role_PrimaryApp");
 
         var lower = fileName.ToLowerInvariant();
         if (lower.Contains("service"))
-            return "Фоновая служба";
+            return LocalizationManager.GetString("Role_Service");
         if (lower.Contains("tun") || lower.Contains("vpn") || lower.Contains("wireguard") || lower.Contains("openvpn") || lower.Contains("proxy"))
-            return "Сетевой туннель / VPN";
+            return LocalizationManager.GetString("Role_Tunnel");
         if (lower.Contains("update") || lower.Contains("upgrade") || lower.Contains("installer"))
-            return "Служба обновления";
+            return LocalizationManager.GetString("Role_Update");
         if (lower.Contains("helper") || lower.Contains("crash") || lower.Contains("reporter"))
-            return "Вспомогательный процесс";
+            return LocalizationManager.GetString("Role_Helper");
         if (lower.Contains("unins") || lower.Contains("maintenancetool"))
-            return "Деинсталлятор";
+            return LocalizationManager.GetString("Role_Uninstaller");
 
-        return "Сопутствующий компонент";
+        return LocalizationManager.GetString("Role_Companion");
     }
 
     private void BtnRemove_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Для удаления приложения нажмите кнопку «✕» напротив нужного файла или кнопку «Удалить группу» в заголовке карточки приложения.", "Удаление", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show("Click ✕ on file or Delete Group to remove.", LocalizationManager.GetString("Msg_DeleteEntryTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void BtnDeleteGroup_Click(object sender, RoutedEventArgs e)
@@ -419,8 +497,8 @@ public partial class MainWindow : FluentWindow
             if (entries.Count == 0) return;
 
             var choice = MessageBox.Show(
-                $"Удалить всю группу «{group.Name}» ({entries.Count} файлов) из Белого списка?\nИсходящие сетевые соединения для них будут заблокированы.",
-                "Удаление группы приложений",
+                LocalizationManager.GetString("Msg_DeleteGroupConfirm", group.Name, entries.Count),
+                LocalizationManager.GetString("Msg_DeleteGroupTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -440,8 +518,8 @@ public partial class MainWindow : FluentWindow
         if (sender is System.Windows.Controls.Button btn && btn.DataContext is WhitelistEntry entry)
         {
             var choice = MessageBox.Show(
-                $"Удалить {entry.FileName} из Белого списка?\nИсходящие сетевые соединения для него будут заблокированы.",
-                "Подтверждение удаления",
+                LocalizationManager.GetString("Msg_DeleteEntryConfirm", entry.FileName),
+                LocalizationManager.GetString("Msg_DeleteEntryTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -454,7 +532,7 @@ public partial class MainWindow : FluentWindow
                 }
                 else
                 {
-                    MessageBox.Show($"Ошибка при удалении: {resp?.Message ?? "Нет ответа"}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"{LocalizationManager.GetString("Msg_ErrorTitle")}: {resp?.Message ?? "No response"}", LocalizationManager.GetString("Msg_ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -462,22 +540,26 @@ public partial class MainWindow : FluentWindow
 
     private void NavDashboard_Click(object sender, RoutedEventArgs e)
     {
-        ShowView(ViewDashboard, "Главная", "Мониторинг исходящего сетевого трафика и изоляция процессов");
+        _currentTab = "Dashboard";
+        ShowView(ViewDashboard, LocalizationManager.GetString("Dash_Title"), LocalizationManager.GetString("Dash_Subtitle"));
     }
 
     private void NavFirewall_Click(object sender, RoutedEventArgs e)
     {
-        ShowView(ViewFirewall, "Сетевой экран", "Параметры и правила блокировки Windows Defender Firewall");
+        _currentTab = "Firewall";
+        ShowView(ViewFirewall, LocalizationManager.GetString("Firewall_Title"), LocalizationManager.GetString("Firewall_Subtitle"));
     }
 
     private void NavInjection_Click(object sender, RoutedEventArgs e)
     {
-        ShowView(ViewInjection, "Защита ядра", "Мониторинг инъекций через ETW и заморозка NtSuspendProcess");
+        _currentTab = "Injection";
+        ShowView(ViewInjection, LocalizationManager.GetString("Injection_Title"), LocalizationManager.GetString("Injection_Subtitle"));
     }
 
     private void NavSettings_Click(object sender, RoutedEventArgs e)
     {
-        ShowView(ViewSettings, "Параметры", "Режимы работы, шифрование базы данных и IPC");
+        _currentTab = "Settings";
+        ShowView(ViewSettings, LocalizationManager.GetString("Settings_Title"), LocalizationManager.GetString("Settings_Subtitle"));
     }
 
     private void UpdateFirewallPolicyUI(bool isBlocked)
@@ -486,29 +568,29 @@ public partial class MainWindow : FluentWindow
 
         if (isBlocked)
         {
-            TxtCardOutbound.Text = "БЛОКИРОВАН (BLOCK)";
+            TxtCardOutbound.Text = LocalizationManager.GetString("Metric_FirewallBlocked");
             TxtCardOutbound.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 153, 164));
 
-            TxtFirewallPolicyBadge.Text = "БЛОКИРОВАН (BLOCK)";
+            TxtFirewallPolicyBadge.Text = LocalizationManager.GetString("Metric_FirewallBlocked");
             TxtFirewallPolicyBadge.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 153, 164));
             BadgeFirewallPolicy.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x26, 255, 153, 164));
             BadgeFirewallPolicy.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x60, 255, 153, 164));
 
-            TxtFirewallPolicyDesc.Text = "DefaultOutboundAction: BLOCK (все исходящие соединения заблокированы на уровне ядра NDIS, кроме Белого списка).";
-            BtnTogglePolicy.Content = "Разрешить все";
+            TxtFirewallPolicyDesc.Text = LocalizationManager.GetString("Firewall_PolicyDescBlock");
+            BtnTogglePolicy.Content = LocalizationManager.GetString("Firewall_BtnAllowAll");
         }
         else
         {
-            TxtCardOutbound.Text = "РАЗРЕШЕН (ALLOW)";
+            TxtCardOutbound.Text = LocalizationManager.GetString("Metric_FirewallAllowed");
             TxtCardOutbound.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 203, 95));
 
-            TxtFirewallPolicyBadge.Text = "РАЗРЕШЕН (ALLOW)";
+            TxtFirewallPolicyBadge.Text = LocalizationManager.GetString("Metric_FirewallAllowed");
             TxtFirewallPolicyBadge.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 203, 95));
             BadgeFirewallPolicy.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 108, 203, 95));
             BadgeFirewallPolicy.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x50, 108, 203, 95));
 
-            TxtFirewallPolicyDesc.Text = "DefaultOutboundAction: ALLOW (исходящие соединения разрешены по умолчанию для всех приложений).";
-            BtnTogglePolicy.Content = "Блокировать все";
+            TxtFirewallPolicyDesc.Text = LocalizationManager.GetString("Firewall_PolicyDescAllow");
+            BtnTogglePolicy.Content = LocalizationManager.GetString("Firewall_BtnBlockAll");
         }
     }
 
@@ -519,8 +601,8 @@ public partial class MainWindow : FluentWindow
         if (!targetBlock)
         {
             var choice = MessageBox.Show(
-                "Переключить политику брандмауэра по умолчанию на «РАЗРЕШАТЬ ВСЕ (Permissive)»?\n\nИсходящий трафик для всех программ будет разрешен по умолчанию на уровне ядра Windows Defender Firewall.",
-                "Смена политики сетевого фильтра",
+                LocalizationManager.GetString("Msg_ConfirmPolicyAllow"),
+                LocalizationManager.GetString("Msg_PolicyChangeTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -537,15 +619,15 @@ public partial class MainWindow : FluentWindow
                 UpdateFirewallPolicyUI(resp.OutboundBlocked);
                 MessageBox.Show(
                     targetBlock
-                        ? "Политика брандмауэра переключена: БЛОКИРОВАТЬ ВСЕ (Zero-Trust).\nВсе исходящие соединения заблокированы, кроме Белого списка."
-                        : "Политика брандмауэра переключена: РАЗРЕШАТЬ ВСЕ (Permissive).\nИсходящие соединения разрешены по умолчанию.",
-                    "Политика изменена",
+                        ? LocalizationManager.GetString("Msg_PolicyBlockSwitched")
+                        : LocalizationManager.GetString("Msg_PolicyAllowSwitched"),
+                    LocalizationManager.GetString("Msg_PolicyChangeTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show($"Не удалось изменить политику: {resp?.Message ?? "Нет ответа от службы"}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"{LocalizationManager.GetString("Msg_ErrorTitle")}: {resp?.Message ?? "No response"}", LocalizationManager.GetString("Msg_ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         finally
@@ -569,7 +651,11 @@ public partial class MainWindow : FluentWindow
     private void BtnMinimizeToTray_Click(object sender, RoutedEventArgs e)
     {
         Hide();
-        _notifyIcon?.ShowBalloonTip(2000, "OmniEye", "Приложение свернуто в трей и продолжает защиту.", ToolTipIcon.Info);
+        _notifyIcon?.ShowBalloonTip(
+            2000, 
+            LocalizationManager.GetString("Tray_MinimizedTitle"), 
+            LocalizationManager.GetString("Tray_MinimizedMsg"), 
+            ToolTipIcon.Info);
     }
 
     private void ShowAndActivate()
