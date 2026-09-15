@@ -35,6 +35,9 @@ The system enforces the fundamental principle of **«Never Trust, Always Verify�
   - [3.4. Hardware-Bound Cryptography & Database Hardening](#34-hardware-bound-cryptography--database-hardening)
   - [3.5. Authenticode Code Signature Verifier](#35-authenticode-code-signature-verifier)
   - [3.6. Windows 11 Native Fluent UI & PerMonitorV2 High DPI](#36-windows-11-native-fluent-ui--permonitorv2-high-dpi)
+  - [3.7. Native Zapret DPI Circumvention Engine](#37-native-zapret-dpi-circumvention-engine)
+  - [3.8. System DNS & Windows 11 Native DoH Integration](#38-system-dns--windows-11-native-doh-integration)
+  - [3.9. Live Network Socket Monitor](#39-live-network-socket-monitor)
 - [4. Inter-Process Communication (IPC) Protocol](#4-inter-process-communication-ipc-protocol)
 - [5. Operating Modes (Developer Mode vs Strict Zero-Trust)](#5-operating-modes-developer-mode-vs-strict-zero-trust)
 - [6. Quick Start & Build Guide](#6-quick-start--build-guide)
@@ -54,22 +57,29 @@ Conventional endpoint security products (EDR/EPP) rely heavily on known signatur
 * **Default Deny Outbound:** Out-of-the-box, no process running on the host has authorization to initiate outbound TCP/UDP handshakes. The firewall outbound policy is clamped to `BLOCK`.
 * **Authenticode Whitelisting:** Outbound network privileges are granted exclusively to validated, cryptographically signed binaries recorded in an encrypted database.
 * **Kernel Freeze & Prompt:** When unapproved cross-process memory manipulation is detected by kernel ETW, OmniEye immediately suspends all threads of the offending process, preventing payload detonation and data exfiltration.
+* **Native DPI Circumvention & DoH:** Fully decoupled native `OmniEye.DpiBypass` module provides packet desynchronization (Discord voice, YouTube) and encrypted DNS without compromising core zero-trust security.
 
 ---
 
 ## 2. System Architecture
 
-The solution is divided into 4 modular projects under a unified .NET 10 solution (`OmniEye.slnx`):
+The solution is divided into 5 modular projects under a unified .NET 10 solution (`OmniEye.slnx`):
 
 ```
 OmniEye/
 ├── OmniEye.slnx                        # Solution configuration file (.NET CLI)
-├── OmniEye.Core/                      # Shared cryptography, security, and IPC contracts
+├── OmniEye.Core/                      # Pure core: shared cryptography, security, and IPC contracts
 │   ├── Configuration/                 # Configuration models (OmniEyeConfig)
 │   ├── Models/                        # DTO IPC message contracts and database entities
 │   ├── Security/                      # WinVerifyTrust, DPAPI, NtDll P/Invoke, NTFS ACL
-│   ├── Storage/                       # SQLite + SQLCipher AES-256 with exclusive file lock
+│   ├── Storage/                       # SQLite + SQLCipher AES-256 with settings persistence
 │   └── Ipc/                           # Asynchronous Named Pipe client (IpcClient)
+├── OmniEye.DpiBypass/                 # Isolated native packet desynchronization & DNS module
+│   ├── Zapret/                        # Native Zapret Engine (winws.exe, WinDivert, 22 presets, Discord UDP)
+│   ├── Dns/                           # SystemDnsManager (adapter config, Win11 DoH, Safe Rollback)
+│   ├── Models/                        # DoH server models and configuration
+│   ├── Proxy/                         # Local HTTP CONNECT DPI proxy
+│   └── Tls/                           # TLS ClientHello SNI parser & fragmentation offset math
 ├── OmniEyeSvc/                        # Elevated Windows Background Service (NT AUTHORITY\SYSTEM)
 │   ├── Network/                       # COM INetFwPolicy2, rule orchestration, Self-Healing Watchdog
 │   ├── Monitor/                       # Microsoft ETW Kernel Process/Thread/Image TraceEvent
@@ -78,13 +88,14 @@ OmniEye/
 │   ├── Worker.cs                      # Microsoft.Extensions.Hosting background worker
 │   └── Program.cs                     # Windows Service / Console host entrypoint
 ├── OmniEyeTray/                       # Windows 11 Fluent Design System Tray GUI
-│   ├── Views/                         # UI views (MainWindow, CompanionDiscovery, PromptDialog)
-│   ├── Models/                        # Companion discovery items & view models
+│   ├── Views/                         # UI views (MainWindow, Dialogs, Subpages)
+│   ├── Services/                      # LocalizationManager (5 languages), NetworkMonitorService
+│   ├── Localization/                  # Dictionaries (en-US, ru-RU, uk-UA, de-DE, ja-JP)
 │   ├── App.xaml                       # WPF-UI theme bootstrap & PerMonitorV2 initialization
 │   ├── app.manifest                   # Manifest declaring PerMonitorV2 DPI awareness
-│   └── MainWindow.xaml.cs             # Tray logic, live filtering, and policy switching
+│   └── MainWindow.xaml.cs             # Tray logic, live filtering, and presets controller
 └── OmniEye.Tests/                     # Comprehensive autonomous verification suite
-    └── Program.cs                     # 6 integration tests validating all layers
+    └── Program.cs                     # 14 integration tests validating all layers
 ```
 
 ### Component Interaction Architecture:
@@ -179,7 +190,31 @@ The [OmniEyeTray](file:///d:/SPA_Full/OmniEye/OmniEyeTray) user interface strict
 * **TitleBar with Snap Layouts:** Native Windows 11 title bar displaying interactive Snap Layout grids when hovering over the maximize button.
 * **Subpixel Anti-Aliasing:** Configured with `ClearType`, subpixel text formatting, and `UseLayoutRounding="True"`, eliminating text jitter and rendering artifacts on dark surfaces.
 * **PerMonitorV2 High DPI Awareness:** With declarative application manifests and `SetProcessDpiAwarenessContext` initialization, moving the window between 1080p (100% scaling) and 4K (150%–200% scaling) displays maintains razor-sharp vector rendering with zero bitmap blur.
-* **Fluent Settings Cards:** Smooth hover feedback (`IsMouseOver`), native border radii (`CornerRadius="8"`), and dark scrollbars.
+* **Windows 11 Settings Cards:** Subtle dividers, consistent corner radiuses (`CornerRadius="8"`), smooth mouseover states, and custom dark scrollbars.
+
+### 3.7. Native Zapret DPI Circumvention Engine
+
+To guarantee continuous availability of essential network communications (including Discord voice and YouTube) in heavily inspected network environments, the decoupled `OmniEye.DpiBypass` module is natively embedded:
+* **Kernel-Level Packet Interception:** Uses native `WinDivert64.sys` driver and the `winws.exe` engine operating at L3/L4.
+* **Discord WebRTC Voice Channel Desynchronization:** Specialized UDP filtering and payload substitution (`--filter-udp=19294-19344,50000-50100 --filter-l7=discord,stun --dpi-desync=fake --dpi-desync-fake-discord=ACTIVE_DISCORD_UDP.bin`), restoring voice connection stability.
+* **HTTPS / TLS ClientHello Desynchronization:** Sequence overlap and packet multisplit targeted against `list-general.txt` and `list-google.txt`.
+* **22 Flowseal Presets:** Interactive preset dropdown in the GUI (`General`, `ALT1-13`, `SIMPLE FAKE`, `FAKE TLS AUTO`, `EXP`) enabling instant strategy switching tailored to any ISP.
+* **Resilient Lifecycle via Windows JobObject:** Process `winws.exe` is bound to a Win32 Job Object with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. The packet engine and driver are instantly cleaned up on tray application termination or crash.
+
+### 3.8. System DNS & Windows 11 Native DoH Integration
+
+The `SystemDnsManager` subsystem automates host DNS resolver configuration:
+* **Automatic Adapter Configuration:** When DPI bypass is activated, active physical adapters (Ethernet, Wi-Fi) automatically receive uncensored secure resolvers (Cloudflare `1.1.1.1` / `1.0.0.1`, Google, Quad9, AdGuard).
+* **Native Windows 11 DoH Encryption:** Registers DoH templates via `netsh dns add encryption` with automatic upgrade (`autoupgrade=yes udpfallback=yes`).
+* **Live Resolver Monitor:** Real-time health checks, latency pinging, and on-demand provider switching from the DoH table.
+* **Guaranteed Safe Rollback:** The original network configuration (DHCP or static DNS) is saved before modification and restored on bypass stoppage, tray exit, or unhandled termination.
+
+### 3.9. Live Network Socket Monitor
+
+The interactive Network Monitor provides total visibility into host network activity:
+* **Real-time Socket Enumeration:** Continuously inspects active TCP and UDP sockets via `GetExtendedTcpTable` / `GetExtendedUdpTable`.
+* **Process Attribution:** Maps socket endpoints to executable paths, PIDs, and zero-trust firewall policy compliance.
+* **1-Click Whitelisting:** Quickly authorizes detected connections directly into the whitelist with automated companion discovery.
 
 ---
 
@@ -350,8 +385,46 @@ dotnet run --project OmniEye.Tests\OmniEye.Tests.csproj
  -> Switched to BLOCK: OutboundBlocked=True, Msg: Default outbound policy set to BLOCK (Zero-Trust).
 [PASS] TEST 6: Dynamic Firewall Policy Switching via IPC
 
+[RUNNING] TEST 7: Active Network Connection Monitoring & Process Attribution...
+ -> Total active sockets detected: 246 (TCP: 153, UDP: 93)
+ -> Policy correlation breakdown: Whitelisted: 0, Blocked: 182, Exceptions: 64
+[PASS] TEST 7: Active Network Connection Monitoring & Process Attribution
+
+[RUNNING] TEST 8: DNS RFC 1035 Wire-Format Serialization & Response Parsing...
+ -> DNS Query built, size: 31 bytes
+ -> Parsed 2 IP addresses, MinTTL: 120s
+[PASS] TEST 8: DNS RFC 1035 Wire-Format Serialization & Response Parsing
+
+[RUNNING] TEST 9: TLS ClientHello SNI Extraction & Fragmentation Offset Calculation...
+ -> Synthesized ClientHello packet size: 72 bytes
+ -> SNI found: True, Extracted: 'discord.com', Calculated split offset: 66
+[PASS] TEST 9: TLS ClientHello SNI Extraction & Fragmentation Offset Calculation
+
+[RUNNING] TEST 10: Multi-Resolver DoH Pool with Concurrent Race & Caching...
+ -> Configured 5 DoH servers: Cloudflare, Cloudflare-Backup, Google, Quad9, AdGuard
+ -> Happy Eyeballs concurrent race resolved cloudflare.com to: 104.16.132.229
+[PASS] TEST 10: Multi-Resolver DoH Pool with Concurrent Race & Caching
+
+[RUNNING] TEST 11: DPI HTTP CONNECT Proxy Server & ClientHello Fragmentation Pipeline...
+ -> DpiProxyServer started on 127.0.0.1:59085, tunnel verified successfully.
+[PASS] TEST 11: DPI HTTP CONNECT Proxy Server & ClientHello Fragmentation Pipeline
+
+[RUNNING] TEST 12: Windows System Proxy WinINet Registry & Automatic Restoration...
+ -> WinINet registry proxy enabled and cleanly restored to original state.
+[PASS] TEST 12: Windows System Proxy WinINet Registry & Automatic Restoration
+
+[RUNNING] TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification...
+ -> Verified binaries: winws.exe, WinDivert64.sys, Discord UDP payload.
+ -> Generated arguments for 22 Flowseal presets.
+ -> Win32 JobObject KILL_ON_JOB_CLOSE initialized and verified.
+[PASS] TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification
+
+[RUNNING] TEST 14: System DNS & Windows 11 Native DoH Configuration Manager...
+ -> Physical adapters discovered. DoH template encryption and safe rollback verified.
+[PASS] TEST 14: System DNS & Windows 11 Native DoH Configuration Manager
+
 ------------------------------------------------------------------
- ALL 6 TESTS PASSED SUCCESSFULLY! (0 Failures)
+ ALL 14 TESTS PASSED SUCCESSFULLY! (0 Failures)
 ------------------------------------------------------------------
 ```
 

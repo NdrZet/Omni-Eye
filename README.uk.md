@@ -35,6 +35,9 @@
   - [3.4. Апаратна криптографія та гарденінг БД](#34-апаратна-криптографія-та-гарденінг-бд)
   - [3.5. Верифікатор цифрових підписів (Authenticode Verifier)](#35-верифікатор-цифрових-підписів-authenticode-verifier)
   - [3.6. Нативний інтерфейс Windows 11 Fluent Design](#36-нативний-інтерфейс-windows-11-fluent-design)
+  - [3.7. Нативний модуль обходу DPI (Native Zapret Engine)](#37-нативний-модуль-обходу-dpi-native-zapret-engine)
+  - [3.8. Менеджер безпечного DNS та Windows 11 DoH](#38-менеджер-безпечного-dns-та-windows-11-doh)
+  - [3.9. Монітор активних мережевих сокетів (Network Monitor)](#39-монітор-активних-мережевих-сокетів-network-monitor)
 - [4. Протокол міжпроцесної взаємодії (IPC)](#4-протокол-міжпроцесної-взаємодії-ipc)
 - [5. Режими роботи (Developer Mode vs Strict)](#5-режими-роботи-developer-mode-vs-strict)
 - [6. Швидкий старт та збірка](#6-швидкий-старт-та-збірка)
@@ -54,22 +57,29 @@
 * **Мережева ізоляція (Default Deny):** за замовчуванням жодна програма не має права надсилати пакети у зовнішню мережу. Вихідна політика брандмауера встановлена в режим `BLOCK`.
 * **Білий список Authenticode:** мережевий доступ надається виключно перевіреним бінарним файлам, підписаним валідним цифровим сертифікатом розробника.
 * **Freeze & Prompt:** у разі виявлення спроби втручання в пам'ять довіреного процесу ядро операційної системи моментально заморожує атакуючий процес до прийняття рішення адміністратором.
+* **Нативний обхід DPI & DoH:** вбудований ізольований модуль `OmniEye.DpiBypass` забезпечує десинхронізацію пакетів (Discord голосовий зв'язок, YouTube) та захищений DNS без впливу на чистоту ядра безпеки.
 
 ---
 
 ## 2. Архітектура рішення
 
-Рішення складається з 4 модульних проєктів у межах єдиного рішення .NET 10 (`OmniEye.slnx`):
+Рішення складається з 5 модульних проєктів у межах єдиного рішення .NET 10 (`OmniEye.slnx`):
 
 ```
 OmniEye/
 ├── OmniEye.slnx                        # Файл конфігурації рішення (.NET CLI)
-├── OmniEye.Core/                      # Спільна бібліотека безпеки, криптографії та IPC
+├── OmniEye.Core/                      # Чисте ядро безпеки, криптографії та IPC
 │   ├── Configuration/                 # Моделі конфігурації (OmniEyeConfig)
 │   ├── Models/                        # DTO-контракти повідомлень IPC та сутності БД
 │   ├── Security/                      # WinVerifyTrust, DPAPI, NtDll P/Invoke, NTFS ACL
-│   ├── Storage/                       # SQLite + SQLCipher AES-256 з ексклюзивним файловим локом
+│   ├── Storage/                       # SQLite + SQLCipher AES-256 (БД налаштувань та білого списку)
 │   └── Ipc/                           # Асинхронний клієнт іменованих каналів (IpcClient)
+├── OmniEye.DpiBypass/                 # Ізольований нативний модуль обходу DPI та DNS
+│   ├── Zapret/                        # Native Zapret Engine (winws.exe, WinDivert, 22 пресети, Discord UDP)
+│   ├── Dns/                           # SystemDnsManager (адаптери Windows, Win11 DoH, Safe Rollback)
+│   ├── Models/                        # DTO серверів DoH та конфігурації
+│   ├── Proxy/                         # Локальний HTTP CONNECT DPI-проксі
+│   └── Tls/                           # TLS ClientHello SNI парсер та розрахунок фрагментації
 ├── OmniEyeSvc/                        # Фонова служба Windows підвищених привілеїв (SYSTEM)
 │   ├── Network/                       # COM INetFwPolicy2, керування правилами, Self-Healing Watchdog
 │   ├── Monitor/                       # Microsoft ETW Kernel Process/Thread/Image TraceEvent
@@ -78,13 +88,14 @@ OmniEye/
 │   ├── Worker.cs                      # Фонова служба Microsoft.Extensions.Hosting
 │   └── Program.cs                     # Точка входу служби Windows
 ├── OmniEyeTray/                       # GUI трею в стилі Windows 11 Fluent Design
-│   ├── Views/                         # Вікна інтерфейсу (MainWindow, CompanionDiscovery, PromptDialog)
-│   ├── Models/                        # Моделі виявлених модулів
+│   ├── Views/                         # Вікна інтерфейсу (MainWindow, CompanionDiscovery, Підсторінки)
+│   ├── Services/                      # LocalizationManager (5 мов), NetworkMonitorService
+│   ├── Localization/                  # Словники (uk-UA, en-US, ru-RU, de-DE, ja-JP)
 │   ├── App.xaml                       # Ініціалізація теми WPF-UI та PerMonitorV2 DPI
 │   ├── app.manifest                   # Маніфест DPI-Awareness (PerMonitorV2)
-│   └── MainWindow.xaml.cs             # Логіка трею, динамічної фільтрації та вибору політики
+│   └── MainWindow.xaml.cs             # Логіка трею, динамічної фільтрації, пресетів та DoH
 └── OmniEye.Tests/                     # Комплекс наскрізних автоматизованих тестів
-    └── Program.cs                     # 6 ізольованих тестів для перевірки всіх рівнів
+    └── Program.cs                     # 14 ізольованих тестів для перевірки всіх рівнів
 ```
 
 ### Схема взаємодії компонентів:
@@ -179,6 +190,30 @@ OmniEye/
 * **Чіткий субпіксельний рендеринг:** апаратний `ClearType`, субпіксельне згладжування та `UseLayoutRounding="True"`.
 * **Підтримка PerMonitorV2 High DPI:** завдяки маніфесту `PerMonitorV2` та ініціалізації контексту ядра переміщення вікна між екранами 1080p (100%) та 4K (150%–200%) не спричиняє розмиття чи мила.
 * **Картки параметрів Windows 11:** плавні мікроанімації при наведенні, радіус закруглення `CornerRadius="8"` та темні смуги прокрутки.
+
+### 3.7. Нативний модуль обходу DPI (Native Zapret Engine)
+
+Для забезпечення безперервного доступу до мережевих сервісів (включно з Discord та YouTube) в умовах глибокої інспекції пакетів (DPI) у проєкт інтегровано ізольований нативний модуль `OmniEye.DpiBypass`:
+* **Ядерне перехоплення пакетів:** використовується нативний драйвер `WinDivert64.sys` та процес `winws.exe`, які функціонують на рівні мережевого стека Windows (L3/L4).
+* **Голосові канали Discord WebRTC:** спеціалізована фільтрація та підміна UDP-трафіку (`--filter-udp=19294-19344,50000-50100 --filter-l7=discord,stun --dpi-desync=fake --dpi-desync-fake-discord=ACTIVE_DISCORD_UDP.bin`), що відновлює стабільність голосового зв'язку.
+* **Десинхронізація HTTPS / TLS ClientHello:** фрагментація та перекриття послідовностей TCP (multisplit, seqovl) за списками `list-general.txt` та `list-google.txt`.
+* **22 стратегії Flowseal:** у консоль винесено селектор пресетів (`General`, `ALT1-13`, `SIMPLE FAKE`, `FAKE TLS AUTO`, `EXP`) для вибору оптимального профілю під будь-якого провайдера.
+* **Надійне завершення через Windows JobObject:** процес `winws.exe` прив'язано до Win32 Job Object із прапорцем `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. При виході або аварійному завершенні програми драйвер та процес негайно вивантажуються з пам'яті.
+
+### 3.8. Менеджер безпечного DNS та Windows 11 DoH
+
+Компонент `SystemDnsManager` автоматизує налаштування системних DNS-серверів:
+* **Автоматичне підключення:** під час увімкнення обходу активні фізичні адаптери (Ethernet, Wi-Fi) автоматично перемикаються на безпечні резолвери (Cloudflare `1.1.1.1` / `1.0.0.1`, Google, Quad9, AdGuard).
+* **Нативне шифрування Windows 11 DoH:** реєстрація шаблонів шифрування через `netsh dns add encryption` вмикає системний протокол DNS-over-HTTPS із автоматичним оновленням (`autoupgrade=yes udpfallback=yes`).
+* **Монітор резолверів DoH:** перевірка доступності та затримки (ping) у реальному часі з можливістю перемикання провайдера в 1 клік.
+* **Гарантований відкат (Safe Rollback):** поточна конфігурація адаптерів (DHCP або статичні IP) зберігається в пам'яті та безпечно відновлюється при вимкненні, закритті додатку або через хук `AppDomain.CurrentDomain.ProcessExit`.
+
+### 3.9. Монітор активних мережевих сокетів (Network Monitor)
+
+Вбудований мережевий монітор забезпечує повну прозорість з'єднань в операційній системі:
+* **Інспекція сокетів:** безперервне опитування таблиці з'єднань TCP/UDP (`GetExtendedTcpTable`, `GetExtendedUdpTable`).
+* **Атрибуція процесів:** зіставлення сокетів із PID, шляхом до бінарного файлу та статусом відповідності політиці Zero-Trust.
+* **Додавання в 1 клік:** можливість авторизувати виявлену програму до Білого списку безпосередньо з таблиці монітора.
 
 ---
 
@@ -349,8 +384,46 @@ dotnet run --project OmniEye.Tests\OmniEye.Tests.csproj
  -> Switched to BLOCK: OutboundBlocked=True, Msg: Default outbound policy set to BLOCK (Zero-Trust).
 [PASS] TEST 6: Dynamic Firewall Policy Switching via IPC
 
+[RUNNING] TEST 7: Active Network Connection Monitoring & Process Attribution...
+ -> Total active sockets detected: 246 (TCP: 153, UDP: 93)
+ -> Policy correlation breakdown: Whitelisted: 0, Blocked: 182, Exceptions: 64
+[PASS] TEST 7: Active Network Connection Monitoring & Process Attribution
+
+[RUNNING] TEST 8: DNS RFC 1035 Wire-Format Serialization & Response Parsing...
+ -> DNS Query built, size: 31 bytes
+ -> Parsed 2 IP addresses, MinTTL: 120s
+[PASS] TEST 8: DNS RFC 1035 Wire-Format Serialization & Response Parsing
+
+[RUNNING] TEST 9: TLS ClientHello SNI Extraction & Fragmentation Offset Calculation...
+ -> Synthesized ClientHello packet size: 72 bytes
+ -> SNI found: True, Extracted: 'discord.com', Calculated split offset: 66
+[PASS] TEST 9: TLS ClientHello SNI Extraction & Fragmentation Offset Calculation
+
+[RUNNING] TEST 10: Multi-Resolver DoH Pool with Concurrent Race & Caching...
+ -> Configured 5 DoH servers: Cloudflare, Cloudflare-Backup, Google, Quad9, AdGuard
+ -> Happy Eyeballs concurrent race resolved cloudflare.com to: 104.16.132.229
+[PASS] TEST 10: Multi-Resolver DoH Pool with Concurrent Race & Caching
+
+[RUNNING] TEST 11: DPI HTTP CONNECT Proxy Server & ClientHello Fragmentation Pipeline...
+ -> DpiProxyServer started on 127.0.0.1:59085, tunnel verified successfully.
+[PASS] TEST 11: DPI HTTP CONNECT Proxy Server & ClientHello Fragmentation Pipeline
+
+[RUNNING] TEST 12: Windows System Proxy WinINet Registry & Automatic Restoration...
+ -> WinINet registry proxy enabled and cleanly restored to original state.
+[PASS] TEST 12: Windows System Proxy WinINet Registry & Automatic Restoration
+
+[RUNNING] TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification...
+ -> Verified binaries: winws.exe, WinDivert64.sys, Discord UDP payload.
+ -> Generated arguments for 22 Flowseal presets.
+ -> Win32 JobObject KILL_ON_JOB_CLOSE initialized and verified.
+[PASS] TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification
+
+[RUNNING] TEST 14: System DNS & Windows 11 Native DoH Configuration Manager...
+ -> Physical adapters discovered. DoH template encryption and safe rollback verified.
+[PASS] TEST 14: System DNS & Windows 11 Native DoH Configuration Manager
+
 ------------------------------------------------------------------
- ALL 6 TESTS PASSED SUCCESSFULLY! (0 Failures)
+ ALL 14 TESTS PASSED SUCCESSFULLY! (0 Failures)
 ------------------------------------------------------------------
 ```
 
