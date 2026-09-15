@@ -177,8 +177,31 @@
     <sys:String x:Key="NetMon_FilterStatusAll">Усі статуси</sys:String>
     <sys:String x:Key="NetMon_ColPath">ШЛЯХ ДО ФАЙЛУ</sys:String>
     <sys:String x:Key="NetMon_WindowTitle">OmniEye — Моніторинг мережевих з'єднань та Zero-Trust</sys:String>
-    <sys:String x:Key="NetMon_StatsSummary">Усього: {0} | TCP: {1} | UDP: {2} | Заблоковано: {3} | Дозволено: {4} | Винятки: {5}</sys:String>
     <sys:String x:Key="Nav_BackToFirewall">Назад до мережевого екрана</sys:String>
     <sys:String x:Key="NetMon_CardOpen">Відкрити моніторинг →</sys:String>
 
+    <!-- DPI Bypass Module (ViewDpiBypass) - Zapret Engine -->
+    <sys:String x:Key="Nav_DpiBypass">Обхід блокувань</sys:String>
+    <sys:String x:Key="DpiBypass_Title">Обхід блокувань</sys:String>
+    <sys:String x:Key="DpiBypass_Subtitle">Стабільний доступ до Discord (включаючи голосові канали), YouTube та інших сервісів</sys:String>
+    <sys:String x:Key="DpiBypass_MasterTitle">Служба обходу блокувань</sys:String>
+    <sys:String x:Key="DpiBypass_MasterDesc">Усуває уповільнення та відновлює з'єднання з Discord, голосовим чатом і YouTube без використання VPN.</sys:String>
+    <sys:String x:Key="DpiBypass_StatusActive">АКТИВНИЙ (Discord, Голос, YouTube)</sys:String>
+    <sys:String x:Key="DpiBypass_StatusInactive">ВИМКНЕНО</sys:String>
+    <sys:String x:Key="DpiBypass_BtnEnable">Увімкнути обхід</sys:String>
+    <sys:String x:Key="DpiBypass_BtnDisable">Вимкнути обхід</sys:String>
+    <sys:String x:Key="DpiBypass_PresetLabel">Пресет обходу:</sys:String>
+    <sys:String x:Key="DpiBypass_ChkSystemProxy">Прозоре перехоплення трафіку системи без налаштування проксі (WinDivert)</sys:String>
+    <sys:String x:Key="DpiBypass_ChkAutoConnectDns">Автоматично підключати безпечний DNS (DoH / 1.1.1.1)</sys:String>
+    <sys:String x:Key="DpiBypass_BtnConnectDns">Підключити</sys:String>
+    <sys:String x:Key="DpiBypass_DnsConnected">Активний</sys:String>
+    <sys:String x:Key="DpiBypass_MetricActiveSockets">PID Процесу</sys:String>
+    <sys:String x:Key="DpiBypass_MetricTransferred">Активний пресет</sys:String>
+    <sys:String x:Key="DpiBypass_MetricDnsHits">Безпечний DNS</sys:String>
+    <sys:String x:Key="DpiBypass_DohTitle">Динамічний DoH-пул (DNS-over-HTTPS)</sys:String>
+    <sys:String x:Key="DpiBypass_DohSubtitle">Паралельна гонка запитів (Happy Eyeballs) обирає сервер з найменшою затримкою та захищає від DNS-спуфінгу провайдера</sys:String>
+    <sys:String x:Key="DpiBypass_SettingsTitle">Параметри мережевого модуля</sys:String>
+    <sys:String x:Key="DpiBypass_SettingsDesc">Мережеве перехоплення: TCP 80,443,8443 (Multisplit / Fake) та UDP 19294-19344, 50000-50100 (Discord WebRTC Voice Fake repeats=6).</sys:String>
+    <sys:String x:Key="DpiBypass_MsgEnabled">Служба обходу блокувань успішно активована.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDisabled">Служба обходу блокувань вимкнена.</sys:String>
 </ResourceDictionary>

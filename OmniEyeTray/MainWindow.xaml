@@ -220,6 +220,12 @@
                             <TextBlock Text="{DynamicResource Nav_Firewall}" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
+                    <RadioButton x:Name="NavDpiBypass" Style="{StaticResource Win11NavItem}" Click="NavDpiBypass_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="GlobeSearch24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
+                            <TextBlock Text="{DynamicResource Nav_DpiBypass}" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
                     <RadioButton x:Name="NavInjection" Style="{StaticResource Win11NavItem}" Click="NavInjection_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
@@ -867,6 +873,209 @@
                         </Border>
                     </StackPanel>
                 </Border>
+            </Grid>
+
+            <!-- ================= VIEW 5: DPI BYPASS & SECURE DOH ================= -->
+            <Grid x:Name="ViewDpiBypass" Grid.Row="1" Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,12,0">
+
+                        <!-- Master Control Hero Card -->
+                        <Border Background="#1CFFFFFF" CornerRadius="8" Padding="18,16" Margin="0,0,0,14" BorderBrush="#24FFFFFF" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Glowing Bypass Badge Icon -->
+                                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="8" Background="#264CC2FF" BorderBrush="#404CC2FF" BorderThickness="1" Margin="0,0,16,0" VerticalAlignment="Center">
+                                    <ui:SymbolIcon Symbol="GlobeSearch24" FontSize="22" Foreground="#4CC2FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Title, Status & WinINet Checkbox -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource DpiBypass_MasterTitle}" FontWeight="SemiBold" FontSize="14" Foreground="#FFFFFF" Margin="0,0,12,0"/>
+                                        <Border x:Name="BadgeDpiStatus" Background="#20888888" BorderBrush="#50888888" BorderThickness="1" CornerRadius="12" Padding="10,3" VerticalAlignment="Center">
+                                            <TextBlock x:Name="TxtDpiStatus" Text="{DynamicResource DpiBypass_StatusInactive}" FontWeight="SemiBold" FontSize="11" Foreground="#A0A0A0"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{DynamicResource DpiBypass_MasterDesc}" FontSize="11.5" Foreground="#9E9E9E" Margin="0,4,0,8" TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,6,0,0">
+                                        <TextBlock Text="{DynamicResource DpiBypass_PresetLabel}" Foreground="#CCCCCC" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <ComboBox x:Name="CmbZapretPreset" Width="260" Height="32" FontSize="12"
+                                                  VerticalContentAlignment="Center" Padding="10,0"
+                                                  SelectionChanged="CmbZapretPreset_SelectionChanged" Cursor="Hand"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ChkAutoConnectDns" Content="{DynamicResource DpiBypass_ChkAutoConnectDns}" 
+                                              IsChecked="True" FontSize="11.5" Foreground="#A0A0A0" Margin="0,8,0,0" Cursor="Hand"/>
+                                </StackPanel>
+
+                                <!-- Master Toggle Button -->
+                                <ui:Button x:Name="BtnToggleDpiBypass" Grid.Column="2" 
+                                           Content="{DynamicResource DpiBypass_BtnEnable}" 
+                                           Appearance="Primary" Icon="{ui:SymbolIcon Symbol=Play24}"
+                                           Click="BtnToggleDpiBypass_Click" 
+                                           VerticalAlignment="Center" Height="40" Padding="18,0" FontSize="12.5"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Live Telemetry Metric Cards (3 Columns) -->
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Metric 1: Active Connections -->
+                            <Border Grid.Column="0" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="6" Background="#264CC2FF" BorderBrush="#404CC2FF" BorderThickness="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="ArrowSync24" FontSize="18" Foreground="#4CC2FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource DpiBypass_MetricActiveSockets}" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
+                                        <TextBlock x:Name="TxtDpiActiveConn" Text="0" FontSize="15" FontWeight="Bold" Foreground="#4CC2FF" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Metric 2: Bytes Transferred -->
+                            <Border Grid.Column="2" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="6" Background="#266CCB5F" BorderBrush="#406CCB5F" BorderThickness="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" Foreground="#6CCB5F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource DpiBypass_MetricTransferred}" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
+                                        <TextBlock x:Name="TxtDpiBytes" Text="0 KB" FontSize="15" FontWeight="Bold" Foreground="#6CCB5F" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Metric 3: DoH Cache Hits -->
+                            <Border Grid.Column="4" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="6" Background="#26FFC83B" BorderBrush="#40FFC83B" BorderThickness="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="18" Foreground="#FFC83B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource DpiBypass_MetricDnsHits}" FontSize="10" FontWeight="SemiBold" Foreground="#A0A0A0" />
+                                        <TextBlock x:Name="TxtDpiDnsHits" Text="0" FontSize="15" FontWeight="Bold" Foreground="#FFC83B" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- Dynamic DoH Resolvers Monitor Card -->
+                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,14" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="{DynamicResource DpiBypass_DohTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                        <TextBlock Text="{DynamicResource DpiBypass_DohSubtitle}" FontSize="11" Foreground="#9E9E9E" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <ui:Button x:Name="BtnRefreshDohPing" Grid.Column="1" Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowSync24}" 
+                                               Click="BtnRefreshDohPing_Click" ToolTip="Ping Resolvers" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- DoH Resolver Rows -->
+                                <ItemsControl x:Name="ItemsDohServers">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#12FFFFFF" CornerRadius="6" Padding="12,8" Margin="0,0,0,6" BorderBrush="#15FFFFFF" BorderThickness="1">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Border Grid.Column="0" Width="8" Height="8" CornerRadius="4" Margin="0,0,10,0" VerticalAlignment="Center">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#6CCB5F" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsDegraded}" Value="True">
+                                                                        <Setter Property="Background" Value="#FF99A4" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12.5" Foreground="#FFFFFF" Margin="0,0,10,0"/>
+                                                        <TextBlock Text="{Binding DirectIp}" FontSize="11" Foreground="#888888" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+
+                                                    <Border Grid.Column="2" Background="#184CC2FF" BorderBrush="#304CC2FF" BorderThickness="1" CornerRadius="8" Padding="8,2" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                        <TextBlock Text="{Binding LatencyMs, StringFormat='{}{0} ms'}" FontSize="11" FontWeight="SemiBold" Foreground="#4CC2FF"/>
+                                                    </Border>
+
+                                                    <ui:Button Grid.Column="3" Appearance="Secondary" FontSize="11" Padding="10,0" Height="26"
+                                                               Click="BtnConnectDohServer_Click" Tag="{Binding}" Cursor="Hand" VerticalAlignment="Center">
+                                                        <ui:Button.Style>
+                                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                                <Setter Property="Content" Value="{DynamicResource DpiBypass_BtnConnectDns}" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsActiveDns}" Value="True">
+                                                                        <Setter Property="Content" Value="{DynamicResource DpiBypass_DnsConnected}" />
+                                                                        <Setter Property="Appearance" Value="Success" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </ui:Button.Style>
+                                                    </ui:Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Desynchronization Parameters Card -->
+                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource DpiBypass_SettingsTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
+                                    <TextBlock Text="{DynamicResource DpiBypass_SettingsDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="#184CC2FF" BorderBrush="#304CC2FF" BorderThickness="1" CornerRadius="8" Padding="10,4" VerticalAlignment="Center">
+                                    <TextBlock Text="WINDIVERT L3/L4 | DISCORD UDP" FontSize="11" FontWeight="SemiBold" Foreground="#4CC2FF"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
 
             <!-- Bottom Status Footer -->

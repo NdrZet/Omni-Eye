@@ -98,20 +98,41 @@ public class FirewallEnforcer : IDisposable
             }
             catch (Exception ex) { _logger.LogWarning(ex, "Could not apply whitelist rules: {Message}", ex.Message); }
 
-            // 4. Set Default Outbound Action = Block
-            SetDefaultOutboundAction(policy, NET_FW_ACTION_BLOCK);
-
-            _isEnforced = true;
-            _logger.LogInformation("Zero-Trust Firewall Policy successfully applied. Outbound default = BLOCK.");
-
-            // 5. Start Self-Healing Loop if not in DeveloperMode
-            if (!_config.DeveloperMode)
+            // 4. Determine Outbound Action based on persisted user setting or Zero-Trust default
+            bool shouldBlock = true;
+            try
             {
-                StartSelfHealing();
+                var pref = _dbManager.GetSetting("Firewall.OutboundBlocked");
+                if (pref != null && bool.TryParse(pref, out var parsed))
+                {
+                    shouldBlock = parsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not load persisted firewall outbound policy: {Message}", ex.Message);
+            }
+
+            if (shouldBlock)
+            {
+                SetDefaultOutboundAction(policy, NET_FW_ACTION_BLOCK);
+                _isEnforced = true;
+                _logger.LogInformation("Zero-Trust Firewall Policy successfully applied. Outbound default = BLOCK.");
+
+                if (!_config.DeveloperMode)
+                {
+                    StartSelfHealing();
+                }
+                else
+                {
+                    _logger.LogInformation("DeveloperMode is active: Self-Healing watchdog is disabled.");
+                }
             }
             else
             {
-                _logger.LogInformation("DeveloperMode is active: Self-Healing watchdog is disabled.");
+                SetDefaultOutboundAction(policy, NET_FW_ACTION_ALLOW);
+                _isEnforced = false;
+                _logger.LogInformation("Permissive Firewall Policy successfully applied based on saved user preference. Outbound default = ALLOW.");
             }
         }
         catch (Exception ex)
@@ -188,6 +209,16 @@ public class FirewallEnforcer : IDisposable
                 SetDefaultOutboundAction(policy, NET_FW_ACTION_ALLOW);
                 _isEnforced = false;
                 _logger.LogInformation("Default Outbound Policy set to ALLOW successfully.");
+            }
+
+            // Persist the user's selected policy across restarts
+            try
+            {
+                _dbManager.SetSetting("Firewall.OutboundBlocked", blockOutbound.ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not persist firewall outbound policy: {Message}", ex.Message);
             }
         }
         catch (Exception ex)

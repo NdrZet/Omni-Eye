@@ -40,6 +40,17 @@ public partial class App : System.Windows.Application
         OmniEyeTray.Services.LocalizationManager.Initialize();
     }
 
+    protected override void OnExit(ExitEventArgs e)
+    {
+        try
+        {
+            OmniEye.DpiBypass.Dns.SystemDnsManager.RestoreDns();
+            OmniEye.DpiBypass.SystemProxy.SystemProxyManager.DisableProxy();
+        }
+        catch { }
+        base.OnExit(e);
+    }
+
     private static void LogCrash(Exception? ex)
     {
         if (ex == null) return;

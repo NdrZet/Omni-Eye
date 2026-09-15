@@ -10,6 +10,12 @@ using OmniEye.Core.Security;
 using OmniEye.Core.Storage;
 using OmniEyeSvc.Ipc;
 using OmniEyeSvc.Network;
+using OmniEye.DpiBypass.Dns;
+using OmniEye.DpiBypass.Models;
+using OmniEye.DpiBypass.Proxy;
+using OmniEye.DpiBypass.SystemProxy;
+using OmniEye.DpiBypass.Tls;
+using OmniEye.DpiBypass.Zapret;
 
 namespace OmniEye.Tests;
 
@@ -34,6 +40,13 @@ public class Program
         await RunTestAsync("TEST 5: DeveloperMode Lifecycle & Graceful Rollback", Test5_DeveloperModeLifecycle);
         await RunTestAsync("TEST 6: Dynamic Firewall Policy Switching via IPC", Test6_DynamicFirewallPolicySwitching);
         await RunTestAsync("TEST 7: Active Network Connection Monitoring & Process Attribution", Test7_ActiveNetworkConnectionMonitoring);
+        await RunTestAsync("TEST 8: DNS RFC 1035 Wire-Format Serialization & Response Parsing", Test8_DnsWireFormatHelper);
+        await RunTestAsync("TEST 9: TLS ClientHello SNI Extraction & Fragmentation Offset Calculation", Test9_TlsClientHelloParserAndSni);
+        await RunTestAsync("TEST 10: Multi-Resolver DoH Pool with Concurrent Race & Caching", Test10_DohResolverPool);
+        await RunTestAsync("TEST 11: DPI HTTP CONNECT Proxy Server & ClientHello Fragmentation Pipeline", Test11_DpiProxyServerTunnel);
+        await RunTestAsync("TEST 12: Windows System Proxy WinINet Registry & Automatic Restoration", Test12_SystemProxyManager);
+        await RunTestAsync("TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification", Test13_ZapretNativeEngine);
+        await RunTestAsync("TEST 14: System DNS & Windows 11 Native DoH Configuration Manager", Test14_SystemDnsManager);
 
         Console.WriteLine();
         Console.WriteLine("------------------------------------------------------------------");
@@ -458,5 +471,410 @@ public class Program
 
         if (permissiveCount == 0 && permissiveConnections.Count > 0)
             throw new Exception("Expected sockets to evaluate to Permissive when isOutboundBlocked=false and not in whitelist.");
+    }
+
+    private static async Task Test8_DnsWireFormatHelper()
+    {
+        // 1. Test Query Building
+        byte[] query = DnsWireFormatHelper.BuildQuery("rutracker.org", DnsWireFormatHelper.TypeA, 0xABCD);
+        Console.WriteLine($" -> DNS Query built, size: {query.Length} bytes");
+
+        if (query.Length < 12)
+            throw new Exception("DNS Query header is too short.");
+
+        // Verify query ID 0xABCD
+        if (query[0] != 0xAB || query[1] != 0xCD)
+            throw new Exception("DNS Query ID mismatch.");
+
+        // Verify QDCOUNT = 1
+        if (query[4] != 0x00 || query[5] != 0x01)
+            throw new Exception("QDCOUNT should be 1.");
+
+        // 2. Test Synthetic Response Parsing
+        // Construct synthetic DNS response with 1 Question and 2 A Answers (104.21.32.1 and 172.67.182.204)
+        using var ms = new MemoryStream();
+        using var writer = new BinaryWriter(ms);
+
+        // Header: ID=0xABCD, Flags=0x8180 (Standard response, No error), QDCOUNT=1, ANCOUNT=2, NS=0, AR=0
+        writer.Write((byte)0xAB); writer.Write((byte)0xCD);
+        writer.Write((byte)0x81); writer.Write((byte)0x80);
+        writer.Write((byte)0x00); writer.Write((byte)0x01);
+        writer.Write((byte)0x00); writer.Write((byte)0x02);
+        writer.Write((byte)0x00); writer.Write((byte)0x00);
+        writer.Write((byte)0x00); writer.Write((byte)0x00);
+
+        // Question: rutracker.org
+        writer.Write((byte)9);
+        writer.Write(Encoding.ASCII.GetBytes("rutracker"));
+        writer.Write((byte)3);
+        writer.Write(Encoding.ASCII.GetBytes("org"));
+        writer.Write((byte)0);
+        writer.Write((byte)0x00); writer.Write((byte)0x01); // Type A
+        writer.Write((byte)0x00); writer.Write((byte)0x01); // Class IN
+
+        // Answer 1: Compression pointer 0xC00C, Type A, Class IN, TTL 300, RDLENGTH 4, RDATA 104.21.32.1
+        writer.Write((byte)0xC0); writer.Write((byte)0x0C);
+        writer.Write((byte)0x00); writer.Write((byte)0x01);
+        writer.Write((byte)0x00); writer.Write((byte)0x01);
+        writer.Write((byte)0x00); writer.Write((byte)0x00); writer.Write((byte)0x01); writer.Write((byte)0x2C); // 300
+        writer.Write((byte)0x00); writer.Write((byte)0x04);
+        writer.Write(new byte[] { 104, 21, 32, 1 });
+
+        // Answer 2: Compression pointer 0xC00C, Type A, Class IN, TTL 120, RDLENGTH 4, RDATA 172.67.182.204
+        writer.Write((byte)0xC0); writer.Write((byte)0x0C);
+        writer.Write((byte)0x00); writer.Write((byte)0x01);
+        writer.Write((byte)0x00); writer.Write((byte)0x01);
+        writer.Write((byte)0x00); writer.Write((byte)0x00); writer.Write((byte)0x00); writer.Write((byte)0x78); // 120
+        writer.Write((byte)0x00); writer.Write((byte)0x04);
+        writer.Write(new byte[] { 172, 67, 182, 204 });
+
+        byte[] syntheticResponse = ms.ToArray();
+        var (addresses, minTtl) = DnsWireFormatHelper.ParseResponse(syntheticResponse);
+
+        Console.WriteLine($" -> Parsed {addresses.Count} IP addresses, MinTTL: {minTtl}s");
+        if (addresses.Count != 2)
+            throw new Exception($"Expected 2 addresses, got {addresses.Count}");
+        if (addresses[0].ToString() != "104.21.32.1" || addresses[1].ToString() != "172.67.182.204")
+            throw new Exception("Parsed IP addresses do not match synthetic response.");
+        if (minTtl != 120)
+            throw new Exception($"Expected MinTTL 120, got {minTtl}");
+    }
+
+    private static async Task Test9_TlsClientHelloParserAndSni()
+    {
+        string testHostname = "discord.com";
+        byte[] clientHello = CreateSynthesizedClientHello(testHostname);
+        Console.WriteLine($" -> Synthesized ClientHello packet size: {clientHello.Length} bytes");
+
+        // 1. Verify detection
+        bool isHello = TlsClientHelloParser.IsClientHello(clientHello, clientHello.Length);
+        if (!isHello)
+            throw new Exception("TlsClientHelloParser failed to identify valid ClientHello.");
+
+        // 2. Verify SNI extraction
+        bool foundSni = TlsClientHelloParser.TryFindSni(clientHello, clientHello.Length, out var extractedSni, out var sniOffset);
+        Console.WriteLine($" -> SNI found: {foundSni}, Extracted: '{extractedSni}', Offset: {sniOffset}");
+
+        if (!foundSni || extractedSni != testHostname)
+            throw new Exception($"SNI extraction failed: expected '{testHostname}', got '{extractedSni}'");
+
+        if (sniOffset <= 0)
+            throw new Exception("SNI offset is invalid.");
+
+        // 3. Verify fragmentation offset calculation (middle of SNI)
+        int splitOffset = TlsClientHelloParser.CalculateSplitOffset(clientHello, clientHello.Length, preferredOffset: 2, splitInsideSni: true);
+        int expectedSplit = sniOffset + (testHostname.Length / 2);
+        Console.WriteLine($" -> Calculated split offset: {splitOffset}, Expected: {expectedSplit}");
+
+        if (splitOffset != expectedSplit)
+            throw new Exception($"Split offset mismatch: expected {expectedSplit}, got {splitOffset}");
+
+        // 4. Verify non-TLS fallback
+        byte[] dummyHttp = Encoding.ASCII.GetBytes("GET /index.html HTTP/1.1\r\nHost: example.com\r\n\r\n");
+        if (TlsClientHelloParser.IsClientHello(dummyHttp, dummyHttp.Length))
+            throw new Exception("Non-TLS packet falsely identified as ClientHello.");
+
+        int fallbackSplit = TlsClientHelloParser.CalculateSplitOffset(dummyHttp, dummyHttp.Length, preferredOffset: 2, splitInsideSni: true);
+        if (fallbackSplit != 2)
+            throw new Exception($"Fallback split offset should be 2, got {fallbackSplit}");
+    }
+
+    private static async Task Test10_DohResolverPool()
+    {
+        using var pool = new DohResolverPool();
+        Console.WriteLine($" -> Configured {pool.Servers.Count} DoH servers: {string.Join(", ", pool.Servers.Select(s => s.Name))}");
+
+        // 1. Test direct IP bypass
+        var direct = await pool.ResolveAsync("1.1.1.1");
+        if (direct?.ToString() != "1.1.1.1")
+            throw new Exception("Direct IP should be returned as-is.");
+
+        // 2. Resolve domain
+        var resolvedIp = await pool.ResolveAsync("cloudflare.com");
+        Console.WriteLine($" -> Resolved cloudflare.com to: {resolvedIp}");
+        if (resolvedIp == null)
+            throw new Exception("Failed to resolve cloudflare.com via DoH pool.");
+
+        long initialHits = pool.CacheHitsCount;
+
+        // 3. Test caching
+        var cachedIp = await pool.ResolveAsync("cloudflare.com");
+        Console.WriteLine($" -> Secondary resolution (cache hit): {cachedIp}");
+        if (cachedIp == null || !cachedIp.Equals(resolvedIp))
+            throw new Exception("Cached IP does not match initial resolution.");
+
+        if (pool.CacheHitsCount <= initialHits)
+            throw new Exception("CacheHitsCount should have incremented on subsequent query.");
+
+        // 4. Run health check on servers
+        await pool.RunHealthChecksAsync();
+        foreach (var s in pool.Servers)
+        {
+            Console.WriteLine($"    * {s.Name} ({s.DirectIp}): Latency={s.LatencyMs}ms, Failures={s.ConsecutiveFailures}");
+        }
+    }
+
+    private static async Task Test11_DpiProxyServerTunnel()
+    {
+        // 1. Start a mock remote destination server on loopback
+        var mockListener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        mockListener.Start();
+        int mockPort = ((System.Net.IPEndPoint)mockListener.LocalEndpoint).Port;
+
+        var mockServerTask = Task.Run(async () =>
+        {
+            using var remoteConn = await mockListener.AcceptTcpClientAsync();
+            using var stream = remoteConn.GetStream();
+            byte[] buf = new byte[2048];
+            int totalRead = 0;
+            while (totalRead < 79)
+            {
+                int read = await stream.ReadAsync(buf.AsMemory(totalRead, buf.Length - totalRead));
+                if (read <= 0) break;
+                totalRead += read;
+            }
+            
+            // Send back a mock response
+            byte[] response = Encoding.ASCII.GetBytes("MOCK_SERVER_ACK");
+            await stream.WriteAsync(response);
+            return (totalRead, buf);
+        });
+
+        // 2. Start DpiProxyServer on a free port
+        var config = new DpiBypassConfig
+        {
+            ListenAddress = "127.0.0.1",
+            ListenPort = 59085,
+            EnableDoh = false, // Use direct loopback IP for fast test
+            EnableFragmentation = true,
+            SplitPosition = 2,
+            SplitDelayMs = 5
+        };
+
+        using var proxy = new DpiProxyServer(config);
+        proxy.Start();
+        Console.WriteLine($" -> DpiProxyServer started on {config.ListenAddress}:{config.ListenPort}");
+
+        try
+        {
+            // 3. Connect client to proxy
+            using var client = new System.Net.Sockets.TcpClient();
+            await client.ConnectAsync("127.0.0.1", config.ListenPort);
+            using var clientStream = client.GetStream();
+
+            // 4. Send HTTP CONNECT
+            string connectReq = $"CONNECT 127.0.0.1:{mockPort} HTTP/1.1\r\nHost: 127.0.0.1:{mockPort}\r\n\r\n";
+            byte[] connectBytes = Encoding.ASCII.GetBytes(connectReq);
+            await clientStream.WriteAsync(connectBytes);
+
+            // 5. Read HTTP 200 OK from proxy
+            byte[] respBuf = new byte[256];
+            int respLen = await clientStream.ReadAsync(respBuf);
+            string proxyResp = Encoding.ASCII.GetString(respBuf, 0, respLen);
+            Console.WriteLine($" -> Proxy response: {proxyResp.Trim()}");
+
+            if (!proxyResp.StartsWith("HTTP/1.1 200 Connection Established"))
+                throw new Exception($"Proxy connection failed: {proxyResp}");
+
+            // 6. Send payload through tunnel (Synthesized ClientHello)
+            byte[] hello = CreateSynthesizedClientHello("blocked-domain.org");
+            await clientStream.WriteAsync(hello);
+
+            // 7. Verify mock server received data
+            var (bytesReceived, receivedBuf) = await mockServerTask;
+            Console.WriteLine($" -> Mock server received: {bytesReceived} bytes");
+            if (bytesReceived != hello.Length)
+                throw new Exception($"Payload length mismatch: expected {hello.Length}, got {bytesReceived}");
+
+            // 8. Verify client received mock response
+            byte[] clientAckBuf = new byte[64];
+            int clientAckLen = await clientStream.ReadAsync(clientAckBuf);
+            string clientAck = Encoding.ASCII.GetString(clientAckBuf, 0, clientAckLen);
+            Console.WriteLine($" -> Client received: {clientAck}");
+
+            if (clientAck != "MOCK_SERVER_ACK")
+                throw new Exception($"Expected MOCK_SERVER_ACK, got {clientAck}");
+
+            Console.WriteLine($" -> Proxy Stats: ActiveConn={proxy.Stats.ActiveConnections}, TotalConn={proxy.Stats.TotalConnections}, BytesTransferred={proxy.Stats.TotalBytesTransferred}");
+        }
+        finally
+        {
+            proxy.Stop();
+            mockListener.Stop();
+        }
+    }
+
+    private static async Task Test12_SystemProxyManager()
+    {
+        bool wasOriginallyEnabled = SystemProxyManager.IsProxyEnabled();
+        Console.WriteLine($" -> Original Windows proxy state: Enabled={wasOriginallyEnabled}");
+
+        // 1. Enable proxy
+        bool enableOk = SystemProxyManager.EnableProxy("127.0.0.1", 59085);
+        if (!enableOk)
+            throw new Exception("SystemProxyManager.EnableProxy failed.");
+
+        bool isNowEnabled = SystemProxyManager.IsProxyEnabled();
+        Console.WriteLine($" -> After EnableProxy: Enabled={isNowEnabled}");
+        if (!isNowEnabled)
+            throw new Exception("SystemProxyManager.IsProxyEnabled returned false after enabling.");
+
+        // 2. Disable proxy and restore
+        bool disableOk = SystemProxyManager.DisableProxy();
+        if (!disableOk)
+            throw new Exception("SystemProxyManager.DisableProxy failed.");
+
+        bool isFinallyEnabled = SystemProxyManager.IsProxyEnabled();
+        Console.WriteLine($" -> After DisableProxy: Enabled={isFinallyEnabled}");
+        if (isFinallyEnabled != wasOriginallyEnabled)
+            throw new Exception($"Proxy state not restored: expected {wasOriginallyEnabled}, got {isFinallyEnabled}");
+    }
+
+    private static Task Test13_ZapretNativeEngine()
+    {
+        var zapretDir = ZapretEngine.ResolveZapretDirectory();
+        Console.WriteLine($" -> Resolved Zapret directory: '{zapretDir}'");
+
+        var winwsExe = Path.Combine(zapretDir, "bin", "winws.exe");
+        var winDivertDll = Path.Combine(zapretDir, "bin", "WinDivert.dll");
+        var winDivertSys = Path.Combine(zapretDir, "bin", "WinDivert64.sys");
+        var discordUdp = Path.Combine(zapretDir, "bin", "ACTIVE_DISCORD_UDP.bin");
+        var listGeneral = Path.Combine(zapretDir, "lists", "list-general.txt");
+
+        if (!File.Exists(winwsExe)) throw new FileNotFoundException("winws.exe missing.");
+        if (!File.Exists(winDivertDll)) throw new FileNotFoundException("WinDivert.dll missing.");
+        if (!File.Exists(winDivertSys)) throw new FileNotFoundException("WinDivert64.sys missing.");
+        if (!File.Exists(discordUdp)) throw new FileNotFoundException("ACTIVE_DISCORD_UDP.bin missing.");
+        if (!File.Exists(listGeneral)) throw new FileNotFoundException("list-general.txt missing.");
+
+        Console.WriteLine($" -> Verified binaries: winws.exe ({new FileInfo(winwsExe).Length} bytes), WinDivert64.sys ({new FileInfo(winDivertSys).Length} bytes)");
+
+        var binDir = Path.Combine(zapretDir, "bin");
+        var listsDir = Path.Combine(zapretDir, "lists");
+
+        foreach (var preset in ZapretEngine.AvailablePresets)
+        {
+            var args = ZapretEngine.BuildArguments(preset, binDir, listsDir);
+            if (string.IsNullOrWhiteSpace(args))
+                throw new Exception($"BuildArguments returned empty string for preset '{preset}'.");
+
+            if (!args.Contains("--wf-tcp") || !args.Contains("--wf-udp"))
+                throw new Exception($"Preset '{preset}' missing core packet filter args.");
+
+            if (!args.Contains("ACTIVE_DISCORD_UDP.bin"))
+                throw new Exception($"Preset '{preset}' missing Discord Voice UDP bypass payload.");
+
+            Console.WriteLine($" -> Preset '{preset}': Generated {args.Length} chars command-line with Discord UDP voice rules.");
+        }
+
+        using var engine = new ZapretEngine();
+        if (engine.IsRunning)
+            throw new Exception("ZapretEngine should not be running immediately upon construction.");
+
+        Console.WriteLine(" -> ZapretEngine JobObject initialized and ready.");
+        return Task.CompletedTask;
+    }
+
+    private static byte[] CreateSynthesizedClientHello(string hostName)
+    {
+        byte[] hostBytes = Encoding.ASCII.GetBytes(hostName);
+        int sniExtLen = 2 + 1 + 2 + hostBytes.Length; // server_name_list_len(2) + name_type(1) + name_len(2) + host
+        int extensionsLen = 4 + sniExtLen; // ext_type(2) + ext_len(2) + sniExtLen
+        int handshakeLen = 2 + 32 + 1 + 4 + 2 + 2 + extensionsLen;
+        int recordLen = 4 + handshakeLen;
+
+        using var ms = new MemoryStream();
+        using var writer = new BinaryWriter(ms);
+
+        // TLS Record Header (5 bytes)
+        writer.Write((byte)0x16); // ContentType: Handshake
+        writer.Write((byte)0x03); writer.Write((byte)0x01); // Version: TLS 1.0 (Record)
+        writer.Write((byte)(recordLen >> 8)); writer.Write((byte)(recordLen & 0xFF)); // Length
+
+        // Handshake Header (4 bytes)
+        writer.Write((byte)0x01); // HandshakeType: ClientHello
+        writer.Write((byte)0x00);
+        writer.Write((byte)(handshakeLen >> 8)); writer.Write((byte)(handshakeLen & 0xFF)); // Handshake Length
+
+        // Client Version (2 bytes)
+        writer.Write((byte)0x03); writer.Write((byte)0x03); // TLS 1.2
+
+        // Client Random (32 bytes)
+        writer.Write(new byte[32]);
+
+        // Session ID Length (1 byte: 0)
+        writer.Write((byte)0x00);
+
+        // Cipher Suites Length (2 bytes) + 1 Suite (2 bytes)
+        writer.Write((byte)0x00); writer.Write((byte)0x02);
+        writer.Write((byte)0xC0); writer.Write((byte)0x2F); // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+
+        // Compression Methods Length (1 byte) + None (1 byte)
+        writer.Write((byte)0x01);
+        writer.Write((byte)0x00);
+
+        // Extensions Length (2 bytes)
+        writer.Write((byte)(extensionsLen >> 8)); writer.Write((byte)(extensionsLen & 0xFF));
+
+        // Extension: server_name (0x0000)
+        writer.Write((byte)0x00); writer.Write((byte)0x00);
+        writer.Write((byte)(sniExtLen >> 8)); writer.Write((byte)(sniExtLen & 0xFF));
+
+        // Server Name List Length (2 bytes)
+        int listLen = 1 + 2 + hostBytes.Length;
+        writer.Write((byte)(listLen >> 8)); writer.Write((byte)(listLen & 0xFF));
+
+        // Server Name Type (1 byte: 0 = host_name)
+        writer.Write((byte)0x00);
+
+        // Host Name Length (2 bytes)
+        writer.Write((byte)(hostBytes.Length >> 8)); writer.Write((byte)(hostBytes.Length & 0xFF));
+
+        // Host Name
+        writer.Write(hostBytes);
+
+        return ms.ToArray();
+    }
+
+    private static Task Test14_SystemDnsManager()
+    {
+        // 1. Adapter discovery
+        var adapters = SystemDnsManager.GetActivePhysicalAdapters();
+        Console.WriteLine($" -> Discovered {adapters.Count} active physical network adapters.");
+        foreach (var (name, id) in adapters)
+        {
+            Console.WriteLine($"    * Adapter: '{name}', GUID: {id}");
+        }
+
+        // 2. DoH Resolver Pool with Secondary IPs
+        var pool = new DohResolverPool();
+        var cf = pool.Servers.FirstOrDefault(s => s.Name.Contains("Cloudflare"));
+        if (cf == null) throw new Exception("Cloudflare resolver not found in pool.");
+        if (cf.DirectIp != "1.1.1.1") throw new Exception($"Expected Cloudflare IP 1.1.1.1, got {cf.DirectIp}");
+        if (cf.SecondaryIp != "1.0.0.1") throw new Exception($"Expected Cloudflare Secondary IP 1.0.0.1, got {cf.SecondaryIp}");
+
+        var google = pool.Servers.FirstOrDefault(s => s.Name.Contains("Google"));
+        if (google == null) throw new Exception("Google resolver not found in pool.");
+        if (google.DirectIp != "8.8.8.8") throw new Exception($"Expected Google IP 8.8.8.8, got {google.DirectIp}");
+        if (google.SecondaryIp != "8.8.4.4") throw new Exception($"Expected Google Secondary IP 8.8.4.4, got {google.SecondaryIp}");
+
+        // 3. INotifyPropertyChanged on DohServerInfo
+        bool propChanged = false;
+        cf.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(DohServerInfo.IsActiveDns))
+            {
+                propChanged = true;
+            }
+        };
+        cf.IsActiveDns = true;
+        if (!propChanged) throw new Exception("DohServerInfo failed to raise PropertyChanged for IsActiveDns.");
+        cf.IsActiveDns = false;
+
+        // 4. SystemDnsManager state verification
+        if (SystemDnsManager.IsConnected) throw new Exception("SystemDnsManager should not be connected by default in test suite.");
+        Console.WriteLine(" -> System DNS Controller & DoH Resolver Pool verified successfully.");
+
+        return Task.CompletedTask;
     }
 }

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OmniEye.Core\OmniEye.Core.csproj" />
+    <ProjectReference Include="..\OmniEye.DpiBypass\OmniEye.DpiBypass.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -177,8 +177,31 @@
     <sys:String x:Key="NetMon_FilterStatusAll">All Statuses</sys:String>
     <sys:String x:Key="NetMon_ColPath">EXECUTABLE PATH</sys:String>
     <sys:String x:Key="NetMon_WindowTitle">OmniEye — Network Telemetry &amp; Zero-Trust Monitor</sys:String>
-    <sys:String x:Key="NetMon_StatsSummary">Total: {0} | TCP: {1} | UDP: {2} | Blocked: {3} | Whitelisted: {4} | Exceptions: {5}</sys:String>
     <sys:String x:Key="Nav_BackToFirewall">Back to Firewall</sys:String>
     <sys:String x:Key="NetMon_CardOpen">Open Monitoring →</sys:String>
 
+    <!-- DPI Bypass Module (ViewDpiBypass) - Zapret Engine -->
+    <sys:String x:Key="Nav_DpiBypass">Bypass</sys:String>
+    <sys:String x:Key="DpiBypass_Title">Network Bypass</sys:String>
+    <sys:String x:Key="DpiBypass_Subtitle">Seamless connectivity for Discord (including voice channels), YouTube, and online services</sys:String>
+    <sys:String x:Key="DpiBypass_MasterTitle">Bypass Service</sys:String>
+    <sys:String x:Key="DpiBypass_MasterDesc">Restores full-speed access to Discord, voice chat, and YouTube without requiring a VPN.</sys:String>
+    <sys:String x:Key="DpiBypass_StatusActive">ACTIVE (Discord, Voice, YouTube)</sys:String>
+    <sys:String x:Key="DpiBypass_StatusInactive">DISABLED</sys:String>
+    <sys:String x:Key="DpiBypass_BtnEnable">Enable Bypass</sys:String>
+    <sys:String x:Key="DpiBypass_BtnDisable">Disable Bypass</sys:String>
+    <sys:String x:Key="DpiBypass_PresetLabel">Bypass Preset:</sys:String>
+    <sys:String x:Key="DpiBypass_ChkSystemProxy">Transparent kernel packet capture without proxy configuration (WinDivert)</sys:String>
+    <sys:String x:Key="DpiBypass_ChkAutoConnectDns">Automatically connect secure DNS (DoH / 1.1.1.1)</sys:String>
+    <sys:String x:Key="DpiBypass_BtnConnectDns">Connect</sys:String>
+    <sys:String x:Key="DpiBypass_DnsConnected">Active</sys:String>
+    <sys:String x:Key="DpiBypass_MetricActiveSockets">Process PID</sys:String>
+    <sys:String x:Key="DpiBypass_MetricTransferred">Active Preset</sys:String>
+    <sys:String x:Key="DpiBypass_MetricDnsHits">Secure DNS</sys:String>
+    <sys:String x:Key="DpiBypass_DohTitle">Dynamic DoH Pool (DNS-over-HTTPS)</sys:String>
+    <sys:String x:Key="DpiBypass_DohSubtitle">Concurrent query racing (Happy Eyeballs) selects the lowest-latency resolver and protects against ISP DNS poisoning</sys:String>
+    <sys:String x:Key="DpiBypass_SettingsTitle">Network Module Settings</sys:String>
+    <sys:String x:Key="DpiBypass_SettingsDesc">Packet Capture: TCP 80,443,8443 (Multisplit / Fake) and UDP 19294-19344, 50000-50100 (Discord WebRTC Voice Fake repeats=6).</sys:String>
+    <sys:String x:Key="DpiBypass_MsgEnabled">Bypass service successfully activated.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDisabled">Bypass service stopped.</sys:String>
 </ResourceDictionary>

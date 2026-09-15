@@ -14,6 +14,9 @@ using Microsoft.Win32;
 using OmniEye.Core.Ipc;
 using OmniEye.Core.Models;
 using OmniEye.Core.Security;
+using OmniEye.DpiBypass.Dns;
+using OmniEye.DpiBypass.Models;
+using OmniEye.DpiBypass.Zapret;
 using OmniEyeTray.Services;
 using OmniEyeTray.Views;
 using Wpf.Ui.Controls;
@@ -33,11 +36,15 @@ public partial class MainWindow : FluentWindow
     private readonly ICollectionView _whitelistView;
     private readonly ICollectionView _connectionsView;
     private readonly System.Windows.Threading.DispatcherTimer _netMonTimer;
+    private readonly System.Windows.Threading.DispatcherTimer _dpiTelemetryTimer;
+    private readonly ZapretEngine _zapretEngine = new();
+    private readonly DohResolverPool _dohPool = new();
     private string _currentTab = "Dashboard";
     private int _lastBlockedAttempts = 0;
 
     public ObservableCollection<WhitelistEntry> WhitelistEntries { get; set; } = new();
     public ObservableCollection<NetworkConnectionInfo> NetworkConnections { get; set; } = new();
+    public ObservableCollection<DohServerInfo> DohServers { get; set; } = new();
 
     public MainWindow()
     {
@@ -62,6 +69,21 @@ public partial class MainWindow : FluentWindow
         };
         _netMonTimer.Tick += async (s, e) => await RefreshNetworkConnectionsAsync();
 
+        ItemsDohServers.ItemsSource = DohServers;
+        foreach (var s in _dohPool.Servers)
+        {
+            DohServers.Add(s);
+        }
+
+        CmbZapretPreset.ItemsSource = ZapretEngine.AvailablePresets;
+        CmbZapretPreset.SelectedItem = "General";
+
+        _dpiTelemetryTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(2)
+        };
+        _dpiTelemetryTimer.Tick += (s, e) => UpdateDpiTelemetry();
+
         InitializeTrayIcon();
 
         // Language selector
@@ -72,6 +94,13 @@ public partial class MainWindow : FluentWindow
         SourceInitialized += (s, e) => ApplyWindows11Style(this);
         Loaded += MainWindow_Loaded;
         Closing += MainWindow_Closing;
+
+        // Wire navigation RadioButtons after InitializeComponent has finished building all views
+        NavDashboard.Checked += NavDashboard_Click;
+        NavFirewall.Checked += NavFirewall_Click;
+        NavDpiBypass.Checked += NavDpiBypass_Click;
+        NavInjection.Checked += NavInjection_Click;
+        NavSettings.Checked += NavSettings_Click;
     }
 
     private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -112,6 +141,10 @@ public partial class MainWindow : FluentWindow
                 case "Settings":
                     TxtPageTitle.Text = LocalizationManager.GetString("Settings_Title");
                     TxtPageSubtitle.Text = LocalizationManager.GetString("Settings_Subtitle");
+                    break;
+                case "DpiBypass":
+                    TxtPageTitle.Text = LocalizationManager.GetString("DpiBypass_Title");
+                    TxtPageSubtitle.Text = LocalizationManager.GetString("DpiBypass_Subtitle");
                     break;
             }
 
@@ -594,6 +627,13 @@ public partial class MainWindow : FluentWindow
         ShowView(ViewFirewall, LocalizationManager.GetString("Firewall_Title"), LocalizationManager.GetString("Firewall_Subtitle"));
     }
 
+    private void NavDpiBypass_Click(object sender, RoutedEventArgs e)
+    {
+        _currentTab = "DpiBypass";
+        ShowView(ViewDpiBypass, LocalizationManager.GetString("DpiBypass_Title"), LocalizationManager.GetString("DpiBypass_Subtitle"));
+        UpdateDpiTelemetry();
+    }
+
     private void NavInjection_Click(object sender, RoutedEventArgs e)
     {
         _currentTab = "Injection";
@@ -687,15 +727,16 @@ public partial class MainWindow : FluentWindow
 
     private void ShowView(UIElement view, string title, string subtitle)
     {
-        ViewDashboard.Visibility = Visibility.Collapsed;
-        ViewFirewall.Visibility = Visibility.Collapsed;
-        ViewNetworkMonitor.Visibility = Visibility.Collapsed;
-        ViewInjection.Visibility = Visibility.Collapsed;
-        ViewSettings.Visibility = Visibility.Collapsed;
+        if (ViewDashboard != null) ViewDashboard.Visibility = Visibility.Collapsed;
+        if (ViewFirewall != null) ViewFirewall.Visibility = Visibility.Collapsed;
+        if (ViewNetworkMonitor != null) ViewNetworkMonitor.Visibility = Visibility.Collapsed;
+        if (ViewInjection != null) ViewInjection.Visibility = Visibility.Collapsed;
+        if (ViewSettings != null) ViewSettings.Visibility = Visibility.Collapsed;
+        if (ViewDpiBypass != null) ViewDpiBypass.Visibility = Visibility.Collapsed;
 
-        view.Visibility = Visibility.Visible;
-        TxtPageTitle.Text = title;
-        TxtPageSubtitle.Text = subtitle;
+        if (view != null) view.Visibility = Visibility.Visible;
+        if (TxtPageTitle != null) TxtPageTitle.Text = title;
+        if (TxtPageSubtitle != null) TxtPageSubtitle.Text = subtitle;
 
         if (view == ViewNetworkMonitor)
         {
@@ -715,6 +756,19 @@ public partial class MainWindow : FluentWindow
             {
                 _netMonTimer.Stop();
             }
+        }
+
+        if (view == ViewDpiBypass)
+        {
+            if (_zapretEngine.IsRunning)
+            {
+                _dpiTelemetryTimer.Start();
+            }
+            UpdateDpiTelemetry();
+        }
+        else
+        {
+            _dpiTelemetryTimer.Stop();
         }
     }
 
@@ -900,6 +954,8 @@ public partial class MainWindow : FluentWindow
         }
         else
         {
+            StopDpiBypass();
+            SystemDnsManager.RestoreDns();
             _notifyIcon?.Dispose();
             _ipcClient.Dispose();
         }
@@ -953,4 +1009,177 @@ public partial class MainWindow : FluentWindow
         }
         catch { }
     }
+
+    #region DPI Bypass (Zapret Engine) & DoH Methods
+
+    private void BtnToggleDpiBypass_Click(object sender, RoutedEventArgs e)
+    {
+        if (_zapretEngine.IsRunning)
+        {
+            StopDpiBypass();
+        }
+        else
+        {
+            StartDpiBypass();
+        }
+    }
+
+    private void StartDpiBypass()
+    {
+        try
+        {
+            var preset = CmbZapretPreset.SelectedItem as string ?? "General";
+            _zapretEngine.Start(preset);
+
+            if (ChkAutoConnectDns.IsChecked == true)
+            {
+                var preferredServer = DohServers.FirstOrDefault(s => s.IsActiveDns) 
+                                   ?? DohServers.FirstOrDefault(s => s.Name.Contains("Cloudflare", StringComparison.OrdinalIgnoreCase))
+                                   ?? DohServers.FirstOrDefault();
+
+                if (preferredServer != null)
+                {
+                    SystemDnsManager.ConnectDns(preferredServer.Name, preferredServer.DirectIp, preferredServer.SecondaryIp, preferredServer.Url);
+                    foreach (var s in DohServers)
+                    {
+                        s.IsActiveDns = (s == preferredServer);
+                    }
+                }
+            }
+
+            _dpiTelemetryTimer?.Start();
+            UpdateDpiTelemetry();
+            UpdateDpiUiState(true);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Failed to start Zapret engine: {ex.Message}",
+                LocalizationManager.GetString("DpiBypass_Title"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            UpdateDpiUiState(false);
+        }
+    }
+
+    private void StopDpiBypass()
+    {
+        try
+        {
+            _zapretEngine.Stop();
+
+            if (SystemDnsManager.IsConnected)
+            {
+                SystemDnsManager.RestoreDns();
+                foreach (var s in DohServers)
+                {
+                    s.IsActiveDns = false;
+                }
+            }
+
+            _dpiTelemetryTimer?.Stop();
+            UpdateDpiTelemetry();
+            UpdateDpiUiState(false);
+        }
+        catch { }
+    }
+
+    private void BtnConnectDohServer_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.FrameworkElement elem && elem.Tag is DohServerInfo server)
+        {
+            if (server.IsActiveDns)
+            {
+                SystemDnsManager.RestoreDns();
+                server.IsActiveDns = false;
+            }
+            else
+            {
+                bool success = SystemDnsManager.ConnectDns(server.Name, server.DirectIp, server.SecondaryIp, server.Url);
+                if (success)
+                {
+                    foreach (var s in DohServers)
+                    {
+                        s.IsActiveDns = (s == server);
+                    }
+                }
+            }
+            UpdateDpiTelemetry();
+        }
+    }
+
+    private void CmbZapretPreset_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_zapretEngine.IsRunning && CmbZapretPreset.SelectedItem is string)
+        {
+            // Restart with the newly selected preset
+            StartDpiBypass();
+        }
+        else
+        {
+            UpdateDpiTelemetry();
+        }
+    }
+
+    private async void BtnRefreshDohPing_Click(object sender, RoutedEventArgs e)
+    {
+        BtnRefreshDohPing.IsEnabled = false;
+        try
+        {
+            await _dohPool.RunHealthChecksAsync();
+            ItemsDohServers.Items.Refresh();
+        }
+        finally
+        {
+            BtnRefreshDohPing.IsEnabled = true;
+        }
+    }
+
+    private void UpdateDpiTelemetry()
+    {
+        if (_zapretEngine.IsRunning)
+        {
+            TxtDpiActiveConn.Text = _zapretEngine.ProcessId.HasValue ? $"PID: {_zapretEngine.ProcessId}" : "АКТИВЕН";
+            TxtDpiBytes.Text = _zapretEngine.CurrentPreset;
+            TxtDpiDnsHits.Text = SystemDnsManager.IsConnected
+                ? (SystemDnsManager.ActiveProviderName ?? "DoH")
+                : "WinDivert L3/L4";
+        }
+        else
+        {
+            TxtDpiActiveConn.Text = "—";
+            TxtDpiBytes.Text = CmbZapretPreset?.SelectedItem as string ?? "General";
+            TxtDpiDnsHits.Text = SystemDnsManager.IsConnected
+                ? (SystemDnsManager.ActiveProviderName ?? "DoH")
+                : "Остановлен";
+        }
+    }
+
+    private void UpdateDpiUiState(bool isRunning)
+    {
+        if (isRunning)
+        {
+            BadgeDpiStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 108, 203, 95));
+            BadgeDpiStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x50, 108, 203, 95));
+            TxtDpiStatus.Text = LocalizationManager.GetString("DpiBypass_StatusActive");
+            TxtDpiStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 203, 95));
+
+            BtnToggleDpiBypass.Content = LocalizationManager.GetString("DpiBypass_BtnDisable");
+            BtnToggleDpiBypass.Appearance = Wpf.Ui.Controls.ControlAppearance.Danger;
+            BtnToggleDpiBypass.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.Stop24 };
+        }
+        else
+        {
+            BadgeDpiStatus.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 136, 136, 136));
+            BadgeDpiStatus.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x50, 136, 136, 136));
+            TxtDpiStatus.Text = LocalizationManager.GetString("DpiBypass_StatusInactive");
+            TxtDpiStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(160, 160, 160));
+
+            BtnToggleDpiBypass.Content = LocalizationManager.GetString("DpiBypass_BtnEnable");
+            BtnToggleDpiBypass.Appearance = Wpf.Ui.Controls.ControlAppearance.Primary;
+            BtnToggleDpiBypass.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.Play24 };
+        }
+    }
+
+    #endregion
 }

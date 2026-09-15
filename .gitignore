@@ -9,6 +9,8 @@ x86/
 [Aa][Rr][Mm]64/
 bld/
 [Bb]in/
+!**/Zapret/bin/
+!**/Zapret/bin/**
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
@@ -45,3 +47,6 @@ $RECYCLE.BIN/
 
 ## ETW / Tracing
 *.etl
+
+## Raw archives
+zapret-discord-youtube-*/

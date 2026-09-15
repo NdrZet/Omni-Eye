@@ -73,6 +73,11 @@ public class DatabaseManager : IDisposable
                         IsEnabled INTEGER NOT NULL
                     );
                     CREATE INDEX IF NOT EXISTS idx_whitelist_path ON Whitelist(FilePath);
+
+                    CREATE TABLE IF NOT EXISTS SystemSettings (
+                        Key TEXT PRIMARY KEY,
+                        Value TEXT NOT NULL
+                    );
                 ";
                 cmd.ExecuteNonQuery();
             }
@@ -251,6 +256,39 @@ public class DatabaseManager : IDisposable
             _exclusiveLockStream.Dispose();
             _exclusiveLockStream = null;
         }
+    }
+
+    public string? GetSetting(string key, string? defaultValue = null)
+    {
+        EnsureInitialized();
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SELECT Value FROM SystemSettings WHERE Key = $key";
+        cmd.Parameters.AddWithValue("$key", key);
+
+        var result = cmd.ExecuteScalar();
+        return result != null && result != DBNull.Value ? Convert.ToString(result) : defaultValue;
+    }
+
+    public void SetSetting(string key, string value)
+    {
+        EnsureInitialized();
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO SystemSettings (Key, Value)
+            VALUES ($key, $val)
+            ON CONFLICT(Key) DO UPDATE SET Value = excluded.Value;
+        ";
+        cmd.Parameters.AddWithValue("$key", key);
+        cmd.Parameters.AddWithValue("$val", value);
+        cmd.ExecuteNonQuery();
     }
 
     private void EnsureInitialized()

@@ -177,8 +177,31 @@
     <sys:String x:Key="NetMon_FilterStatusAll">すべてのステータス</sys:String>
     <sys:String x:Key="NetMon_ColPath">実行ファイルパス</sys:String>
     <sys:String x:Key="NetMon_WindowTitle">OmniEye — ネットワークテレメトリ＆ゼロトラストモニター</sys:String>
-    <sys:String x:Key="NetMon_StatsSummary">合計: {0} | TCP: {1} | UDP: {2} | ブロック: {3} | 許可済み: {4} | システム例外: {5}</sys:String>
     <sys:String x:Key="Nav_BackToFirewall">ファイアウォールに戻る</sys:String>
     <sys:String x:Key="NetMon_CardOpen">モニターを開く →</sys:String>
 
+    <!-- DPI Bypass Module (ViewDpiBypass) - Zapret Engine -->
+    <sys:String x:Key="Nav_DpiBypass">アクセス制限解除</sys:String>
+    <sys:String x:Key="DpiBypass_Title">アクセス制限解除</sys:String>
+    <sys:String x:Key="DpiBypass_Subtitle">Discord (ボイス含む)、YouTube、各種サービスへの安定した接続を提供</sys:String>
+    <sys:String x:Key="DpiBypass_MasterTitle">制限解除サービス</sys:String>
+    <sys:String x:Key="DpiBypass_MasterDesc">VPNを使用せずにDiscord (ボイス含む) やYouTubeへの安定したアクセスを回復します。</sys:String>
+    <sys:String x:Key="DpiBypass_StatusActive">有効 (Discord, ボイス, YouTube)</sys:String>
+    <sys:String x:Key="DpiBypass_StatusInactive">無効</sys:String>
+    <sys:String x:Key="DpiBypass_BtnEnable">バイパスを有効化</sys:String>
+    <sys:String x:Key="DpiBypass_BtnDisable">バイパスを無効化</sys:String>
+    <sys:String x:Key="DpiBypass_PresetLabel">バイパスプリセット:</sys:String>
+    <sys:String x:Key="DpiBypass_ChkSystemProxy">プロキシ設定なしの透過的カーネルパケットキャプチャ (WinDivert)</sys:String>
+    <sys:String x:Key="DpiBypass_ChkAutoConnectDns">セキュアDNSを自動接続 (DoH / 1.1.1.1)</sys:String>
+    <sys:String x:Key="DpiBypass_BtnConnectDns">接続</sys:String>
+    <sys:String x:Key="DpiBypass_DnsConnected">接続中</sys:String>
+    <sys:String x:Key="DpiBypass_MetricActiveSockets">プロセスPID</sys:String>
+    <sys:String x:Key="DpiBypass_MetricTransferred">アクティブプリセット</sys:String>
+    <sys:String x:Key="DpiBypass_MetricDnsHits">セキュアDNS</sys:String>
+    <sys:String x:Key="DpiBypass_DohTitle">動的DoHプール (DNS-over-HTTPS)</sys:String>
+    <sys:String x:Key="DpiBypass_DohSubtitle">並行リクエストレース (Happy Eyeballs) により最小遅延のリゾルバーを選択し、プロバイダーのDNS改ざんを防止します</sys:String>
+    <sys:String x:Key="DpiBypass_SettingsTitle">ネットワークモジュール設定</sys:String>
+    <sys:String x:Key="DpiBypass_SettingsDesc">パケットキャプチャ: TCP 80,443,8443 (Multisplit / Fake) および UDP 19294-19344, 50000-50100 (Discord WebRTC Voice Fake repeats=6)。</sys:String>
+    <sys:String x:Key="DpiBypass_MsgEnabled">制限解除サービスが正常に開始されました。</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDisabled">制限解除サービスが停止しました。</sys:String>
 </ResourceDictionary>
