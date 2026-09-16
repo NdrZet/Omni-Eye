@@ -204,4 +204,25 @@
     <sys:String x:Key="DpiBypass_SettingsDesc">パケットキャプチャ: TCP 80,443,8443 (Multisplit / Fake) および UDP 19294-19344, 50000-50100 (Discord WebRTC Voice Fake repeats=6)。</sys:String>
     <sys:String x:Key="DpiBypass_MsgEnabled">制限解除サービスが正常に開始されました。</sys:String>
     <sys:String x:Key="DpiBypass_MsgDisabled">制限解除サービスが停止しました。</sys:String>
+
+    <!-- Domain Lists Editor -->
+    <sys:String x:Key="DpiBypass_ListsTitle">ドメインリスト (Hostlists)</sys:String>
+    <sys:String x:Key="DpiBypass_ListsDesc">Zapret (winws) 用のカスタムルーティングルールおよび除外ホストリスト設定</sys:String>
+    <sys:String x:Key="DpiBypass_ListGeneral">一般リスト (General)</sys:String>
+    <sys:String x:Key="DpiBypass_ListGoogle">Google &amp; YouTube</sys:String>
+    <sys:String x:Key="DpiBypass_ListExclude">除外リスト (Exclude)</sys:String>
+    <sys:String x:Key="DpiBypass_SearchDomainsPlaceholder">ドメインを検索...</sys:String>
+    <sys:String x:Key="DpiBypass_AddDomainPlaceholder">ドメインを入力 (例: discord.gg, youtube.com)...</sys:String>
+    <sys:String x:Key="DpiBypass_BtnAddDomain">追加</sys:String>
+    <sys:String x:Key="DpiBypass_BtnApplyLists">変更を適用</sys:String>
+    <sys:String x:Key="DpiBypass_BtnImportList">インポート</sys:String>
+    <sys:String x:Key="DpiBypass_BtnExportList">エクスポート</sys:String>
+    <sys:String x:Key="DpiBypass_BtnFetchOnline">オンラインから取得</sys:String>
+    <sys:String x:Key="DpiBypass_MsgListsApplied">ドメインリストが正常に保存され適用されました！</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainAdded">ドメインがリストに追加されました。</sys:String>
+    <sys:String x:Key="DpiBypass_MsgInvalidDomain">無効なドメイン名フォーマットです。</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainExists">このドメインは既にリストに存在します。</sys:String>
+    <sys:String x:Key="DpiBypass_DomainsCount">総ドメイン数:</sys:String>
+    <sys:String x:Key="DpiBypass_NoDomainsFound">ドメインが見つかりません</sys:String>
 </ResourceDictionary>
+

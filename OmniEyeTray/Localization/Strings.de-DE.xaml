@@ -204,4 +204,25 @@
     <sys:String x:Key="DpiBypass_SettingsDesc">Paketerfassung: TCP 80,443,8443 (Multisplit / Fake) und UDP 19294-19344, 50000-50100 (Discord WebRTC Voice Fake repeats=6).</sys:String>
     <sys:String x:Key="DpiBypass_MsgEnabled">Bypass-Dienst erfolgreich aktiviert.</sys:String>
     <sys:String x:Key="DpiBypass_MsgDisabled">Bypass-Dienst beendet.</sys:String>
+
+    <!-- Domain Lists Editor -->
+    <sys:String x:Key="DpiBypass_ListsTitle">Domain-Listen (Hostlists)</sys:String>
+    <sys:String x:Key="DpiBypass_ListsDesc">Benutzerdefinierte Routing-Regeln und Ausschluss-Hostlisten für Zapret (winws)</sys:String>
+    <sys:String x:Key="DpiBypass_ListGeneral">Allgemeine Liste</sys:String>
+    <sys:String x:Key="DpiBypass_ListGoogle">Google &amp; YouTube</sys:String>
+    <sys:String x:Key="DpiBypass_ListExclude">Ausnahmen (Exclude)</sys:String>
+    <sys:String x:Key="DpiBypass_SearchDomainsPlaceholder">Domains suchen...</sys:String>
+    <sys:String x:Key="DpiBypass_AddDomainPlaceholder">Domain eingeben (z. B. discord.gg, youtube.com)...</sys:String>
+    <sys:String x:Key="DpiBypass_BtnAddDomain">Hinzufügen</sys:String>
+    <sys:String x:Key="DpiBypass_BtnApplyLists">Änderungen anwenden</sys:String>
+    <sys:String x:Key="DpiBypass_BtnImportList">Importieren</sys:String>
+    <sys:String x:Key="DpiBypass_BtnExportList">Exportieren</sys:String>
+    <sys:String x:Key="DpiBypass_BtnFetchOnline">Online abrufen</sys:String>
+    <sys:String x:Key="DpiBypass_MsgListsApplied">Domainlisten erfolgreich gespeichert und angewendet!</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainAdded">Domain erfolgreich zur Liste hinzugefügt.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgInvalidDomain">Ungültiges Domain-Format.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainExists">Diese Domain ist bereits in der Liste vorhanden.</sys:String>
+    <sys:String x:Key="DpiBypass_DomainsCount">Gesamtanzahl Domains:</sys:String>
+    <sys:String x:Key="DpiBypass_NoDomainsFound">Keine Domains gefunden</sys:String>
 </ResourceDictionary>
+

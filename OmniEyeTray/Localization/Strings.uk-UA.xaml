@@ -204,4 +204,25 @@
     <sys:String x:Key="DpiBypass_SettingsDesc">Мережеве перехоплення: TCP 80,443,8443 (Multisplit / Fake) та UDP 19294-19344, 50000-50100 (Discord WebRTC Voice Fake repeats=6).</sys:String>
     <sys:String x:Key="DpiBypass_MsgEnabled">Служба обходу блокувань успішно активована.</sys:String>
     <sys:String x:Key="DpiBypass_MsgDisabled">Служба обходу блокувань вимкнена.</sys:String>
+
+    <!-- Domain Lists Editor -->
+    <sys:String x:Key="DpiBypass_ListsTitle">Списки доменів (Hostlists)</sys:String>
+    <sys:String x:Key="DpiBypass_ListsDesc">Кастомне налаштування правил маршрутизації та виключень для Zapret (winws)</sys:String>
+    <sys:String x:Key="DpiBypass_ListGeneral">Загальний список (General)</sys:String>
+    <sys:String x:Key="DpiBypass_ListGoogle">Google &amp; YouTube</sys:String>
+    <sys:String x:Key="DpiBypass_ListExclude">Винятки (Exclude)</sys:String>
+    <sys:String x:Key="DpiBypass_SearchDomainsPlaceholder">Пошук за доменами...</sys:String>
+    <sys:String x:Key="DpiBypass_AddDomainPlaceholder">Введіть домен (напр. discord.gg, youtube.com)...</sys:String>
+    <sys:String x:Key="DpiBypass_BtnAddDomain">Додати</sys:String>
+    <sys:String x:Key="DpiBypass_BtnApplyLists">Застосувати зміни</sys:String>
+    <sys:String x:Key="DpiBypass_BtnImportList">Імпорт</sys:String>
+    <sys:String x:Key="DpiBypass_BtnExportList">Експорт</sys:String>
+    <sys:String x:Key="DpiBypass_BtnFetchOnline">Завантажити з мережі</sys:String>
+    <sys:String x:Key="DpiBypass_MsgListsApplied">Списки доменів успішно збережені та застосовані!</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainAdded">Домен успішно додано до списку.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgInvalidDomain">Некоректний формат доменного імені.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainExists">Цей домен вже присутній у списку.</sys:String>
+    <sys:String x:Key="DpiBypass_DomainsCount">Всього доменів:</sys:String>
+    <sys:String x:Key="DpiBypass_NoDomainsFound">Доменів не знайдено</sys:String>
 </ResourceDictionary>
+

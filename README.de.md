@@ -200,7 +200,16 @@ Um den unterbrechungsfreien Zugriff auf Netzwerkdienste (wie Discord Voice und Y
 * **22 Flowseal-Profile:** Interaktive Profilauswahl in der GUI (`General`, `ALT1-13`, `SIMPLE FAKE`, `FAKE TLS AUTO`, `EXP`) zur schnellen Anpassung an jeden Provider.
 * **Prozessbindung über Windows JobObject:** Prozess `winws.exe` ist an ein Win32 Job Object mit `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` gebunden. Beim Beenden des Programms werden Treiber und Prozess garantiert sofort beendet.
 
-### 3.8. Sicherer DNS-Manager & Windows 11 DoH
+### 3.8. Benutzerdefinierter Domain-Listen-Editor (Custom Domain Lists Editor)
+
+Der integrierte Domain-Listen-Editor auf der Bypass-Seite ermöglicht die vollständige Konfiguration von Hostlist-Regeln direkt über die GUI:
+* **Listenverwaltung ohne Dateieditierung:** Nahtloses Wechseln zwischen `list-general.txt` (Allgemein), `list-google.txt` (YouTube & Google-Dienste) und `list-exclude.txt` (Ausnahmen) über Registerkarten.
+* **Intelligente Bereinigung & Validierung:** Entfernt Protokolle (`http://`, `https://`), Pfade, Ports und Abfrageparameter, validiert FQDN-Hostnamen und unterstützt `^` sowie `*.` Platzhalter.
+* **Sofortiger Hot-Reload:** Beim Speichern wird der aktive `winws.exe`-Prozess in unter 200 ms mit den neuen Hostlisten neu gestartet.
+* **Import, Export & Community-Synchronisation:** Export in Textdateien, Batch-Import externer Listen mit Deduplizierung und 1-Klick-Aktualisierung aus Community-Repositories.
+* **Live-Suche & Zähleranzeige:** Schnelles Filtern nach Teilzeichenfolgen und Badge mit Gesamtzahl der Einträge.
+
+### 3.9. Sicherer DNS-Manager & Windows 11 DoH
 
 Das `SystemDnsManager`-Subsystem steuert die DNS-Konfiguration des Systems:
 * **Automatische Adapterkonfiguration:** Bei Aktivierung des Bypasses werden aktive Netzwerkadapter (Ethernet, Wi-Fi) automatisch auf sichere DNS-Server (Cloudflare `1.1.1.1` / `1.0.0.1`, Google, Quad9, AdGuard) umgestellt.
@@ -208,7 +217,7 @@ Das `SystemDnsManager`-Subsystem steuert die DNS-Konfiguration des Systems:
 * **Echtzeit-DoH-Monitor:** Überwachung von Latenzen (Ping) und Anbieterwechsel per Knopfdruck.
 * **Garantierter Safe Rollback:** Die ursprüngliche Netzwerkkonfiguration (DHCP oder statische IPs) wird gesichert und beim Stoppen oder Beenden verlässlich wiederhergestellt.
 
-### 3.9. Echtzeit-Netzwerk-Socket-Monitor
+### 3.10. Echtzeit-Netzwerk-Socket-Monitor
 
 Der integrierte Netzwerk-Monitor bietet vollständige Transparenz über alle Verbindungen:
 * **Socket-Inspektion:** Kontinuierliche Abfrage der TCP/UDP-Verbindungstabellen (`GetExtendedTcpTable`, `GetExtendedUdpTable`).

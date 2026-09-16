@@ -11,6 +11,7 @@ using OmniEye.Core.Storage;
 using OmniEyeSvc.Ipc;
 using OmniEyeSvc.Network;
 using OmniEye.DpiBypass.Dns;
+using OmniEye.DpiBypass.Lists;
 using OmniEye.DpiBypass.Models;
 using OmniEye.DpiBypass.Proxy;
 using OmniEye.DpiBypass.SystemProxy;
@@ -47,6 +48,7 @@ public class Program
         await RunTestAsync("TEST 12: Windows System Proxy WinINet Registry & Automatic Restoration", Test12_SystemProxyManager);
         await RunTestAsync("TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification", Test13_ZapretNativeEngine);
         await RunTestAsync("TEST 14: System DNS & Windows 11 Native DoH Configuration Manager", Test14_SystemDnsManager);
+        await RunTestAsync("TEST 15: DomainListManager File Persistence, Sanitization & Import/Export", Test15_DomainListManager);
 
         Console.WriteLine();
         Console.WriteLine("------------------------------------------------------------------");
@@ -874,6 +876,97 @@ public class Program
         // 4. SystemDnsManager state verification
         if (SystemDnsManager.IsConnected) throw new Exception("SystemDnsManager should not be connected by default in test suite.");
         Console.WriteLine(" -> System DNS Controller & DoH Resolver Pool verified successfully.");
+
+        return Task.CompletedTask;
+    }
+
+    private static Task Test15_DomainListManager()
+    {
+        // 1. Test Domain Sanitization & Normalization
+        Console.WriteLine(" -> Testing Domain Sanitization & Edge Cases...");
+        if (!DomainListManager.TrySanitizeDomain("https://discord.com/channels/123/456", out var d1, out _) || d1 != "discord.com")
+            throw new Exception($"Expected 'discord.com', got '{d1}'");
+
+        if (!DomainListManager.TrySanitizeDomain("http://sub.domain.org:8080/path?q=1#frag", out var d2, out _) || d2 != "sub.domain.org")
+            throw new Exception($"Expected 'sub.domain.org', got '{d2}'");
+
+        if (!DomainListManager.TrySanitizeDomain("^dns.google", out var d3, out _) || d3 != "^dns.google")
+            throw new Exception($"Expected '^dns.google', got '{d3}'");
+
+        if (!DomainListManager.TrySanitizeDomain("*.youtube.com", out var d4, out _) || d4 != "*.youtube.com")
+            throw new Exception($"Expected '*.youtube.com', got '{d4}'");
+
+        if (DomainListManager.TrySanitizeDomain("not a domain", out _, out _))
+            throw new Exception("Expected failure for invalid domain string with spaces.");
+
+        if (DomainListManager.TrySanitizeDomain("   ", out _, out _))
+            throw new Exception("Expected failure for whitespace string.");
+
+        // 2. Test File Persistence in Isolated Test Directory
+        Console.WriteLine(" -> Testing Domain List Persistence & Deduplication...");
+        var tempListsDir = Path.Combine(Path.GetTempPath(), "OmniEye_Test_Lists_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var manager = new DomainListManager(tempListsDir);
+
+            var initialDomains = new[] { "discord.gg", "https://youtube.com/watch", "^dns.google" };
+            manager.SaveList(DomainListManager.ListGeneral, initialDomains);
+
+            var loaded = manager.LoadList(DomainListManager.ListGeneral);
+            if (loaded.Count != 3)
+                throw new Exception($"Expected 3 domains loaded, got {loaded.Count}");
+
+            if (!loaded.Contains("discord.gg") || !loaded.Contains("youtube.com") || !loaded.Contains("^dns.google"))
+                throw new Exception("Missing expected domain in loaded list.");
+
+            // 3. Test Deduplication & Case-Insensitivity
+            var duplicateBatch = new[] { "DISCORD.GG", "youtube.com", "newdomain.net" };
+            manager.SaveList(DomainListManager.ListGeneral, loaded.Concat(duplicateBatch));
+
+            var reloaded = manager.LoadList(DomainListManager.ListGeneral);
+            if (reloaded.Count != 4)
+                throw new Exception($"Expected 4 distinct domains after duplicate batch, got {reloaded.Count}");
+
+            // 4. Test Export
+            Console.WriteLine(" -> Testing Export to text file...");
+            var exportPath = Path.Combine(tempListsDir, "exported.txt");
+            manager.ExportList(DomainListManager.ListGeneral, exportPath);
+            if (!File.Exists(exportPath))
+                throw new Exception("Export file was not created.");
+
+            var exportedLines = File.ReadAllLines(exportPath);
+            if (exportedLines.Length != 4)
+                throw new Exception($"Expected 4 lines in export, got {exportedLines.Length}");
+
+            // 5. Test Import
+            Console.WriteLine(" -> Testing Import from text file...");
+            var importSourcePath = Path.Combine(tempListsDir, "import_src.txt");
+            File.WriteAllLines(importSourcePath, new[] { "twitch.tv", "https://store.steampowered.com/app/123", "discord.gg" });
+
+            int addedCount = manager.ImportList(DomainListManager.ListGeneral, importSourcePath, mergeWithExisting: true);
+            if (addedCount != 2)
+                throw new Exception($"Expected 2 new domains imported, got {addedCount}");
+
+            var afterImport = manager.LoadList(DomainListManager.ListGeneral);
+            if (afterImport.Count != 6)
+                throw new Exception($"Expected 6 domains total after import, got {afterImport.Count}");
+
+            // 6. Test Hot-Reload API Signature on ZapretEngine
+            Console.WriteLine(" -> Testing ZapretEngine.Restart() non-crashing invocation...");
+            var engine = new ZapretEngine();
+            engine.Restart("General");
+            if (engine.CurrentPreset != "General")
+                throw new Exception("Expected CurrentPreset to be 'General'");
+
+            Console.WriteLine(" -> DomainListManager & Hot-Reload verified successfully.");
+        }
+        finally
+        {
+            if (Directory.Exists(tempListsDir))
+            {
+                try { Directory.Delete(tempListsDir, recursive: true); } catch { }
+            }
+        }
 
         return Task.CompletedTask;
     }

@@ -1057,6 +1057,123 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Custom Domain Lists Editor Card -->
+                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,14" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                            <StackPanel>
+                                <!-- Card Header -->
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="18" Foreground="#4CC2FF" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{DynamicResource DpiBypass_ListsTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{DynamicResource DpiBypass_ListsDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <!-- Action Buttons -->
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:Button x:Name="BtnImportDomainList" Content="{DynamicResource DpiBypass_BtnImportList}" 
+                                                   Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowUpload24}" 
+                                                   Click="BtnImportDomainList_Click" Margin="0,0,6,0" FontSize="11" Height="30" Padding="10,0"/>
+                                        <ui:Button x:Name="BtnExportDomainList" Content="{DynamicResource DpiBypass_BtnExportList}" 
+                                                   Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowDownload24}" 
+                                                   Click="BtnExportDomainList_Click" Margin="0,0,6,0" FontSize="11" Height="30" Padding="10,0"/>
+                                        <ui:Button x:Name="BtnFetchCommunityList" Content="{DynamicResource DpiBypass_BtnFetchOnline}" 
+                                                   Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=Globe24}" 
+                                                   Click="BtnFetchCommunityList_Click" Margin="0,0,8,0" FontSize="11" Height="30" Padding="10,0"/>
+                                        <ui:Button x:Name="BtnApplyDomainLists" Content="{DynamicResource DpiBypass_BtnApplyLists}" 
+                                                   Appearance="Primary" Icon="{ui:SymbolIcon Symbol=Checkmark24}" 
+                                                   Click="BtnApplyDomainLists_Click" FontSize="11.5" Height="30" Padding="14,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- List Selection Segmented Tabs & Search/Count Row -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Tabs -->
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:Button x:Name="BtnTabGeneralList" Content="{DynamicResource DpiBypass_ListGeneral}" 
+                                                   Appearance="Primary" Margin="0,0,6,0" Click="BtnTabList_Click" Tag="list-general.txt" Height="28" FontSize="11" Padding="10,0" Cursor="Hand"/>
+                                        <ui:Button x:Name="BtnTabGoogleList" Content="{DynamicResource DpiBypass_ListGoogle}" 
+                                                   Appearance="Secondary" Margin="0,0,6,0" Click="BtnTabList_Click" Tag="list-google.txt" Height="28" FontSize="11" Padding="10,0" Cursor="Hand"/>
+                                        <ui:Button x:Name="BtnTabExcludeList" Content="{DynamicResource DpiBypass_ListExclude}" 
+                                                   Appearance="Secondary" Click="BtnTabList_Click" Tag="list-exclude.txt" Height="28" FontSize="11" Padding="10,0" Cursor="Hand"/>
+                                    </StackPanel>
+
+                                    <!-- Search Box -->
+                                    <ui:TextBox x:Name="TxtSearchDomains" Grid.Column="1" Margin="14,0,12,0" Height="28" 
+                                                PlaceholderText="{DynamicResource DpiBypass_SearchDomainsPlaceholder}" 
+                                                Icon="{ui:SymbolIcon Symbol=Search24}" HorizontalAlignment="Stretch" MaxWidth="320"
+                                                TextChanged="TxtSearchDomains_TextChanged" FontSize="11.5"/>
+
+                                    <!-- Count Badge -->
+                                    <Border Grid.Column="2" Background="#184CC2FF" BorderBrush="#304CC2FF" BorderThickness="1" CornerRadius="8" Padding="10,3" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{DynamicResource DpiBypass_DomainsCount}" FontSize="10.5" Foreground="#A0A0A0" Margin="0,0,5,0"/>
+                                            <TextBlock x:Name="TxtDomainCountBadge" Text="0" FontSize="11" FontWeight="Bold" Foreground="#4CC2FF"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Fast Add Domain Input Row -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ui:TextBox x:Name="TxtNewDomain" Grid.Column="0" Height="32" Margin="0,0,8,0"
+                                                PlaceholderText="{DynamicResource DpiBypass_AddDomainPlaceholder}" 
+                                                KeyDown="TxtNewDomain_KeyDown" FontSize="12"/>
+                                    <ui:Button x:Name="BtnAddNewDomain" Grid.Column="1" 
+                                               Content="{DynamicResource DpiBypass_BtnAddDomain}" 
+                                               Appearance="Primary" Icon="{ui:SymbolIcon Symbol=Add24}" 
+                                               Click="BtnAddNewDomain_Click" Height="32" Padding="14,0" FontSize="11.5"/>
+                                </Grid>
+
+                                <!-- Domain Items List View -->
+                                <Border Background="#10FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="6" Padding="6" Height="220">
+                                    <Grid>
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                            <ItemsControl x:Name="ItemsDomainList">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="#0CFFFFFF" CornerRadius="4" Padding="10,6" Margin="0,0,0,4" BorderBrush="#10FFFFFF" BorderThickness="1">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <Border Grid.Column="0" Width="6" Height="6" CornerRadius="3" Background="#4CC2FF" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="1" Text="{Binding}" Foreground="#EAEAEA" FontSize="12" FontFamily="Consolas, Segoe UI" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                                <ui:Button Grid.Column="2" Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=Dismiss24}" 
+                                                                           Padding="4,2" Height="24" Width="26" ToolTip="Удалить / Delete" 
+                                                                           Click="BtnDeleteDomain_Click" Tag="{Binding}" Cursor="Hand" VerticalAlignment="Center"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+
+                                        <!-- Empty State Text -->
+                                        <TextBlock x:Name="TxtEmptyDomainsState" Text="{DynamicResource DpiBypass_NoDomainsFound}" 
+                                                   Foreground="#707070" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                   Visibility="Collapsed"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Desynchronization Parameters Card -->
                         <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
                             <Grid>

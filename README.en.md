@@ -201,7 +201,16 @@ To guarantee continuous availability of essential network communications (includ
 * **22 Flowseal Presets:** Interactive preset dropdown in the GUI (`General`, `ALT1-13`, `SIMPLE FAKE`, `FAKE TLS AUTO`, `EXP`) enabling instant strategy switching tailored to any ISP.
 * **Resilient Lifecycle via Windows JobObject:** Process `winws.exe` is bound to a Win32 Job Object with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. The packet engine and driver are instantly cleaned up on tray application termination or crash.
 
-### 3.8. System DNS & Windows 11 Native DoH Integration
+### 3.8. Custom Domain Lists Editor
+
+An interactive Domain Lists Editor directly within the DPI Bypass page gives users full control over hostlist desynchronization rules:
+* **Hostlist Management Without File Editing:** Seamlessly switch between `list-general.txt` (General), `list-google.txt` (YouTube & Google services), and `list-exclude.txt` (Exclusions) via segmented tabs.
+* **Intelligent Domain Sanitization & Validation:** Strips protocols (`http://`, `https://`), trailing paths, query parameters, and ports, validating valid FQDN syntax while preserving `^` and `*.` wildcards.
+* **Instant Hot-Reload:** Applying changes automatically restarts the running `winws.exe` engine with the new hostlists in <200ms without interrupting the UI state.
+* **Import, Export & Community Sync:** Export lists to `.txt`, import third-party rules with automatic deduplication, or download community updates directly from GitHub in 1 click.
+* **Real-time Search & Domain Badge:** Instant substring filtering and badge counter displaying total rule counts.
+
+### 3.9. System DNS & Windows 11 Native DoH Integration
 
 The `SystemDnsManager` subsystem automates host DNS resolver configuration:
 * **Automatic Adapter Configuration:** When DPI bypass is activated, active physical adapters (Ethernet, Wi-Fi) automatically receive uncensored secure resolvers (Cloudflare `1.1.1.1` / `1.0.0.1`, Google, Quad9, AdGuard).
@@ -209,7 +218,7 @@ The `SystemDnsManager` subsystem automates host DNS resolver configuration:
 * **Live Resolver Monitor:** Real-time health checks, latency pinging, and on-demand provider switching from the DoH table.
 * **Guaranteed Safe Rollback:** The original network configuration (DHCP or static DNS) is saved before modification and restored on bypass stoppage, tray exit, or unhandled termination.
 
-### 3.9. Live Network Socket Monitor
+### 3.10. Live Network Socket Monitor
 
 The interactive Network Monitor provides total visibility into host network activity:
 * **Real-time Socket Enumeration:** Continuously inspects active TCP and UDP sockets via `GetExtendedTcpTable` / `GetExtendedUdpTable`.

@@ -204,4 +204,25 @@
     <sys:String x:Key="DpiBypass_SettingsDesc">Packet Capture: TCP 80,443,8443 (Multisplit / Fake) and UDP 19294-19344, 50000-50100 (Discord WebRTC Voice Fake repeats=6).</sys:String>
     <sys:String x:Key="DpiBypass_MsgEnabled">Bypass service successfully activated.</sys:String>
     <sys:String x:Key="DpiBypass_MsgDisabled">Bypass service stopped.</sys:String>
+
+    <!-- Domain Lists Editor -->
+    <sys:String x:Key="DpiBypass_ListsTitle">Domain Lists (Hostlists)</sys:String>
+    <sys:String x:Key="DpiBypass_ListsDesc">Custom configuration of routing rules and exclusion hostlists for Zapret (winws)</sys:String>
+    <sys:String x:Key="DpiBypass_ListGeneral">General List</sys:String>
+    <sys:String x:Key="DpiBypass_ListGoogle">Google &amp; YouTube</sys:String>
+    <sys:String x:Key="DpiBypass_ListExclude">Exclusions (Exclude)</sys:String>
+    <sys:String x:Key="DpiBypass_SearchDomainsPlaceholder">Search domains...</sys:String>
+    <sys:String x:Key="DpiBypass_AddDomainPlaceholder">Enter domain (e.g. discord.gg, youtube.com)...</sys:String>
+    <sys:String x:Key="DpiBypass_BtnAddDomain">Add</sys:String>
+    <sys:String x:Key="DpiBypass_BtnApplyLists">Apply Changes</sys:String>
+    <sys:String x:Key="DpiBypass_BtnImportList">Import</sys:String>
+    <sys:String x:Key="DpiBypass_BtnExportList">Export</sys:String>
+    <sys:String x:Key="DpiBypass_BtnFetchOnline">Fetch Online</sys:String>
+    <sys:String x:Key="DpiBypass_MsgListsApplied">Domain lists successfully saved and applied!</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainAdded">Domain successfully added to list.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgInvalidDomain">Invalid domain name format.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainExists">This domain is already present in the list.</sys:String>
+    <sys:String x:Key="DpiBypass_DomainsCount">Total domains:</sys:String>
+    <sys:String x:Key="DpiBypass_NoDomainsFound">No domains found</sys:String>
 </ResourceDictionary>
+

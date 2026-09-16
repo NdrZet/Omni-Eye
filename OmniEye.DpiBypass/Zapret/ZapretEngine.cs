@@ -208,6 +208,26 @@ public class ZapretEngine : IDisposable
     }
 
     /// <summary>
+    /// Restarts the winws.exe engine with the current or updated preset (e.g. after domain lists reload).
+    /// </summary>
+    public void Restart(string? preset = null)
+    {
+        lock (_lock)
+        {
+            var targetPreset = !string.IsNullOrWhiteSpace(preset) ? preset : CurrentPreset;
+            if (IsRunning)
+            {
+                Stop();
+                Start(targetPreset);
+            }
+            else
+            {
+                CurrentPreset = targetPreset;
+            }
+        }
+    }
+
+    /// <summary>
     /// Finds the Zapret directory across installed paths, output folder, or project source.
     /// </summary>
     public static string ResolveZapretDirectory()

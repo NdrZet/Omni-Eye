@@ -15,6 +15,7 @@ using OmniEye.Core.Ipc;
 using OmniEye.Core.Models;
 using OmniEye.Core.Security;
 using OmniEye.DpiBypass.Dns;
+using OmniEye.DpiBypass.Lists;
 using OmniEye.DpiBypass.Models;
 using OmniEye.DpiBypass.Zapret;
 using OmniEyeTray.Services;
@@ -39,6 +40,10 @@ public partial class MainWindow : FluentWindow
     private readonly System.Windows.Threading.DispatcherTimer _dpiTelemetryTimer;
     private readonly ZapretEngine _zapretEngine = new();
     private readonly DohResolverPool _dohPool = new();
+    private readonly DomainListManager _domainListManager = new();
+    private string _activeSelectedList = DomainListManager.ListGeneral;
+    private readonly ObservableCollection<string> _allDomainsForCurrentList = new();
+    private readonly ObservableCollection<string> _filteredDomains = new();
     private string _currentTab = "Dashboard";
     private int _lastBlockedAttempts = 0;
 
@@ -77,6 +82,9 @@ public partial class MainWindow : FluentWindow
 
         CmbZapretPreset.ItemsSource = ZapretEngine.AvailablePresets;
         CmbZapretPreset.SelectedItem = "General";
+
+        ItemsDomainList.ItemsSource = _filteredDomains;
+        LoadDomainList(_activeSelectedList);
 
         _dpiTelemetryTimer = new System.Windows.Threading.DispatcherTimer
         {
@@ -1180,6 +1188,276 @@ public partial class MainWindow : FluentWindow
             BtnToggleDpiBypass.Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.Play24 };
         }
     }
+
+    #region Custom Domain Lists Editor Handlers
+
+    private void LoadDomainList(string listFileName)
+    {
+        _activeSelectedList = listFileName;
+
+        // Update tab button styles
+        BtnTabGeneralList.Appearance = (listFileName == DomainListManager.ListGeneral) ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        BtnTabGoogleList.Appearance = (listFileName == DomainListManager.ListGoogle) ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        BtnTabExcludeList.Appearance = (listFileName == DomainListManager.ListExclude) ? ControlAppearance.Primary : ControlAppearance.Secondary;
+
+        var domains = _domainListManager.LoadList(listFileName);
+        _allDomainsForCurrentList.Clear();
+        foreach (var d in domains)
+        {
+            _allDomainsForCurrentList.Add(d);
+        }
+
+        ApplyDomainFilter(TxtSearchDomains?.Text);
+    }
+
+    private void ApplyDomainFilter(string? query)
+    {
+        _filteredDomains.Clear();
+        var q = query?.Trim();
+
+        if (string.IsNullOrEmpty(q))
+        {
+            foreach (var d in _allDomainsForCurrentList)
+            {
+                _filteredDomains.Add(d);
+            }
+        }
+        else
+        {
+            foreach (var d in _allDomainsForCurrentList)
+            {
+                if (d.Contains(q, StringComparison.OrdinalIgnoreCase))
+                {
+                    _filteredDomains.Add(d);
+                }
+            }
+        }
+
+        if (TxtDomainCountBadge != null)
+        {
+            TxtDomainCountBadge.Text = _allDomainsForCurrentList.Count.ToString();
+        }
+
+        if (TxtEmptyDomainsState != null)
+        {
+            TxtEmptyDomainsState.Visibility = _filteredDomains.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
+    private void TxtSearchDomains_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        ApplyDomainFilter(TxtSearchDomains.Text);
+    }
+
+    private void BtnTabList_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement elem && elem.Tag is string listName)
+        {
+            LoadDomainList(listName);
+        }
+    }
+
+    private void BtnAddNewDomain_Click(object sender, RoutedEventArgs e)
+    {
+        AddCurrentDomainInput();
+    }
+
+    private void TxtNewDomain_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            AddCurrentDomainInput();
+            e.Handled = true;
+        }
+    }
+
+    private void AddCurrentDomainInput()
+    {
+        var rawInput = TxtNewDomain.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(rawInput))
+        {
+            return;
+        }
+
+        if (!DomainListManager.TrySanitizeDomain(rawInput, out var cleanDomain, out var error))
+        {
+            MessageBox.Show(
+                $"{LocalizationManager.GetString("DpiBypass_MsgInvalidDomain")}\n{error}",
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        if (_allDomainsForCurrentList.Any(d => string.Equals(d, cleanDomain, StringComparison.OrdinalIgnoreCase)))
+        {
+            MessageBox.Show(
+                LocalizationManager.GetString("DpiBypass_MsgDomainExists"),
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        _allDomainsForCurrentList.Add(cleanDomain);
+        var sorted = _allDomainsForCurrentList.OrderBy(d => d, StringComparer.OrdinalIgnoreCase).ToList();
+        _allDomainsForCurrentList.Clear();
+        foreach (var d in sorted)
+        {
+            _allDomainsForCurrentList.Add(d);
+        }
+
+        TxtNewDomain.Clear();
+        _domainListManager.SaveList(_activeSelectedList, _allDomainsForCurrentList);
+        ApplyDomainFilter(TxtSearchDomains.Text);
+    }
+
+    private void BtnDeleteDomain_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement elem && elem.Tag is string domain)
+        {
+            var itemToRemove = _allDomainsForCurrentList.FirstOrDefault(d => string.Equals(d, domain, StringComparison.OrdinalIgnoreCase));
+            if (itemToRemove != null)
+            {
+                _allDomainsForCurrentList.Remove(itemToRemove);
+                _domainListManager.SaveList(_activeSelectedList, _allDomainsForCurrentList);
+                ApplyDomainFilter(TxtSearchDomains.Text);
+            }
+        }
+    }
+
+    private void BtnApplyDomainLists_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _domainListManager.SaveList(_activeSelectedList, _allDomainsForCurrentList);
+            if (_zapretEngine.IsRunning)
+            {
+                _zapretEngine.Restart();
+                UpdateDpiTelemetry();
+            }
+
+            MessageBox.Show(
+                LocalizationManager.GetString("DpiBypass_MsgListsApplied"),
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Error saving lists: {ex.Message}",
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnImportDomainList_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var ofd = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Import Domain List",
+                Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+            };
+
+            if (ofd.ShowDialog() == true)
+            {
+                int added = _domainListManager.ImportList(_activeSelectedList, ofd.FileName, mergeWithExisting: true);
+                LoadDomainList(_activeSelectedList);
+
+                if (_zapretEngine.IsRunning)
+                {
+                    _zapretEngine.Restart();
+                    UpdateDpiTelemetry();
+                }
+
+                MessageBox.Show(
+                    $"Imported {added} new domains into {_activeSelectedList}.",
+                    LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Import failed: {ex.Message}",
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnExportDomainList_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var sfd = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Export Domain List",
+                Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+                FileName = _activeSelectedList
+            };
+
+            if (sfd.ShowDialog() == true)
+            {
+                _domainListManager.ExportList(_activeSelectedList, sfd.FileName);
+                MessageBox.Show(
+                    $"List {_activeSelectedList} exported successfully.",
+                    LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Export failed: {ex.Message}",
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private async void BtnFetchCommunityList_Click(object sender, RoutedEventArgs e)
+    {
+        BtnFetchCommunityList.IsEnabled = false;
+        try
+        {
+            var url = $"https://raw.githubusercontent.com/Flowseal/zapret-discord-youtube/main/zapret-discord-youtube-1.10.2/lists/{_activeSelectedList}";
+            var (added, total) = await _domainListManager.FetchCommunityListAsync(_activeSelectedList, url);
+            LoadDomainList(_activeSelectedList);
+
+            if (_zapretEngine.IsRunning)
+            {
+                _zapretEngine.Restart();
+                UpdateDpiTelemetry();
+            }
+
+            MessageBox.Show(
+                $"Online update completed: added {added} new domains (total: {total}).",
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Online fetch error: {ex.Message}",
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        finally
+        {
+            BtnFetchCommunityList.IsEnabled = true;
+        }
+    }
+
+    #endregion
 
     #endregion
 }

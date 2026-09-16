@@ -204,4 +204,25 @@
     <sys:String x:Key="DpiBypass_SettingsDesc">Сетевой перехват: TCP 80,443,8443 (Multisplit / Fake) и UDP 19294-19344, 50000-50100 (Discord WebRTC Voice Fake repeats=6).</sys:String>
     <sys:String x:Key="DpiBypass_MsgEnabled">Служба обхода блокировок успешно активирована.</sys:String>
     <sys:String x:Key="DpiBypass_MsgDisabled">Служба обхода блокировок отключена.</sys:String>
+
+    <!-- Domain Lists Editor -->
+    <sys:String x:Key="DpiBypass_ListsTitle">Списки доменов (Hostlists)</sys:String>
+    <sys:String x:Key="DpiBypass_ListsDesc">Кастомная настройка правил маршрутизации и исключений для Zapret (winws)</sys:String>
+    <sys:String x:Key="DpiBypass_ListGeneral">Общий список (General)</sys:String>
+    <sys:String x:Key="DpiBypass_ListGoogle">Google &amp; YouTube</sys:String>
+    <sys:String x:Key="DpiBypass_ListExclude">Исключения (Exclude)</sys:String>
+    <sys:String x:Key="DpiBypass_SearchDomainsPlaceholder">Поиск по доменам...</sys:String>
+    <sys:String x:Key="DpiBypass_AddDomainPlaceholder">Введите домен (напр. discord.gg, youtube.com)...</sys:String>
+    <sys:String x:Key="DpiBypass_BtnAddDomain">Добавить</sys:String>
+    <sys:String x:Key="DpiBypass_BtnApplyLists">Применить списки</sys:String>
+    <sys:String x:Key="DpiBypass_BtnImportList">Импорт</sys:String>
+    <sys:String x:Key="DpiBypass_BtnExportList">Экспорт</sys:String>
+    <sys:String x:Key="DpiBypass_BtnFetchOnline">Загрузить из сети</sys:String>
+    <sys:String x:Key="DpiBypass_MsgListsApplied">Списки доменов успешно сохранены и применены!</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainAdded">Домен успешно добавлен в список.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgInvalidDomain">Некорректный формат доменного имени.</sys:String>
+    <sys:String x:Key="DpiBypass_MsgDomainExists">Данный домен уже присутствует в списке.</sys:String>
+    <sys:String x:Key="DpiBypass_DomainsCount">Всего доменов:</sys:String>
+    <sys:String x:Key="DpiBypass_NoDomainsFound">Домены не найдены</sys:String>
 </ResourceDictionary>
+
