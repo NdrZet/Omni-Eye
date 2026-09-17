@@ -49,6 +49,7 @@ public class Program
         await RunTestAsync("TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification", Test13_ZapretNativeEngine);
         await RunTestAsync("TEST 14: System DNS & Windows 11 Native DoH Configuration Manager", Test14_SystemDnsManager);
         await RunTestAsync("TEST 15: DomainListManager File Persistence, Sanitization & Import/Export", Test15_DomainListManager);
+        await RunTestAsync("TEST 16: Cloud Tunnel MTProto Handshake, AES-CTR Cipher & SOCKS5 Routing", Test16_CloudTunnelMtprotoAndSocks5);
 
         Console.WriteLine();
         Console.WriteLine("------------------------------------------------------------------");
@@ -993,5 +994,114 @@ invalid domain with spaces
         }
 
         return Task.CompletedTask;
+    }
+
+    private static async Task Test16_CloudTunnelMtprotoAndSocks5()
+    {
+        // 1. Test AES-CTR Stream Cipher
+        Console.WriteLine(" -> Testing AES-CTR Stream Cipher (256-bit)...");
+        byte[] key = new byte[32];
+        byte[] iv = new byte[16];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(key);
+        System.Security.Cryptography.RandomNumberGenerator.Fill(iv);
+
+        string originalText = "OmniEye Cloud Tunnel MTProto & SOCKS5 test message! 1234567890.";
+        byte[] originalBytes = Encoding.UTF8.GetBytes(originalText);
+
+        using (var cipherEnc = new OmniEye.Core.CloudTunnel.Crypto.AesCtrCipher(key, iv))
+        using (var cipherDec = new OmniEye.Core.CloudTunnel.Crypto.AesCtrCipher(key, iv))
+        {
+            byte[] encrypted = cipherEnc.Transform(originalBytes);
+            byte[] decrypted = cipherDec.Transform(encrypted);
+
+            string roundtrip = Encoding.UTF8.GetString(decrypted);
+            if (roundtrip != originalText)
+                throw new Exception($"AES-CTR roundtrip failed! Got '{roundtrip}', expected '{originalText}'");
+
+            // Verify streaming across chunk boundaries
+            using var chunkEnc = new OmniEye.Core.CloudTunnel.Crypto.AesCtrCipher(key, iv);
+            using var chunkDec = new OmniEye.Core.CloudTunnel.Crypto.AesCtrCipher(key, iv);
+
+            byte[] chunk1 = originalBytes.AsSpan(0, 10).ToArray();
+            byte[] chunk2 = originalBytes.AsSpan(10).ToArray();
+
+            byte[] enc1 = chunkEnc.Transform(chunk1);
+            byte[] enc2 = chunkEnc.Transform(chunk2);
+
+            byte[] dec1 = chunkDec.Transform(enc1);
+            byte[] dec2 = chunkDec.Transform(enc2);
+
+            string chunkRoundtrip = Encoding.UTF8.GetString(dec1) + Encoding.UTF8.GetString(dec2);
+            if (chunkRoundtrip != originalText)
+                throw new Exception("AES-CTR chunked streaming failed!");
+        }
+
+        // 2. Test CloudTunnelConfig & Telegram Links
+        Console.WriteLine(" -> Testing CloudTunnelConfig & Telegram Link Formatter...");
+        var config = new OmniEye.Core.Models.CloudTunnelConfig
+        {
+            Host = "127.0.0.1",
+            MtprotoPort = 1443,
+            Secret = "0123456789abcdef0123456789abcdef",
+            WorkerDomains = new() { "my-test.workers.dev" }
+        };
+
+        string tgLink = config.GetTelegramLink();
+        if (tgLink != "tg://proxy?server=127.0.0.1&port=1443&secret=0123456789abcdef0123456789abcdef")
+            throw new Exception($"Unexpected Telegram link: {tgLink}");
+
+        string webTgLink = config.GetWebTelegramLink();
+        if (webTgLink != "https://t.me/proxy?server=127.0.0.1&port=1443&secret=0123456789abcdef0123456789abcdef")
+            throw new Exception($"Unexpected Web Telegram link: {webTgLink}");
+
+        // 3. Test MTProto Handshake generation & rejection
+        Console.WriteLine(" -> Testing MTProto Handshake rejection on invalid data...");
+        byte[] junkHandshake = new byte[64];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(junkHandshake);
+        byte[] secretBytes = Convert.FromHexString(config.Secret);
+
+        var nullResult = OmniEye.Core.CloudTunnel.Mtproto.MtprotoHandshake.TryParse(junkHandshake, secretBytes);
+        if (nullResult != null)
+            throw new Exception("Expected null result for random junk handshake");
+
+        // 4. Test CloudTunnelManager Lifecycle
+        Console.WriteLine(" -> Testing CloudTunnelManager Start & Stop lifecycle...");
+        var managerConfig = new OmniEye.Core.Models.CloudTunnelConfig
+        {
+            Host = "127.0.0.1",
+            MtprotoPort = 19443, // Test ports to avoid conflicts
+            Socks5Port = 19808,
+            Secret = config.Secret,
+            EnableSocks5 = true,
+            EnableSystemProxy = false
+        };
+
+        var tunnelMgr = new OmniEye.Core.CloudTunnel.CloudTunnelManager(managerConfig);
+        tunnelMgr.Start();
+
+        if (!tunnelMgr.IsRunning)
+            throw new Exception("Expected CloudTunnelManager to be running");
+
+        // Test connecting to local SOCKS5 port
+        using (var tcpClient = new System.Net.Sockets.TcpClient())
+        {
+            await tcpClient.ConnectAsync("127.0.0.1", 19808);
+            if (!tcpClient.Connected)
+                throw new Exception("Failed to connect to local SOCKS5 port 19808");
+        }
+
+        tunnelMgr.Stop();
+        if (tunnelMgr.IsRunning)
+            throw new Exception("Expected CloudTunnelManager to be stopped");
+
+        // 5. Test Embedded Cloudflare Worker Script Resource
+        Console.WriteLine(" -> Testing WorkerScript Embedded Resource...");
+        if (string.IsNullOrWhiteSpace(OmniEye.Core.CloudTunnel.Resources.WorkerScript.Code) ||
+            !OmniEye.Core.CloudTunnel.Resources.WorkerScript.Code.Contains("cloudflare:sockets"))
+        {
+            throw new Exception("WorkerScript resource code is invalid or missing 'cloudflare:sockets'");
+        }
+
+        Console.WriteLine(" -> Cloud Tunnel components verified successfully.");
     }
 }

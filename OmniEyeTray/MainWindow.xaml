@@ -227,6 +227,12 @@
                             <TextBlock Text="{DynamicResource Nav_DpiBypass}" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
+                    <RadioButton x:Name="NavCloudTunnel" Style="{StaticResource Win11NavItem}" Click="NavCloudTunnel_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="CloudLightning24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
+                            <TextBlock Text="{DynamicResource Nav_CloudTunnel}" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
                     <RadioButton x:Name="NavInjection" Style="{StaticResource Win11NavItem}" Click="NavInjection_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
@@ -1229,6 +1235,200 @@
                                     <TextBlock Text="WINDIVERT L3/L4 | DISCORD UDP" FontSize="11" FontWeight="SemiBold" Foreground="#4CC2FF"/>
                                 </Border>
                             </Grid>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ================= VIEW 6: CLOUD TUNNEL & TG WS PROXY ================= -->
+            <Grid x:Name="ViewCloudTunnel" Grid.Row="1" Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,16,0">
+
+                        <!-- Top Metric Cards (Status, Latency, Traffic) -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Metric 1: Status -->
+                            <Border Grid.Column="0" Background="#161616" BorderBrush="#252525" BorderThickness="1" CornerRadius="8" Padding="14">
+                                <StackPanel>
+                                    <TextBlock Text="СТАТУС ТУННЕЛЯ" FontSize="11" FontWeight="SemiBold" Foreground="#888888" />
+                                    <TextBlock x:Name="TxtCloudTunnelStatus" Text="{DynamicResource CloudTunnel_StatusStopped}" FontSize="18" FontWeight="Bold" Foreground="#E05252" Margin="0,4,0,0" />
+                                    <TextBlock x:Name="TxtCloudTunnelPortInfo" Text="MTProto: 1443 | SOCKS5: 10808" FontSize="11" Foreground="#666666" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Metric 2: Cloudflare Ping -->
+                            <Border Grid.Column="2" Background="#161616" BorderBrush="#252525" BorderThickness="1" CornerRadius="8" Padding="14">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource CloudTunnel_MetricPing}" FontSize="11" FontWeight="SemiBold" Foreground="#888888" />
+                                    <TextBlock x:Name="TxtCloudTunnelPing" Text="—" FontSize="18" FontWeight="Bold" Foreground="#4CC2FF" Margin="0,4,0,0" />
+                                    <TextBlock Text="Cloudflare Edge WebSocket" FontSize="11" Foreground="#666666" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Metric 3: Active Sessions & Traffic -->
+                            <Border Grid.Column="4" Background="#161616" BorderBrush="#252525" BorderThickness="1" CornerRadius="8" Padding="14">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource CloudTunnel_MetricTraffic}" FontSize="11" FontWeight="SemiBold" Foreground="#888888" />
+                                    <TextBlock x:Name="TxtCloudTunnelTraffic" Text="0 B / 0 B" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,4,0,0" />
+                                    <TextBlock x:Name="TxtCloudTunnelSessions" Text="0 активных сессий" FontSize="11" Foreground="#666666" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Main Toggle Switch Card -->
+                        <Border Background="#161616" BorderBrush="#282828" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{DynamicResource CloudTunnel_Title}" FontWeight="SemiBold" FontSize="15" Foreground="#FFFFFF" />
+                                    <TextBlock Text="{DynamicResource CloudTunnel_Subtitle}" FontSize="12" Foreground="#9E9E9E" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <ui:Button x:Name="BtnToggleCloudTunnel" Grid.Column="1" 
+                                           Content="{DynamicResource CloudTunnel_BtnEnable}" 
+                                           Appearance="Success" 
+                                           FontSize="13" FontWeight="SemiBold" Padding="20,8" 
+                                           Click="BtnToggleCloudTunnel_Click" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Telegram Turbo (1-Click) Card -->
+                        <Border Background="#161616" BorderBrush="#282828" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Send24" FontSize="16" Foreground="#2AABEE" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource CloudTunnel_TgSectionTitle}" FontWeight="SemiBold" FontSize="14" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="{DynamicResource CloudTunnel_TgSectionDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Background="#182AABEE" BorderBrush="#302AABEE" BorderThickness="1" CornerRadius="6" Padding="8,3" VerticalAlignment="Center">
+                                        <TextBlock Text="MTPROTO / 1443" FontSize="10" FontWeight="SemiBold" Foreground="#2AABEE" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Host, Port, Secret Info Grid -->
+                                <Border Background="#121212" BorderBrush="#202020" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                                            <TextBlock Text="ХОСТ &amp; ПОРТ" FontSize="10" Foreground="#666666" FontWeight="SemiBold" />
+                                            <TextBlock x:Name="TxtTgHostPort" Text="127.0.0.1:1443" FontSize="12" Foreground="#E0E0E0" FontWeight="SemiBold" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="SECRET KEY (HEX)" FontSize="10" Foreground="#666666" FontWeight="SemiBold" />
+                                            <TextBlock x:Name="TxtTgSecret" Text="Загрузка..." FontSize="12" Foreground="#888888" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ui:Button x:Name="BtnRegenerateSecret" Grid.Column="2" Content="Новый ключ" Appearance="Secondary" FontSize="11" Padding="8,4" Click="BtnRegenerateSecret_Click" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+
+                                <!-- Buttons: 1-Click Connect & Copy Link -->
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:Button x:Name="BtnConnectTelegram" Content="{DynamicResource CloudTunnel_BtnConnectTg}" 
+                                               Appearance="Primary" Icon="{ui:SymbolIcon Symbol=Open24}"
+                                               FontSize="12" FontWeight="SemiBold" Padding="16,7" Margin="0,0,10,0" 
+                                               Click="BtnConnectTelegram_Click" />
+
+                                    <ui:Button x:Name="BtnCopyTgLink" Content="{DynamicResource CloudTunnel_BtnCopyTgLink}" 
+                                               Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=Copy24}"
+                                               FontSize="12" Padding="14,7" 
+                                               Click="BtnCopyTgLink_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- System Proxy & SOCKS5 Card -->
+                        <Border Background="#161616" BorderBrush="#282828" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Globe24" FontSize="16" Foreground="#4CC2FF" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource CloudTunnel_SocksSectionTitle}" FontWeight="SemiBold" FontSize="14" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="{DynamicResource CloudTunnel_SocksSectionDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Background="#184CC2FF" BorderBrush="#304CC2FF" BorderThickness="1" CornerRadius="6" Padding="8,3" VerticalAlignment="Center">
+                                        <TextBlock Text="SOCKS5 / 10808" FontSize="10" FontWeight="SemiBold" Foreground="#4CC2FF" />
+                                    </Border>
+                                </Grid>
+
+                                <CheckBox x:Name="ChkSystemProxy" Content="{DynamicResource CloudTunnel_ChkSystemProxy}" 
+                                          Foreground="#CCCCCC" FontSize="12" Margin="0,0,0,8" 
+                                          Click="ChkSystemProxy_Click" />
+
+                                <CheckBox x:Name="ChkBypassRu" Content="{DynamicResource CloudTunnel_ChkBypassRu}" 
+                                          IsChecked="True" Foreground="#CCCCCC" FontSize="12" Margin="0,0,0,12" 
+                                          Click="ChkBypassRu_Click" />
+
+                                <ui:Button x:Name="BtnCopyTerminal" Content="{DynamicResource CloudTunnel_BtnCopyTerminal}" 
+                                           Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=Code24}"
+                                           FontSize="11" Padding="12,5" HorizontalAlignment="Left" 
+                                           Click="BtnCopyTerminal_Click" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Cloudflare Workers & Endpoints Card -->
+                        <Border Background="#161616" BorderBrush="#282828" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Cloud24" FontSize="16" Foreground="#F38020" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource CloudTunnel_WorkerSectionTitle}" FontWeight="SemiBold" FontSize="14" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="{DynamicResource CloudTunnel_WorkerSectionDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <ui:Button x:Name="BtnWorkerScript" Grid.Column="1" 
+                                               Content="{DynamicResource CloudTunnel_BtnWorkerScript}" 
+                                               Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=DocumentBulletList24}" 
+                                               FontSize="11" Padding="10,5" 
+                                               Click="BtnWorkerScript_Click" />
+                                </Grid>
+
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="TxtWorkerDomains" 
+                                             Background="#121212" Foreground="#FFFFFF" BorderBrush="#303030" 
+                                             FontSize="12" Padding="8,6" />
+                                    <ui:Button x:Name="BtnSaveWorkers" Grid.Column="1" Content="Сохранить" 
+                                               Appearance="Primary" FontSize="12" Padding="14,6" Margin="8,0,0,0" 
+                                               Click="BtnSaveWorkers_Click" />
+                                </Grid>
+                                <TextBlock Text="Совет: укажите один или несколько доменов Cloudflare Workers через запятую (например, my-proxy.username.workers.dev)." FontSize="11" Foreground="#666666" />
+                            </StackPanel>
                         </Border>
 
                     </StackPanel>

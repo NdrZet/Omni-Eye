@@ -228,5 +228,29 @@
     <sys:String x:Key="DpiBypass_ViewModeNotepad">Блокнот</sys:String>
     <sys:String x:Key="DpiBypass_BtnOpenNotepad">У Блокноті Windows</sys:String>
     <sys:String x:Key="DpiBypass_NotepadHint">Редагуйте список построково. Підтримуються коментарі (#) та маски (^, *.). При збереженні виконується автоматична нормалізація.</sys:String>
+
+    <!-- Cloud Tunnel & TG WS Proxy -->
+    <sys:String x:Key="Nav_CloudTunnel">Хмарний тунель</sys:String>
+    <sys:String x:Key="CloudTunnel_Title">Хмарний тунель (TG WS Proxy)</sys:String>
+    <sys:String x:Key="CloudTunnel_Subtitle">Швидкісний тунель MTProto &amp; SOCKS5 через Cloudflare WebSocket</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusActive">АКТИВНИЙ</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusStopped">ЗУПИНЕНИЙ</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnEnable">Увімкнути тунель</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnDisable">Зупинити тунель</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionTitle">Telegram Turbo (1-Click)</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionDesc">Нативний MTProto проксі на порту 1443 з автомаршрутизацією до DC2/DC4 через Cloudflare</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnConnectTg">Підключити до Telegram</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTgLink">Скопіювати посилання</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionTitle">Системний проксі &amp; Браузери (SOCKS5)</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionDesc">Локальний SOCKS5 проксі на порту 10808 для браузерів, терміналу, Discord та AI-сервісів (OpenAI, Claude)</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkSystemProxy">Увімкнути як системний проксі Windows</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkBypassRu">Прямий доступ для локальних сайтів</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTerminal">Копіювати для терміналу</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionTitle">Cloudflare Workers &amp; Ендпоінти</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionDesc">Домени безкоштовних воркерів Cloudflare. Можна вказати власний *.workers.dev</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnWorkerScript">Інструкція та код скрипта</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricActiveConn">Активних сесій</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricPing">Пінг до Cloudflare</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricTraffic">Передано трафіку</sys:String>
 </ResourceDictionary>
 

@@ -228,5 +228,29 @@
     <sys:String x:Key="DpiBypass_ViewModeNotepad">Notizblock</sys:String>
     <sys:String x:Key="DpiBypass_BtnOpenNotepad">Im Windows-Editor öffnen</sys:String>
     <sys:String x:Key="DpiBypass_NotepadHint">Bearbeiten Sie die Liste zeilenweise. Unterstützt Kommentare (#) und Platzhalter (^, *.). Automatisches Bereinigen beim Speichern.</sys:String>
+
+    <!-- Cloud Tunnel & TG WS Proxy -->
+    <sys:String x:Key="Nav_CloudTunnel">Cloud-Tunnel</sys:String>
+    <sys:String x:Key="CloudTunnel_Title">Cloud-Tunnel (TG WS Proxy)</sys:String>
+    <sys:String x:Key="CloudTunnel_Subtitle">Ultraschneller MTProto &amp; SOCKS5 Tunnel über Cloudflare WebSocket</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusActive">AKTIV</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusStopped">GESTOPPT</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnEnable">Tunnel aktivieren</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnDisable">Tunnel stoppen</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionTitle">Telegram Turbo (1-Klick)</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionDesc">Nativer MTProto-Proxy auf Port 1443 mit automatischem Routing zu DC2/DC4 über Cloudflare</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnConnectTg">Mit Telegram verbinden</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTgLink">Link kopieren</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionTitle">System-Proxy &amp; Browser (SOCKS5)</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionDesc">Lokaler SOCKS5-Proxy auf Port 10808 für Browser, Terminal, Discord und KI-Dienste (OpenAI, Claude)</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkSystemProxy">Als Windows-Systemproxy aktivieren</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkBypassRu">Direkter Zugriff für lokale Domains</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTerminal">Befehl für Terminal kopieren</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionTitle">Cloudflare Workers &amp; Endpunkte</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionDesc">Kostenlose Cloudflare Worker-Endpunkte. Eigenen *.workers.dev für maximale Privatsphäre angeben</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnWorkerScript">Skript-Anleitung &amp; Code</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricActiveConn">Aktive Sitzungen</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricPing">Cloudflare Ping</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricTraffic">Übertragen</sys:String>
 </ResourceDictionary>
 

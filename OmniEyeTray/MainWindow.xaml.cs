@@ -18,6 +18,9 @@ using OmniEye.DpiBypass.Dns;
 using OmniEye.DpiBypass.Lists;
 using OmniEye.DpiBypass.Models;
 using OmniEye.DpiBypass.Zapret;
+using OmniEye.Core.CloudTunnel;
+using OmniEye.Core.CloudTunnel.Resources;
+using OmniEye.Core.CloudTunnel.SystemProxy;
 using OmniEyeTray.Services;
 using OmniEyeTray.Views;
 using Wpf.Ui.Controls;
@@ -39,6 +42,7 @@ public partial class MainWindow : FluentWindow
     private readonly System.Windows.Threading.DispatcherTimer _netMonTimer;
     private readonly System.Windows.Threading.DispatcherTimer _dpiTelemetryTimer;
     private readonly ZapretEngine _zapretEngine = new();
+    private readonly CloudTunnelManager _cloudTunnelManager = new();
     private readonly DohResolverPool _dohPool = new();
     private readonly DomainListManager _domainListManager = new();
     private string _activeSelectedList = DomainListManager.ListGeneral;
@@ -110,8 +114,12 @@ public partial class MainWindow : FluentWindow
         NavDashboard.Checked += NavDashboard_Click;
         NavFirewall.Checked += NavFirewall_Click;
         NavDpiBypass.Checked += NavDpiBypass_Click;
+        NavCloudTunnel.Checked += NavCloudTunnel_Click;
         NavInjection.Checked += NavInjection_Click;
         NavSettings.Checked += NavSettings_Click;
+
+        _cloudTunnelManager.StateChanged += () => Dispatcher.Invoke(UpdateCloudTunnelUI);
+        UpdateCloudTunnelUI();
     }
 
     private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -651,6 +659,13 @@ public partial class MainWindow : FluentWindow
         UpdateDpiTelemetry();
     }
 
+    private void NavCloudTunnel_Click(object sender, RoutedEventArgs e)
+    {
+        _currentTab = "CloudTunnel";
+        ShowView(ViewCloudTunnel, LocalizationManager.GetString("CloudTunnel_Title"), LocalizationManager.GetString("CloudTunnel_Subtitle"));
+        UpdateCloudTunnelUI();
+    }
+
     private void NavInjection_Click(object sender, RoutedEventArgs e)
     {
         _currentTab = "Injection";
@@ -769,6 +784,7 @@ public partial class MainWindow : FluentWindow
         if (ViewInjection != null) ViewInjection.Visibility = Visibility.Collapsed;
         if (ViewSettings != null) ViewSettings.Visibility = Visibility.Collapsed;
         if (ViewDpiBypass != null) ViewDpiBypass.Visibility = Visibility.Collapsed;
+        if (ViewCloudTunnel != null) ViewCloudTunnel.Visibility = Visibility.Collapsed;
 
         if (view != null) view.Visibility = Visibility.Visible;
         if (TxtPageTitle != null) TxtPageTitle.Text = title;
@@ -992,6 +1008,8 @@ public partial class MainWindow : FluentWindow
         {
             StopDpiBypass();
             SystemDnsManager.RestoreDns();
+            _cloudTunnelManager.Stop();
+            WindowsProxyManager.DisableProxy();
             _notifyIcon?.Dispose();
             _ipcClient.Dispose();
         }
@@ -1611,6 +1629,185 @@ public partial class MainWindow : FluentWindow
         {
             BtnFetchCommunityList.IsEnabled = true;
         }
+    }
+
+    #endregion
+
+    #region Cloud Tunnel & TG WS Proxy Handlers
+
+    private void UpdateCloudTunnelUI()
+    {
+        if (TxtCloudTunnelStatus == null) return;
+
+        bool isRunning = _cloudTunnelManager.IsRunning;
+        if (isRunning)
+        {
+            TxtCloudTunnelStatus.Text = LocalizationManager.GetString("CloudTunnel_StatusActive");
+            TxtCloudTunnelStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4C, 0xC2, 0xFF));
+            BtnToggleCloudTunnel.Content = LocalizationManager.GetString("CloudTunnel_BtnDisable");
+            BtnToggleCloudTunnel.Appearance = Wpf.Ui.Controls.ControlAppearance.Danger;
+        }
+        else
+        {
+            TxtCloudTunnelStatus.Text = LocalizationManager.GetString("CloudTunnel_StatusStopped");
+            TxtCloudTunnelStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE0, 0x52, 0x52));
+            BtnToggleCloudTunnel.Content = LocalizationManager.GetString("CloudTunnel_BtnEnable");
+            BtnToggleCloudTunnel.Appearance = Wpf.Ui.Controls.ControlAppearance.Success;
+        }
+
+        if (_cloudTunnelManager.WorkerPingMs >= 0)
+        {
+            TxtCloudTunnelPing.Text = $"{_cloudTunnelManager.WorkerPingMs} мс";
+            TxtCloudTunnelPing.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4C, 0xC2, 0xFF));
+        }
+        else
+        {
+            TxtCloudTunnelPing.Text = "—";
+            TxtCloudTunnelPing.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x88, 0x88, 0x88));
+        }
+
+        TxtCloudTunnelTraffic.Text = $"{FormatBytes(_cloudTunnelManager.BytesUploaded)} / {FormatBytes(_cloudTunnelManager.BytesDownloaded)}";
+        TxtCloudTunnelSessions.Text = $"{_cloudTunnelManager.ActiveConnections} активных сессий";
+
+        TxtTgHostPort.Text = $"{_cloudTunnelManager.Config.Host}:{_cloudTunnelManager.Config.MtprotoPort}";
+        TxtTgSecret.Text = _cloudTunnelManager.Config.Secret;
+        ChkSystemProxy.IsChecked = WindowsProxyManager.IsProxyEnabled();
+        ChkBypassRu.IsChecked = _cloudTunnelManager.Config.BypassRussianTraffic;
+
+        if (string.IsNullOrWhiteSpace(TxtWorkerDomains.Text) && _cloudTunnelManager.Config.WorkerDomains.Count > 0)
+        {
+            TxtWorkerDomains.Text = string.Join(", ", _cloudTunnelManager.Config.WorkerDomains);
+        }
+    }
+
+    private void BtnToggleCloudTunnel_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_cloudTunnelManager.IsRunning)
+            {
+                _cloudTunnelManager.Stop();
+            }
+            else
+            {
+                _cloudTunnelManager.Start();
+            }
+            UpdateCloudTunnelUI();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Ошибка переключения туннеля: {ex.Message}", "OmniEye Cloud Tunnel", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void BtnConnectTelegram_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!_cloudTunnelManager.IsRunning)
+            {
+                _cloudTunnelManager.Start();
+                UpdateCloudTunnelUI();
+            }
+
+            var link = _cloudTunnelManager.Config.GetTelegramLink();
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(link) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Не удалось открыть Telegram: {ex.Message}\nСсылка скопирована в буфер обмена.", "OmniEye", MessageBoxButton.OK, MessageBoxImage.Information);
+            try { System.Windows.Clipboard.SetText(_cloudTunnelManager.Config.GetTelegramLink()); } catch { }
+        }
+    }
+
+    private void BtnCopyTgLink_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.Windows.Clipboard.SetText(_cloudTunnelManager.Config.GetTelegramLink());
+            BtnCopyTgLink.Content = "✓ Скопировано";
+            _ = Task.Delay(2000).ContinueWith(_ => Dispatcher.Invoke(() => BtnCopyTgLink.Content = LocalizationManager.GetString("CloudTunnel_BtnCopyTgLink")));
+        }
+        catch { }
+    }
+
+    private void BtnRegenerateSecret_Click(object sender, RoutedEventArgs e)
+    {
+        _cloudTunnelManager.Config.Secret = CloudTunnelConfig.GenerateSecret();
+        UpdateCloudTunnelUI();
+    }
+
+    private void ChkSystemProxy_Click(object sender, RoutedEventArgs e)
+    {
+        bool enable = ChkSystemProxy.IsChecked == true;
+        _cloudTunnelManager.Config.EnableSystemProxy = enable;
+        if (enable)
+        {
+            WindowsProxyManager.EnableProxy(_cloudTunnelManager.Config.Host, _cloudTunnelManager.Config.Socks5Port, _cloudTunnelManager.Config.BypassRussianTraffic);
+        }
+        else
+        {
+            WindowsProxyManager.DisableProxy();
+        }
+        UpdateCloudTunnelUI();
+    }
+
+    private void ChkBypassRu_Click(object sender, RoutedEventArgs e)
+    {
+        _cloudTunnelManager.Config.BypassRussianTraffic = ChkBypassRu.IsChecked == true;
+        if (WindowsProxyManager.IsProxyEnabled())
+        {
+            WindowsProxyManager.EnableProxy(_cloudTunnelManager.Config.Host, _cloudTunnelManager.Config.Socks5Port, _cloudTunnelManager.Config.BypassRussianTraffic);
+        }
+    }
+
+    private void BtnCopyTerminal_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string cmd = $"$env:HTTPS_PROXY=\"http://{_cloudTunnelManager.Config.Host}:{_cloudTunnelManager.Config.Socks5Port}\"; $env:HTTP_PROXY=\"http://{_cloudTunnelManager.Config.Host}:{_cloudTunnelManager.Config.Socks5Port}\"";
+            System.Windows.Clipboard.SetText(cmd);
+            BtnCopyTerminal.Content = "✓ Команда скопирована";
+            _ = Task.Delay(2000).ContinueWith(_ => Dispatcher.Invoke(() => BtnCopyTerminal.Content = LocalizationManager.GetString("CloudTunnel_BtnCopyTerminal")));
+        }
+        catch { }
+    }
+
+    private void BtnSaveWorkers_Click(object sender, RoutedEventArgs e)
+    {
+        var raw = TxtWorkerDomains.Text;
+        var domains = raw.Split(new[] { ',', ';', ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                         .Select(d => d.Trim().Replace("https://", "").Replace("http://", "").TrimEnd('/'))
+                         .Where(d => !string.IsNullOrWhiteSpace(d))
+                         .Distinct(StringComparer.OrdinalIgnoreCase)
+                         .ToList();
+
+        _cloudTunnelManager.Config.WorkerDomains = domains;
+        BtnSaveWorkers.Content = "✓ Сохранено";
+        _ = Task.Delay(2000).ContinueWith(_ => Dispatcher.Invoke(() => BtnSaveWorkers.Content = "Сохранить"));
+    }
+
+    private void BtnWorkerScript_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.Windows.Clipboard.SetText(WorkerScript.Code);
+            MessageBox.Show(
+                WorkerScript.InstructionsRu + "\n\nКод скрипта worker.js скопирован в буфер обмена!",
+                "Инструкция по Cloudflare Worker",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+        }
+        catch { }
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024.0):F1} MB";
+        return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
     }
 
     #endregion

@@ -228,5 +228,29 @@
     <sys:String x:Key="DpiBypass_ViewModeNotepad">Блокнот</sys:String>
     <sys:String x:Key="DpiBypass_BtnOpenNotepad">В Блокноте Windows</sys:String>
     <sys:String x:Key="DpiBypass_NotepadHint">Редактируйте список построчно. Поддерживаются комментарии (#) и маски (^, *.). При сохранении выполняется автоматическая нормализация.</sys:String>
+
+    <!-- Cloud Tunnel & TG WS Proxy -->
+    <sys:String x:Key="Nav_CloudTunnel">Облачный туннель</sys:String>
+    <sys:String x:Key="CloudTunnel_Title">Облачный туннель (TG WS Proxy)</sys:String>
+    <sys:String x:Key="CloudTunnel_Subtitle">Сверхскоростной туннель MTProto &amp; SOCKS5 через Cloudflare WebSocket</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusActive">АКТИВЕН</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusStopped">ОСТАНОВЛЕН</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnEnable">Включить туннель</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnDisable">Остановить туннель</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionTitle">Telegram Turbo (1-Click)</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionDesc">Нативный MTProto прокси на порту 1443 с автоматическим роутингом к DC2/DC4 через Cloudflare</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnConnectTg">Подключить к Telegram</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTgLink">Скопировать ссылку</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionTitle">Системный прокси &amp; Браузеры (SOCKS5)</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionDesc">Локальный SOCKS5 прокси на порту 10808 для браузеров, терминала, Discord и AI-сервисов (OpenAI, Claude)</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkSystemProxy">Включить как системный прокси Windows</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkBypassRu">Прямой доступ для РФ сайтов (.ru, банки, Госуслуги)</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTerminal">Копировать для терминала</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionTitle">Cloudflare Workers &amp; Эндпоинты</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionDesc">Домены бесплатных воркеров Cloudflare. Можно указать свой *.workers.dev для максимальной скорости</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnWorkerScript">Инструкция и код скрипта</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricActiveConn">Активных сессий</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricPing">Пинг до Cloudflare</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricTraffic">Передано трафика</sys:String>
 </ResourceDictionary>
 

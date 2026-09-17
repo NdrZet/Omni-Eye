@@ -228,5 +228,29 @@
     <sys:String x:Key="DpiBypass_ViewModeNotepad">メモ帳</sys:String>
     <sys:String x:Key="DpiBypass_BtnOpenNotepad">Windows メモ帳で開く</sys:String>
     <sys:String x:Key="DpiBypass_NotepadHint">リストを1行ずつ編集できます。コメント (#) やワイルドカード (^, *.) に対応。保存時に自動正規化されます。</sys:String>
+
+    <!-- Cloud Tunnel & TG WS Proxy -->
+    <sys:String x:Key="Nav_CloudTunnel">クラウドトンネル</sys:String>
+    <sys:String x:Key="CloudTunnel_Title">クラウドトンネル (TG WS Proxy)</sys:String>
+    <sys:String x:Key="CloudTunnel_Subtitle">Cloudflare WebSocket経由の超高速MTProto＆SOCKS5トンネル</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusActive">アクティブ</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusStopped">停止中</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnEnable">トンネルを開始</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnDisable">トンネルを停止</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionTitle">Telegram Turbo (1-Click)</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionDesc">ポート1443のネイティブMTProtoプロキシ（Cloudflare経由でDC2/DC4へ自動ルーティング）</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnConnectTg">Telegramに接続</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTgLink">リンクをコピー</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionTitle">システムプロキシ＆ブラウザ (SOCKS5)</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionDesc">ブラウザ、ターミナル、Discord、AIサービス（OpenAI、Claude）向けのポート10808ローカルSOCKS5プロキシ</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkSystemProxy">Windowsシステムプロキシとして有効化</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkBypassRu">ローカルドメインを直接アクセス</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTerminal">ターミナル用コマンドをコピー</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionTitle">Cloudflare Workers＆エンドポイント</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionDesc">無料のCloudflare Workerエンドポイント。専用の*.workers.devを指定可能</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnWorkerScript">スクリプト説明とコード</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricActiveConn">アクティブセッション</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricPing">Cloudflare Ping</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricTraffic">転送量</sys:String>
 </ResourceDictionary>
 

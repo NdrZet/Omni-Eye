@@ -228,5 +228,29 @@
     <sys:String x:Key="DpiBypass_ViewModeNotepad">Notepad</sys:String>
     <sys:String x:Key="DpiBypass_BtnOpenNotepad">Open in Notepad</sys:String>
     <sys:String x:Key="DpiBypass_NotepadHint">Edit list line by line. Supports comments (#) and wildcards (^, *.). Auto-sanitization applies on save.</sys:String>
+
+    <!-- Cloud Tunnel & TG WS Proxy -->
+    <sys:String x:Key="Nav_CloudTunnel">Cloud Tunnel</sys:String>
+    <sys:String x:Key="CloudTunnel_Title">Cloud Tunnel (TG WS Proxy)</sys:String>
+    <sys:String x:Key="CloudTunnel_Subtitle">Ultra-fast MTProto &amp; SOCKS5 tunnel over Cloudflare WebSocket</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusActive">ACTIVE</sys:String>
+    <sys:String x:Key="CloudTunnel_StatusStopped">STOPPED</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnEnable">Enable Tunnel</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnDisable">Stop Tunnel</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionTitle">Telegram Turbo (1-Click)</sys:String>
+    <sys:String x:Key="CloudTunnel_TgSectionDesc">Native MTProto proxy on port 1443 with auto routing to DC2/DC4 via Cloudflare</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnConnectTg">Connect to Telegram</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTgLink">Copy Link</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionTitle">System Proxy &amp; Browsers (SOCKS5)</sys:String>
+    <sys:String x:Key="CloudTunnel_SocksSectionDesc">Local SOCKS5 proxy on port 10808 for browsers, terminal tools, Discord, and AI services (OpenAI, Claude)</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkSystemProxy">Set as Windows System Proxy</sys:String>
+    <sys:String x:Key="CloudTunnel_ChkBypassRu">Direct access for domestic domains (.ru, banks, gov)</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnCopyTerminal">Copy for Terminal</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionTitle">Cloudflare Workers &amp; Endpoints</sys:String>
+    <sys:String x:Key="CloudTunnel_WorkerSectionDesc">Free Cloudflare worker endpoints. Specify your own *.workers.dev for maximum privacy and dedicated speed</sys:String>
+    <sys:String x:Key="CloudTunnel_BtnWorkerScript">Script Instructions &amp; Code</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricActiveConn">Active Sessions</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricPing">Cloudflare Ping</sys:String>
+    <sys:String x:Key="CloudTunnel_MetricTraffic">Transferred</sys:String>
 </ResourceDictionary>
 
