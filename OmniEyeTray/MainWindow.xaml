@@ -229,7 +229,7 @@
                     </RadioButton>
                     <RadioButton x:Name="NavCloudTunnel" Style="{StaticResource Win11NavItem}" Click="NavCloudTunnel_Click">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="CloudLightning24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
+                            <ui:SymbolIcon Symbol="Cloud24" FontSize="16" Margin="0,0,12,0" Foreground="#A0A0A0" />
                             <TextBlock Text="{DynamicResource Nav_CloudTunnel}" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
