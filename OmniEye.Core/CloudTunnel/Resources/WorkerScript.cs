@@ -30,7 +30,7 @@ export default {
             return new Response(""Not found"", { status: 404 });
         }
 
-        const dst = url.searchParams.get(""dst"") || ""149.154.167.220"";
+        const dst = url.searchParams.get(""dst"") || ""149.154.167.51"";
         const port = parseInt(url.searchParams.get(""port"") || ""443"", 10);
 
         const pair = new WebSocketPair();

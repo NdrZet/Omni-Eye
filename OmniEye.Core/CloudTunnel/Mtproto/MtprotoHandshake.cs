@@ -110,7 +110,7 @@ public static class MtprotoHandshake
         );
     }
 
-    private static (byte[] relayInit, AesCtrCipher tgEnc, AesCtrCipher tgDec) GenerateRelayInit(ReadOnlySpan<byte> protoTag, short dcIdx)
+    public static (byte[] relayInit, AesCtrCipher tgEnc, AesCtrCipher tgDec) GenerateRelayInit(ReadOnlySpan<byte> protoTag, short dcIdx)
     {
         byte[] rnd = new byte[HandshakeLength];
 

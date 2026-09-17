@@ -1682,9 +1682,13 @@ public partial class MainWindow : FluentWindow
         ChkSystemProxy.IsChecked = WindowsProxyManager.IsProxyEnabled();
         ChkBypassRu.IsChecked = _cloudTunnelManager.Config.BypassRussianTraffic;
 
-        if (string.IsNullOrWhiteSpace(TxtWorkerDomains.Text) && _cloudTunnelManager.Config.WorkerDomains.Count > 0)
+        if (!TxtWorkerDomains.IsFocused && _cloudTunnelManager.Config.WorkerDomains.Count > 0)
         {
-            TxtWorkerDomains.Text = string.Join(", ", _cloudTunnelManager.Config.WorkerDomains);
+            var expected = string.Join(", ", _cloudTunnelManager.Config.WorkerDomains);
+            if (string.IsNullOrWhiteSpace(TxtWorkerDomains.Text) || TxtWorkerDomains.Text != expected)
+            {
+                TxtWorkerDomains.Text = expected;
+            }
         }
     }
 

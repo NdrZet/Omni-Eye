@@ -1109,7 +1109,7 @@ invalid domain with spaces
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var client = await OmniEye.Core.CloudTunnel.WebSocket.CfWorkerClient.ConnectAsync(
                 new[] { "cdn.sklv-project.workers.dev" },
-                "149.154.167.220",
+                "149.154.167.51",
                 2,
                 TimeSpan.FromSeconds(4),
                 cts.Token
@@ -1117,6 +1117,17 @@ invalid domain with spaces
             if (client != null)
             {
                 Console.WriteLine($" -> SUCCESS! Connected to WebSocket on {client.ConnectedDomain}, State={client.State}");
+
+                // Generate valid relay handshake for DC 2
+                var (relayInit, tgEnc, tgDec) = OmniEye.Core.CloudTunnel.Mtproto.MtprotoHandshake.GenerateRelayInit(
+                    OmniEye.Core.CloudTunnel.Mtproto.MtprotoHandshake.TagAbridged,
+                    2
+                );
+
+                Console.WriteLine($" -> Sending 64 bytes RelayInit to Telegram DC via worker...");
+                await client.SendAsync(relayInit, cts.Token);
+                Console.WriteLine($" -> RelayInit sent successfully. Worker stream active.");
+
                 await client.DisposeAsync();
             }
             else
