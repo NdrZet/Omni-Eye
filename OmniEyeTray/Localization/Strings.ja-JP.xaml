@@ -23,6 +23,7 @@
     <sys:String x:Key="Status_DevMode">開発者モード</sys:String>
     <sys:String x:Key="Status_StrictZeroTrust">厳格なゼロトラスト</sys:String>
     <sys:String x:Key="Status_Active">有効</sys:String>
+    <sys:String x:Key="Status_Inactive">無効</sys:String>
 
     <!-- Dashboard (ViewDashboard) -->
     <sys:String x:Key="Dash_Title">ダッシュボード</sys:String>

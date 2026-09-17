@@ -23,6 +23,7 @@
     <sys:String x:Key="Status_DevMode">DEVELOPER MODE</sys:String>
     <sys:String x:Key="Status_StrictZeroTrust">STRICT ZERO-TRUST</sys:String>
     <sys:String x:Key="Status_Active">ACTIVE</sys:String>
+    <sys:String x:Key="Status_Inactive">DISABLED</sys:String>
 
     <!-- Dashboard (ViewDashboard) -->
     <sys:String x:Key="Dash_Title">Dashboard</sys:String>

@@ -695,6 +695,14 @@ public partial class MainWindow : FluentWindow
             BadgeDevMode.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x26, 0xFF, 0xC8, 0x3B));
             BadgeDevMode.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x60, 0xFF, 0xC8, 0x3B));
             TxtDevMode.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xC8, 0x3B));
+
+            if (TxtSettingsDevMode != null && BadgeSettingsDevMode != null)
+            {
+                TxtSettingsDevMode.Text = LocalizationManager.GetString("Status_Active");
+                BadgeSettingsDevMode.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x26, 0xFF, 0xC8, 0x3B));
+                BadgeSettingsDevMode.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x60, 0xFF, 0xC8, 0x3B));
+                TxtSettingsDevMode.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xC8, 0x3B));
+            }
         }
         else
         {
@@ -702,6 +710,14 @@ public partial class MainWindow : FluentWindow
             BadgeDevMode.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 0x06, 0xB6, 0xD4));
             BadgeDevMode.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x50, 0x06, 0xB6, 0xD4));
             TxtDevMode.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x06, 0xB6, 0xD4));
+
+            if (TxtSettingsDevMode != null && BadgeSettingsDevMode != null)
+            {
+                TxtSettingsDevMode.Text = LocalizationManager.GetString("Status_Inactive");
+                BadgeSettingsDevMode.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x18, 0xFF, 0xFF, 0xFF));
+                BadgeSettingsDevMode.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF));
+                TxtSettingsDevMode.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x9E, 0x9E, 0x9E));
+            }
         }
     }
 

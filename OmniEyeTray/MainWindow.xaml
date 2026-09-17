@@ -865,8 +865,8 @@
                                     <TextBlock Text="{DynamicResource Settings_DevModeTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
                                     <TextBlock Text="{DynamicResource Settings_DevModeDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
                                 </StackPanel>
-                                <Border Grid.Column="1" Background="#26FFC83B" BorderBrush="#60FFC83B" BorderThickness="1" CornerRadius="10" Padding="10,4" VerticalAlignment="Center">
-                                    <TextBlock Text="{DynamicResource Status_Active}" FontSize="11" FontWeight="SemiBold" Foreground="#FFC83B"/>
+                                <Border x:Name="BadgeSettingsDevMode" Grid.Column="1" Background="#18FFFFFF" BorderBrush="#30FFFFFF" BorderThickness="1" CornerRadius="10" Padding="10,4" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtSettingsDevMode" Text="{DynamicResource Status_Inactive}" FontSize="11" FontWeight="SemiBold" Foreground="#9E9E9E"/>
                                 </Border>
                             </Grid>
                         </Border>
