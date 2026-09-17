@@ -5,7 +5,7 @@ namespace OmniEye.Core.Configuration;
 
 public class OmniEyeConfig
 {
-    public bool DeveloperMode { get; set; } = true;
+    public bool DeveloperMode { get; set; } = false;
     public string DbDirectory { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "OmniEye");
     public string DbFileName { get; set; } = "config.db";
     public string KeyFileName { get; set; } = "master.key";

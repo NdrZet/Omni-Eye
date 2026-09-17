@@ -31,7 +31,7 @@ public partial class MainWindow : FluentWindow
 {
     private readonly IpcClient _ipcClient;
     private NotifyIcon? _notifyIcon;
-    private bool _isDeveloperMode = true;
+    private bool _isDeveloperMode = false;
     private bool _isOutboundBlocked = true;
     private bool _reallyExit = false;
     private readonly ICollectionView _whitelistView;
@@ -158,9 +158,7 @@ public partial class MainWindow : FluentWindow
                     break;
             }
 
-            TxtDevMode.Text = _isDeveloperMode
-                ? LocalizationManager.GetString("Status_DevMode")
-                : LocalizationManager.GetString("Status_StrictZeroTrust");
+            UpdateDevModeUI(_isDeveloperMode);
 
             if (_ipcClient.IsConnected)
             {
@@ -300,11 +298,8 @@ public partial class MainWindow : FluentWindow
         var status = await _ipcClient.GetStatusAsync();
         if (status != null)
         {
-            _isDeveloperMode = status.DeveloperMode;
             _lastBlockedAttempts = status.BlockedAttemptsCount;
-            TxtDevMode.Text = status.DeveloperMode 
-                ? LocalizationManager.GetString("Status_DevMode") 
-                : LocalizationManager.GetString("Status_StrictZeroTrust");
+            UpdateDevModeUI(status.DeveloperMode);
             TxtCardAttempts.Text = LocalizationManager.GetString("Metric_BlockedAttemptsFormat", status.BlockedAttemptsCount);
             UpdateFirewallPolicyUI(status.OutboundBlocked);
         }
@@ -665,6 +660,25 @@ public partial class MainWindow : FluentWindow
     {
         _currentTab = "Settings";
         ShowView(ViewSettings, LocalizationManager.GetString("Settings_Title"), LocalizationManager.GetString("Settings_Subtitle"));
+    }
+
+    private void UpdateDevModeUI(bool isDevMode)
+    {
+        _isDeveloperMode = isDevMode;
+        if (isDevMode)
+        {
+            TxtDevMode.Text = LocalizationManager.GetString("Status_DevMode");
+            BadgeDevMode.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x26, 0xFF, 0xC8, 0x3B));
+            BadgeDevMode.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x60, 0xFF, 0xC8, 0x3B));
+            TxtDevMode.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xC8, 0x3B));
+        }
+        else
+        {
+            TxtDevMode.Text = LocalizationManager.GetString("Status_StrictZeroTrust");
+            BadgeDevMode.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 0x06, 0xB6, 0xD4));
+            BadgeDevMode.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x50, 0x06, 0xB6, 0xD4));
+            TxtDevMode.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x06, 0xB6, 0xD4));
+        }
     }
 
     private void UpdateFirewallPolicyUI(bool isBlocked)

@@ -291,8 +291,8 @@
 
                 <!-- Status Badges (Windows 11 Pills) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border x:Name="BadgeDevMode" Background="#26FFC83B" BorderBrush="#60FFC83B" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,8,0">
-                        <TextBlock x:Name="TxtDevMode" Text="DEVELOPER MODE" FontWeight="SemiBold" FontSize="11" Foreground="#FFC83B"/>
+                    <Border x:Name="BadgeDevMode" Background="#2006B6D4" BorderBrush="#5006B6D4" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,8,0">
+                        <TextBlock x:Name="TxtDevMode" Text="STRICT ZERO-TRUST" FontWeight="SemiBold" FontSize="11" Foreground="#06B6D4"/>
                     </Border>
                     <Border x:Name="BadgeStatus" Background="#206CCB5F" BorderBrush="#506CCB5F" BorderThickness="1" CornerRadius="12" Padding="10,4">
                         <TextBlock x:Name="TxtServiceStatus" Text="СЛУЖБА ПОДКЛЮЧЕНА" FontWeight="SemiBold" FontSize="11" Foreground="#6CCB5F"/>
