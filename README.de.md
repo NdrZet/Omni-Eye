@@ -319,29 +319,46 @@ In zwei separaten PowerShell-Fenstern:
 
 ## 7. Paketierung, Verteilung & Windows-Dienst-Bereitstellung
 
-Für den Produktiveinsatz und die Verteilung kann die Lösung als eigenständiges portables Release paketiert werden:
+Das Projekt unterstützt zwei Verteilungsformate: **einzelner `.exe`-Installer** und **portables ZIP-Archiv**.
 
-### 1. Automatisierte 1-Klick-Paketierung (`package.ps1`):
-Ein automatisiertes Build- und Paketierungsskript befindet sich im Stammverzeichnis:
+### 1. Installation über den Einzeldatei-Installer (`OmniEye-Setup-win-x64.exe`):
+Die einfachste und empfohlene Bereitstellungsmethode für Endbenutzer:
+* `OmniEye-Setup-win-x64.exe` herunterladen und ausführen.
+* Moderner mehrsprachiger Installationsassistent (Deutsch, Englisch, Russisch, Ukrainisch, Japanisch):
+  * Installiert Dienst- und GUI-Dateien nach `C:\Program Files\OmniEye\`.
+  * Registriert und startet `OmniEyeSvc` automatisch im Windows-Dienst-Manager.
+  * Erstellt Verknüpfungen im Startmenü und auf dem Desktop.
+  * Fügt optional OmniEye Tray zum Windows-Autostart (`Run`) hinzu.
+  * Registriert einen sauberen Deinstallationsassistenten unter Windows «Einstellungen ➔ Apps».
+* **Automatische (stille) Unternehmensinstallation:**
+  ```cmd
+  OmniEye-Setup-win-x64.exe /VERYSILENT /NORESTART
+  ```
+
+---
+
+### 2. Automatisierte 1-Klick-Paketierung (`package.ps1`):
+Ein universelles Build- und Paketierungsskript befindet sich im Stammverzeichnis:
 ```powershell
 powershell -ExecutionPolicy Bypass -File package.ps1
 ```
 Dieses Skript führt automatisch folgende Schritte aus:
-* Bereinigen vorheriger Builds in `publish\OmniEye\`.
-* Veröffentlichen des Dienstes `OmniEyeSvc` nach `publish\OmniEye\Service\`.
-* Veröffentlichen der Benutzeroberfläche `OmniEyeTray` mit allen nativen Bibliotheken, `WinDivert64.sys`, `winws.exe` und Zapret-Profilen nach `publish\OmniEye\Tray\`.
-* Erstellen der Verwaltungs-Batch-Dateien (`InstallService.bat`, `UninstallService.bat`, `StartOmniEye.bat`, `README.txt`).
-* Erstellen des vollständigen ZIP-Release-Archivs `publish\OmniEye-Release-win-x64.zip`.
+1. Bereinigen vorheriger Builds in `publish\`.
+2. Veröffentlichen des Dienstes `OmniEyeSvc` nach `publish\OmniEye\Service\`.
+3. Veröffentlichen von `OmniEyeTray` mit allen nativen Binärdateien, `WinDivert64.sys` und Zapret-Profilen nach `publish\OmniEye\Tray\`.
+4. Erstellen der Batch-Verwaltungsskripte (`InstallService.bat`, `UninstallService.bat`, `StartOmniEye.bat`).
+5. Erstellen des ZIP-Archivs `publish\OmniEye-Release-win-x64.zip`.
+6. Kompilieren des eigenständigen Installers `publish\OmniEye-Setup-win-x64.exe` über Inno Setup (`ISCC.exe`).
 
 ---
 
-### 2. Manuelle Veröffentlichung (Release):
+### 3. Manuelle Veröffentlichung (Release):
 ```powershell
 dotnet publish OmniEyeSvc\OmniEyeSvc.csproj -c Release -o publish\OmniEye\Service
 dotnet publish OmniEyeTray\OmniEyeTray.csproj -c Release -o publish\OmniEye\Tray
 ```
 
-### 3. Windows-Dienst registrieren & starten:
+### 4. Manuelle Dienst-Registrierung (Portabler Modus):
 * **Über die Batch-Datei:** Rechtsklick auf `InstallService.bat` im extrahierten Verzeichnis ➔ *«Als Administrator ausführen»*.
 * **Manuell über `sc.exe` (als Administrator):**
   ```cmd
@@ -350,13 +367,13 @@ dotnet publish OmniEyeTray\OmniEyeTray.csproj -c Release -o publish\OmniEye\Tray
   sc.exe start OmniEyeSvc
   ```
 
-### 4. Dienst verwalten:
+### 5. Dienst verwalten:
 ```cmd
 sc.exe stop OmniEyeSvc
 sc.exe delete OmniEyeSvc
 ```
 
-### 5. Tray-App zum Autostart hinzufügen:
+### 6. Tray-App zum Autostart hinzufügen (Portabler Modus):
 Verknüpfung von `Tray\OmniEyeTray.exe` im Windows-Autostartordner ablegen (`Win + R` ➔ `shell:startup`).
 
 ---

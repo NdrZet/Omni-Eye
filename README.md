@@ -320,29 +320,46 @@ dotnet build OmniEye.slnx -c Release
 
 ## 7. Упаковка, распространение и установка службы Windows
 
-Для промышленного развертывания и распространения решение упаковывается в виде изолированного портативного дистрибутива:
+Проект поддерживает два формата распространения: **единый `.exe` установщик** и **портативный ZIP-дистрибутив**.
 
-### 1. Автоматическая упаковка в 1 клик (`package.ps1`):
-В репозиторий включен автоматизированный скрипт сборки и упаковки релиза:
+### 1. Установка через единый инсталлятор (`OmniEye-Setup-win-x64.exe`):
+Самый простой и рекомендуемый способ развертывания для пользователей:
+* Скачайте и запустите `OmniEye-Setup-win-x64.exe`.
+* Мастер установки на родном языке (русский, английский, украинский, немецкий, японский):
+  * Распаковывает службу и интерфейс в `C:\Program Files\OmniEye\`.
+  * Автоматически регистрирует и запускает службу `OmniEyeSvc` в Windows Service Control Manager.
+  * Создает ярлыки в меню «Пуск» и на Рабочем столе.
+  * Опционально добавляет интерфейс Tray в автозапуск Windows (`Run`).
+  * Регистрирует корректный деинсталлятор в меню «Параметры ➔ Приложения» Windows.
+* **Тихая корпоративная установка:**
+  ```cmd
+  OmniEye-Setup-win-x64.exe /VERYSILENT /NORESTART
+  ```
+
+---
+
+### 2. Автоматическая сборка всех дистрибутивов в 1 клик (`package.ps1`):
+В корень репозитория включен универсальный скрипт упаковки:
 ```powershell
 powershell -ExecutionPolicy Bypass -File package.ps1
 ```
 Скрипт автоматически выполняет:
-* Очистку предыдущих сборок в каталоге `publish\OmniEye\`.
-* Публикацию службы `OmniEyeSvc` в подпапку `publish\OmniEye\Service\`.
-* Публикацию интерфейса `OmniEyeTray` вместе со всеми нативными библиотеками, драйвером `WinDivert64.sys`, бинарником `winws.exe` и пресетами Zapret в `publish\OmniEye\Tray\`.
-* Генерацию командных файлов управления `InstallService.bat`, `UninstallService.bat`, `StartOmniEye.bat` и `README.txt`.
-* Упаковку готового дистрибутива в архив `publish\OmniEye-Release-win-x64.zip`.
+1. Очистку артефактов в каталоге `publish\`.
+2. Публикацию службы `OmniEyeSvc` в `publish\OmniEye\Service\`.
+3. Публикацию интерфейса `OmniEyeTray` со всеми нативными библиотеками, драйвером `WinDivert64.sys` и пресетами Zapret в `publish\OmniEye\Tray\`.
+4. Генерацию батников управления `InstallService.bat`, `UninstallService.bat`, `StartOmniEye.bat`.
+5. Сжатие в портативный ZIP-архив `publish\OmniEye-Release-win-x64.zip`.
+6. Компиляцию единого инсталлятора `publish\OmniEye-Setup-win-x64.exe` через Inno Setup Compiler (`ISCC.exe`).
 
 ---
 
-### 2. Ручная публикация Release-сборки:
+### 3. Ручная публикация Release-сборки:
 ```powershell
 dotnet publish OmniEyeSvc\OmniEyeSvc.csproj -c Release -o publish\OmniEye\Service
 dotnet publish OmniEyeTray\OmniEyeTray.csproj -c Release -o publish\OmniEye\Tray
 ```
 
-### 3. Регистрация и запуск службы Windows:
+### 4. Ручная регистрация службы Windows (портативный режим):
 * **Через командный файл:** нажмите правой кнопкой мыши на `InstallService.bat` в распакованной папке ➔ *«Запуск от имени администратора»*.
 * **Вручную через `sc.exe` (от имени Администратора):**
   ```cmd
@@ -351,13 +368,13 @@ dotnet publish OmniEyeTray\OmniEyeTray.csproj -c Release -o publish\OmniEye\Tray
   sc.exe start OmniEyeSvc
   ```
 
-### 4. Управление службой:
+### 5. Управление службой:
 ```cmd
 sc.exe stop OmniEyeSvc
 sc.exe delete OmniEyeSvc
 ```
 
-### 5. Добавление интерфейса Tray в автозапуск:
+### 6. Добавление интерфейса Tray в автозапуск (для портативной версии):
 Создайте ярлык для `Tray\OmniEyeTray.exe` в папке автозагрузки Windows (`Win + R` ➔ `shell:startup`).
 
 ---

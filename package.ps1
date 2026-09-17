@@ -126,7 +126,7 @@ DEPLOYMENT STEPS:
 [System.IO.File]::WriteAllText("$root\$OutputDir\README.txt", $readmeTxt)
 
 # 5. Create ZIP Archive
-Write-Host "`n[5/5] Creating release ZIP archive: $ArchiveName..." -ForegroundColor Yellow
+Write-Host "`n[5/6] Creating release ZIP archive: $ArchiveName..." -ForegroundColor Yellow
 $archiveFullPath = Join-Path $root $ArchiveName
 if (Test-Path $archiveFullPath) {
     Remove-Item $archiveFullPath -Force
@@ -134,8 +134,38 @@ if (Test-Path $archiveFullPath) {
 Compress-Archive -Path "$root\$OutputDir\*" -DestinationPath $archiveFullPath -Force
 
 $zipSizeMb = [math]::Round(((Get-Item $archiveFullPath).Length / 1MB), 2)
+
+# 6. Build Single-File Executable Installer (.exe)
+Write-Host "`n[6/6] Building Single-File Executable Installer (OmniEye-Setup-win-x64.exe)..." -ForegroundColor Yellow
+$isccCandidates = @(
+    (Get-Command iscc -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source),
+    "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe",
+    "$env:ProgramFiles (x86)\Inno Setup 6\ISCC.exe",
+    "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
+)
+$isccExe = $isccCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+
+$installerFullPath = Join-Path $root "publish\OmniEye-Setup-win-x64.exe"
+if ($isccExe) {
+    Write-Host "Found Inno Setup Compiler: $isccExe" -ForegroundColor Cyan
+    & $isccExe "$root\installer\OmniEye.iss"
+    if ($LASTEXITCODE -eq 0 -and (Test-Path $installerFullPath)) {
+        $setupSizeMb = [math]::Round(((Get-Item $installerFullPath).Length / 1MB), 2)
+        Write-Host "Single-file Installer created successfully: $installerFullPath ($setupSizeMb MB)" -ForegroundColor Green
+    } else {
+        Write-Warning "Inno Setup compilation finished with code $LASTEXITCODE"
+    }
+} else {
+    Write-Warning "Inno Setup 6 compiler (iscc.exe) not found. To build single-file .exe installer, install Inno Setup ('winget install JRSoftware.InnoSetup')."
+}
+
 Write-Host "`n==========================================================" -ForegroundColor Green
-Write-Host " PACKAGING COMPLETE!                                      " -ForegroundColor Green
-Write-Host " Folder:  $root\$OutputDir                                " -ForegroundColor Green
-Write-Host " Archive: $archiveFullPath ($zipSizeMb MB)                 " -ForegroundColor Green
+Write-Host " PACKAGING PIPELINE COMPLETE!                             " -ForegroundColor Green
+Write-Host " Portable:  $root\$OutputDir                              " -ForegroundColor Green
+Write-Host " ZIP:       $archiveFullPath ($zipSizeMb MB)              " -ForegroundColor Green
+if (Test-Path $installerFullPath) {
+    $setupSizeMb = [math]::Round(((Get-Item $installerFullPath).Length / 1MB), 2)
+    Write-Host " Installer: $installerFullPath ($setupSizeMb MB)          " -ForegroundColor Green
+}
 Write-Host "==========================================================" -ForegroundColor Green
+

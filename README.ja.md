@@ -319,29 +319,46 @@ dotnet build OmniEye.slnx -c Release
 
 ## 7. パッケージング、配布 & Windows サービス展開手順
 
-本番運用および配布用に、本ソリューションは独立したポータブルリリースパッケージとして作成できます：
+本プロジェクトは **単一 `.exe` インストーラー** と **ポータブル ZIP 配布** の2種類の配布形式をサポートしています。
 
-### 1. 1 クリック自動パッケージング（`package.ps1`）：
-プロジェクトのルートディレクトリに、自動ビルドおよびパッケージングスクリプトが含まれています：
+### 1. 単一インストーラーによるセットアップ（`OmniEye-Setup-win-x64.exe`）：
+エンドユーザーにとって最もシンプルで推奨される展開方法です：
+* `OmniEye-Setup-win-x64.exe` をダウンロードして実行します。
+* 多言語対応のセットアップウィザード（日本語、英語、ロシア語、ウクライナ語、ドイツ語）：
+  * サービスおよびトレイ GUI を `C:\Program Files\OmniEye\` に展開。
+  * Windows サービスコントロールマネージャーに `OmniEyeSvc` を自動登録して起動。
+  * スタートメニューおよびデスクトップにショートカットを作成。
+  * オプションで Windows ログオン時のトレイ自動起動（`Run` レジストリ）を有効化。
+  * Windows の「設定 ➔ アプリ」にアンインストーラーを正常登録。
+* **サイレント（無人）企業展開：**
+  ```cmd
+  OmniEye-Setup-win-x64.exe /VERYSILENT /NORESTART
+  ```
+
+---
+
+### 2. 1 クリック自動パッケージング（`package.ps1`）：
+プロジェクトのルートディレクトリに、ユニバーサルビルドおよびパッケージングスクリプトが含まれています：
 ```powershell
 powershell -ExecutionPolicy Bypass -File package.ps1
 ```
 このスクリプトは以下の処理を自動実行します：
-* `publish\OmniEye\` ディレクトリ内の過去ビルドのクリーンアップ。
-* `OmniEyeSvc` サービスを `publish\OmniEye\Service\` に発行。
-* `OmniEyeTray` GUI、ネイティブ DLL、`WinDivert64.sys`、`winws.exe`、Zapret プリセットを `publish\OmniEye\Tray\` に発行。
-* 管理用バッチスクリプト（`InstallService.bat`、`UninstallService.bat`、`StartOmniEye.bat`、`README.txt`）を自動生成。
-* 配布パッケージ全体を `publish\OmniEye-Release-win-x64.zip` に圧縮保存。
+1. `publish\` 内の過去成果物のクリーンアップ。
+2. `OmniEyeSvc` を `publish\OmniEye\Service\` に発行。
+3. `OmniEyeTray` GUI、ネイティブ DLL、`WinDivert64.sys`、Zapret プリセットを `publish\OmniEye\Tray\` に発行。
+4. 管理用バッチスクリプト（`InstallService.bat`、`UninstallService.bat`、`StartOmniEye.bat`）を自動生成。
+5. ポータブルパッケージ全体を `publish\OmniEye-Release-win-x64.zip` に圧縮保存。
+6. Inno Setup Compiler (`ISCC.exe`) により、単一インストーラー `publish\OmniEye-Setup-win-x64.exe` をコンパイル。
 
 ---
 
-### 2. 手動リリース発行：
+### 3. 手動リリース発行：
 ```powershell
 dotnet publish OmniEyeSvc\OmniEyeSvc.csproj -c Release -o publish\OmniEye\Service
 dotnet publish OmniEyeTray\OmniEyeTray.csproj -c Release -o publish\OmniEye\Tray
 ```
 
-### 3. Windows サービスの登録 & 開始：
+### 4. 手動による Windows サービス登録（ポータブルモード）：
 * **バッチファイルによる実行：** 展開先フォルダの `InstallService.bat` を右クリック ➔ *「管理者として実行」*。
 * **手動による `sc.exe` 登録（管理者権限）：**
   ```cmd
@@ -350,13 +367,13 @@ dotnet publish OmniEyeTray\OmniEyeTray.csproj -c Release -o publish\OmniEye\Tray
   sc.exe start OmniEyeSvc
   ```
 
-### 4. サービスの管理：
+### 5. サービスの管理：
 ```cmd
 sc.exe stop OmniEyeSvc
 sc.exe delete OmniEyeSvc
 ```
 
-### 5. トレイ GUI のスタートアップ登録：
+### 6. トレイ GUI のスタートアップ登録（ポータブルモード）：
 `Tray\OmniEyeTray.exe` のショートカットを作成し、Windows のスタートアップフォルダ（`Win + R` ➔ `shell:startup`）に配置します。
 
 ---
