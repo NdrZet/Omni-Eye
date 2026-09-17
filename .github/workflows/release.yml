@@ -1,0 +1,77 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v1.0.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build, Package & Publish Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress
+
+      - name: Build & Package OmniEye (Installer + Portable ZIP)
+        shell: pwsh
+        run: |
+          .\package.ps1 -Configuration Release
+
+      - name: Verify Release Artifacts
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "publish\OmniEye-Release-win-x64.zip")) {
+            throw "Artifact publish\OmniEye-Release-win-x64.zip was not found!"
+          }
+          if (-not (Test-Path "publish\OmniEye-Setup-win-x64.exe")) {
+            throw "Artifact publish\OmniEye-Setup-win-x64.exe was not found!"
+          }
+          Write-Host "Artifacts successfully created and verified." -ForegroundColor Green
+
+      - name: Determine Release Tag
+        id: tag_info
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ inputs.tag_name }}" -ne "") {
+            $tag = "${{ inputs.tag_name }}"
+          }
+          if (-not $tag -or $tag -eq "main" -or $tag -eq "master") {
+            $tag = "v1.0." + (Get-Date -Format "yyyyMMdd.HHmm")
+          }
+          Write-Host "Using tag: $tag"
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_info.outputs.tag }}
+          files: |
+            publish/OmniEye-Setup-win-x64.exe
+            publish/OmniEye-Release-win-x64.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

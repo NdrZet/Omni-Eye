@@ -1,0 +1,2 @@
+# User-defined excluded domains (bypass will be ignored for these domains)
+domain.example.abc

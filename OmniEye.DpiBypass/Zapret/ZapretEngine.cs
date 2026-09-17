@@ -98,6 +98,8 @@ public class ZapretEngine : IDisposable
                 throw new FileNotFoundException($"winws.exe not found at: {winwsExe}");
             }
 
+            EnsureUserLists(listsDir);
+
             var arguments = BuildArguments(presetName, zapretDir, binDir, listsDir);
 
             var psi = new ProcessStartInfo
@@ -132,8 +134,25 @@ public class ZapretEngine : IDisposable
 
             _process = proc ?? throw new InvalidOperationException("Failed to start winws.exe process.");
 
+            // Check if process immediately exited on launch (e.g. missing files or driver load failure)
+            try
+            {
+                if (_process.WaitForExit(250))
+                {
+                    int exitCode = _process.ExitCode;
+                    _process.Dispose();
+                    _process = null;
+                    throw new InvalidOperationException($"Zapret winws.exe terminated immediately with exit code {exitCode}. Check administrative privileges and driver status.");
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch { }
+
             // Bind process to JobObject for guaranteed auto-kill on parent exit (if accessible)
-            if (_jobHandle != IntPtr.Zero)
+            if (_jobHandle != IntPtr.Zero && _process != null && !_process.HasExited)
             {
                 try
                 {
@@ -145,6 +164,36 @@ public class ZapretEngine : IDisposable
             CurrentPreset = presetName;
             StateChanged?.Invoke(true);
         }
+    }
+
+    /// <summary>
+    /// Ensures user-defined list files exist so winws.exe doesn't exit prematurely on missing files.
+    /// </summary>
+    public static void EnsureUserLists(string listsDir)
+    {
+        try
+        {
+            Directory.CreateDirectory(listsDir);
+
+            var generalUser = Path.Combine(listsDir, "list-general-user.txt");
+            if (!File.Exists(generalUser))
+            {
+                File.WriteAllText(generalUser, "# User-defined custom domains for DPI bypass\r\ndomain.example.abc\r\n");
+            }
+
+            var excludeUser = Path.Combine(listsDir, "list-exclude-user.txt");
+            if (!File.Exists(excludeUser))
+            {
+                File.WriteAllText(excludeUser, "# User-defined excluded domains (bypass ignored)\r\ndomain.example.abc\r\n");
+            }
+
+            var ipsetExcludeUser = Path.Combine(listsDir, "ipset-exclude-user.txt");
+            if (!File.Exists(ipsetExcludeUser))
+            {
+                File.WriteAllText(ipsetExcludeUser, "# User-defined excluded IP ranges (CIDR)\r\n203.0.113.113/32\r\n");
+            }
+        }
+        catch { }
     }
 
     /// <summary>

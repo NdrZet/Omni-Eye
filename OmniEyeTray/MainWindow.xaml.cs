@@ -48,6 +48,7 @@ public partial class MainWindow : FluentWindow
     private bool _suppressNotepadTextSync = false;
     private string _currentTab = "Dashboard";
     private int _lastBlockedAttempts = 0;
+    private bool _isDpiBypassActive = false;
 
     public ObservableCollection<WhitelistEntry> WhitelistEntries { get; set; } = new();
     public ObservableCollection<NetworkConnectionInfo> NetworkConnections { get; set; } = new();
@@ -1049,7 +1050,8 @@ public partial class MainWindow : FluentWindow
 
     private void BtnToggleDpiBypass_Click(object sender, RoutedEventArgs e)
     {
-        if (_zapretEngine.IsRunning)
+        // If bypass is active, engine is running, or button is in Stop/Danger state -> user wants to stop
+        if (_isDpiBypassActive || _zapretEngine.IsRunning || BtnToggleDpiBypass.Appearance == Wpf.Ui.Controls.ControlAppearance.Danger)
         {
             StopDpiBypass();
         }
@@ -1082,18 +1084,21 @@ public partial class MainWindow : FluentWindow
                 }
             }
 
+            _isDpiBypassActive = true;
             _dpiTelemetryTimer?.Start();
             UpdateDpiTelemetry();
             UpdateDpiUiState(true);
         }
         catch (Exception ex)
         {
+            _isDpiBypassActive = false;
+            UpdateDpiUiState(false);
+            UpdateDpiTelemetry();
             MessageBox.Show(
-                $"Failed to start Zapret engine: {ex.Message}",
+                $"Не удалось запустить службу обхода DPI (Zapret winws):\n\n{ex.Message}",
                 LocalizationManager.GetString("DpiBypass_Title"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
-            UpdateDpiUiState(false);
         }
     }
 
@@ -1111,12 +1116,15 @@ public partial class MainWindow : FluentWindow
                     s.IsActiveDns = false;
                 }
             }
-
+        }
+        catch { }
+        finally
+        {
             _dpiTelemetryTimer?.Stop();
+            _isDpiBypassActive = false;
             UpdateDpiTelemetry();
             UpdateDpiUiState(false);
         }
-        catch { }
     }
 
     private void BtnConnectDohServer_Click(object sender, RoutedEventArgs e)
@@ -1145,7 +1153,7 @@ public partial class MainWindow : FluentWindow
 
     private void CmbZapretPreset_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_zapretEngine.IsRunning && CmbZapretPreset.SelectedItem is string)
+        if ((_isDpiBypassActive || _zapretEngine.IsRunning) && CmbZapretPreset.SelectedItem is string)
         {
             // Restart with the newly selected preset
             StartDpiBypass();
@@ -1174,7 +1182,7 @@ public partial class MainWindow : FluentWindow
     {
         if (_zapretEngine.IsRunning)
         {
-            TxtDpiActiveConn.Text = _zapretEngine.ProcessId.HasValue ? $"PID: {_zapretEngine.ProcessId}" : "АКТИВЕН";
+            TxtDpiActiveConn.Text = _zapretEngine.ProcessId.HasValue ? _zapretEngine.ProcessId.Value.ToString() : "АКТИВЕН";
             TxtDpiBytes.Text = _zapretEngine.CurrentPreset;
             TxtDpiDnsHits.Text = SystemDnsManager.IsConnected
                 ? (SystemDnsManager.ActiveProviderName ?? "DoH")
@@ -1182,6 +1190,13 @@ public partial class MainWindow : FluentWindow
         }
         else
         {
+            // If the UI was marked active but the process terminated externally, resync UI state
+            if (_isDpiBypassActive)
+            {
+                _isDpiBypassActive = false;
+                UpdateDpiUiState(false);
+            }
+
             TxtDpiActiveConn.Text = "—";
             TxtDpiBytes.Text = CmbZapretPreset?.SelectedItem as string ?? "General";
             TxtDpiDnsHits.Text = SystemDnsManager.IsConnected

@@ -1,0 +1,3 @@
+# User-defined custom domains for DPI bypass
+# Add one domain per line (e.g. discord.gg, youtube.com)
+domain.example.abc
