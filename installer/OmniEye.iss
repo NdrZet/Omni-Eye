@@ -87,7 +87,7 @@ Filename: "{sys}\sc.exe"; Parameters: "description OmniEyeSvc ""Высокопр
 Filename: "{sys}\sc.exe"; Parameters: "start OmniEyeSvc"; Flags: runhidden; Tasks: startservice
 
 ; 2. Запуск приложения Tray после завершения установки
-Filename: "{app}\Tray\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Tray\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
 
 [UninstallRun]
 ; Корректное завершение процессов и удаление службы при деинсталляции
