@@ -318,40 +318,56 @@ Open two separate PowerShell sessions:
 
 ---
 
-## 7. Windows Service Deployment
+## 7. Packaging, Distribution & Windows Service Deployment
 
-For production deployments, compile release binaries and register the engine as a native Windows Service (Service Control Manager):
+For production deployments and distribution, the solution can be packaged as a self-contained portable release:
 
-### 1. Publish Release Artifacts:
+### 1. 1-Click Automated Packaging (`package.ps1`):
+An automated build and packaging script is included in the root directory:
 ```powershell
-dotnet publish OmniEyeSvc\OmniEyeSvc.csproj -c Release -o publish\OmniEyeSvc
-dotnet publish OmniEyeTray\OmniEyeTray.csproj -c Release -o publish\OmniEyeTray
+powershell -ExecutionPolicy Bypass -File package.ps1
+```
+This script automatically executes:
+* Clean previous builds in `publish\OmniEye\`.
+* Publish `OmniEyeSvc` into `publish\OmniEye\Service\`.
+* Publish `OmniEyeTray` with all native binaries, `WinDivert64.sys`, `winws.exe`, and Zapret presets into `publish\OmniEye\Tray\`.
+* Generate management batch scripts (`InstallService.bat`, `UninstallService.bat`, `StartOmniEye.bat`, `README.txt`).
+* Package the complete distribution into `publish\OmniEye-Release-win-x64.zip`.
+
+---
+
+### 2. Manual Release Publishing:
+```powershell
+dotnet publish OmniEyeSvc\OmniEyeSvc.csproj -c Release -o publish\OmniEye\Service
+dotnet publish OmniEyeTray\OmniEyeTray.csproj -c Release -o publish\OmniEye\Tray
 ```
 
-### 2. Register Windows Service (`sc.exe` as Administrator):
-```cmd
-sc.exe create OmniEyeSvc binPath= "D:\SPA_Full\OmniEye\publish\OmniEyeSvc\OmniEyeSvc.exe" start= auto DisplayName= "OmniEye Zero-Trust Service"
-sc.exe description OmniEyeSvc "Anti-Exfiltration Engine and Zero-Trust Network Enforcer."
-sc.exe start OmniEyeSvc
-```
+### 3. Service Registration & Startup:
+* **Using the Batch Helper:** Right-click `InstallService.bat` in the extracted release directory ➔ *Run as administrator*.
+* **Manually via `sc.exe` (Run as Administrator):**
+  ```cmd
+  sc.exe create OmniEyeSvc binPath= "C:\Program Files\OmniEye\Service\OmniEyeSvc.exe" start= auto DisplayName= "OmniEye Zero-Trust Service"
+  sc.exe description OmniEyeSvc "Anti-Exfiltration Engine and Zero-Trust Network Enforcer."
+  sc.exe start OmniEyeSvc
+  ```
 
-### 3. Service Lifecycle Management:
+### 4. Service Lifecycle Management:
 ```cmd
 sc.exe stop OmniEyeSvc
 sc.exe delete OmniEyeSvc
 ```
 
-### 4. Enable GUI Auto-Start:
-Create a shortcut pointing to `publish\OmniEyeTray\OmniEyeTray.exe` in the user startup folder (`Win + R` ➔ `shell:startup`).
+### 5. Enable GUI Auto-Start:
+Create a shortcut pointing to `Tray\OmniEyeTray.exe` in the user startup folder (`Win + R` ➔ `shell:startup`).
 
 ---
 
 ## 8. Automated Verification Suite
 
-The [OmniEye.Tests](file:///d:/SPA_Full/OmniEye/OmniEye.Tests) project provides end-to-end integration tests validating all security guarantees without external dependencies. To execute:
+The [OmniEye.Tests](file:///d:/SPA_Full\OmniEye\OmniEye.Tests) project provides end-to-end integration tests validating all security guarantees without external dependencies. To execute:
 
 ```powershell
-dotnet run --project OmniEye.Tests\OmniEye.Tests.csproj
+dotnet run --project OmniEye.Tests\OmniEye.Tests.csproj -c Release
 ```
 
 ### Test Suite Execution Output:
@@ -360,84 +376,31 @@ dotnet run --project OmniEye.Tests\OmniEye.Tests.csproj
  OmniEye (Zero-Trust Anti-Exfiltration System) Verification Suite
 ==================================================================
 
-[RUNNING] TEST 1: DPAPI Key Management & SQLCipher Encryption...
- -> Verified ciphertext database. Header: [51-65-61-47-C2-DC-88-98-CD-D0-4E-76-AB-B1-FA-33]
- -> Encrypted entry created and retrieved successfully (Id: 1, File: notepad.exe)
- -> Exclusive file lock successfully acquired and released.
 [PASS] TEST 1: DPAPI Key Management & SQLCipher Encryption
-
-[RUNNING] TEST 2: Authenticode Signature Verification (WinVerifyTrust)...
- -> dotnet.exe: Signed=True, Valid=True, Subject=CN=.NET, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
- -> Unsigned test file: Signed=False, Valid=False
 [PASS] TEST 2: Authenticode Signature Verification (WinVerifyTrust)
-
-[RUNNING] TEST 3: Process Freeze & Resume (NtSuspendProcess / NtResumeProcess)...
- -> Spawned target process PID: 29768
- -> NtSuspendProcess succeeded. Process frozen.
- -> NtResumeProcess succeeded. Process resumed.
- -> Process successfully terminated.
 [PASS] TEST 3: Process Freeze & Resume (NtSuspendProcess / NtResumeProcess)
-
-[RUNNING] TEST 4: Named Pipe IPC Server/Client Protocol & Security Prompts...
- -> IPC client connected to test server pipe.
- -> Status RPC verified: IsRunning=True, DevMode=True
- -> Whitelist Add RPC verified: Added to whitelist and firewall successfully.
- -> Whitelist Get RPC verified: 1 entries.
- -> Injection Prompt-and-Decision verified. Server received action: 'kill'.
 [PASS] TEST 4: Named Pipe IPC Server/Client Protocol & Security Prompts
-
-[RUNNING] TEST 5: DeveloperMode Lifecycle & Graceful Rollback...
- -> Applied Firewall policy in DeveloperMode.
- -> Successfully rolled back Firewall policy to Allow.
- -> Database exclusive lock successfully released for shutdown.
 [PASS] TEST 5: DeveloperMode Lifecycle & Graceful Rollback
-
-[RUNNING] TEST 6: Dynamic Firewall Policy Switching via IPC...
- -> Initial policy: OutboundBlocked=False
- -> Switched to ALLOW: OutboundBlocked=False, Msg: Default outbound policy set to ALLOW (Permissive).
- -> Switched to BLOCK: OutboundBlocked=True, Msg: Default outbound policy set to BLOCK (Zero-Trust).
 [PASS] TEST 6: Dynamic Firewall Policy Switching via IPC
-
-[RUNNING] TEST 7: Active Network Connection Monitoring & Process Attribution...
- -> Total active sockets detected: 246 (TCP: 153, UDP: 93)
- -> Policy correlation breakdown: Whitelisted: 0, Blocked: 182, Exceptions: 64
 [PASS] TEST 7: Active Network Connection Monitoring & Process Attribution
-
-[RUNNING] TEST 8: DNS RFC 1035 Wire-Format Serialization & Response Parsing...
- -> DNS Query built, size: 31 bytes
- -> Parsed 2 IP addresses, MinTTL: 120s
 [PASS] TEST 8: DNS RFC 1035 Wire-Format Serialization & Response Parsing
-
-[RUNNING] TEST 9: TLS ClientHello SNI Extraction & Fragmentation Offset Calculation...
- -> Synthesized ClientHello packet size: 72 bytes
- -> SNI found: True, Extracted: 'discord.com', Calculated split offset: 66
 [PASS] TEST 9: TLS ClientHello SNI Extraction & Fragmentation Offset Calculation
-
-[RUNNING] TEST 10: Multi-Resolver DoH Pool with Concurrent Race & Caching...
- -> Configured 5 DoH servers: Cloudflare, Cloudflare-Backup, Google, Quad9, AdGuard
- -> Happy Eyeballs concurrent race resolved cloudflare.com to: 104.16.132.229
 [PASS] TEST 10: Multi-Resolver DoH Pool with Concurrent Race & Caching
-
-[RUNNING] TEST 11: DPI HTTP CONNECT Proxy Server & ClientHello Fragmentation Pipeline...
- -> DpiProxyServer started on 127.0.0.1:59085, tunnel verified successfully.
 [PASS] TEST 11: DPI HTTP CONNECT Proxy Server & ClientHello Fragmentation Pipeline
-
-[RUNNING] TEST 12: Windows System Proxy WinINet Registry & Automatic Restoration...
- -> WinINet registry proxy enabled and cleanly restored to original state.
 [PASS] TEST 12: Windows System Proxy WinINet Registry & Automatic Restoration
-
-[RUNNING] TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification...
- -> Verified binaries: winws.exe, WinDivert64.sys, Discord UDP payload.
- -> Generated arguments for 22 Flowseal presets.
- -> Win32 JobObject KILL_ON_JOB_CLOSE initialized and verified.
 [PASS] TEST 13: Zapret Native Engine Assets & Command-Line Arguments Verification
-
-[RUNNING] TEST 14: System DNS & Windows 11 Native DoH Configuration Manager...
- -> Physical adapters discovered. DoH template encryption and safe rollback verified.
 [PASS] TEST 14: System DNS & Windows 11 Native DoH Configuration Manager
+[PASS] TEST 15: DomainListManager File Persistence, Sanitization & Import/Export
+       -> Testing Domain Sanitization & Edge Cases...
+       -> Testing Domain List Persistence & Deduplication...
+       -> Testing Export to text file...
+       -> Testing Import from text file...
+       -> Testing Multiline Notepad Raw Text Parsing...
+       -> Testing ZapretEngine.Restart() non-crashing invocation...
+       -> DomainListManager & Hot-Reload verified successfully.
 
 ------------------------------------------------------------------
- ALL 14 TESTS PASSED SUCCESSFULLY! (0 Failures)
+ ALL 15 TESTS PASSED SUCCESSFULLY! (0 Failures)
 ------------------------------------------------------------------
 ```
 
