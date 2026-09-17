@@ -42,7 +42,7 @@ public partial class MainWindow : FluentWindow
     private readonly System.Windows.Threading.DispatcherTimer _netMonTimer;
     private readonly System.Windows.Threading.DispatcherTimer _dpiTelemetryTimer;
     private readonly ZapretEngine _zapretEngine = new();
-    private readonly CloudTunnelManager _cloudTunnelManager = new();
+    private readonly CloudTunnelManager _cloudTunnelManager = new(CloudTunnelConfig.Load());
     private readonly DohResolverPool _dohPool = new();
     private readonly DomainListManager _domainListManager = new();
     private string _activeSelectedList = DomainListManager.ListGeneral;
@@ -119,6 +119,14 @@ public partial class MainWindow : FluentWindow
         NavSettings.Checked += NavSettings_Click;
 
         _cloudTunnelManager.StateChanged += () => Dispatcher.Invoke(UpdateCloudTunnelUI);
+        if (_cloudTunnelManager.Config.IsEnabled)
+        {
+            _cloudTunnelManager.Start();
+        }
+        else if (_cloudTunnelManager.Config.WorkerDomains.Count > 0)
+        {
+            _ = Task.Run(async () => await _cloudTunnelManager.PingWorkerAsync());
+        }
         UpdateCloudTunnelUI();
     }
 
@@ -1680,6 +1688,20 @@ public partial class MainWindow : FluentWindow
         }
     }
 
+    private List<string> SaveWorkerDomainsFromInput()
+    {
+        var raw = TxtWorkerDomains.Text;
+        var domains = raw.Split(new[] { ',', ';', ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                         .Select(d => d.Trim().Replace("https://", "").Replace("http://", "").TrimEnd('/'))
+                         .Where(d => !string.IsNullOrWhiteSpace(d))
+                         .Distinct(StringComparer.OrdinalIgnoreCase)
+                         .ToList();
+
+        _cloudTunnelManager.Config.WorkerDomains = domains;
+        _cloudTunnelManager.Config.Save();
+        return domains;
+    }
+
     private void BtnToggleCloudTunnel_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -1690,8 +1712,14 @@ public partial class MainWindow : FluentWindow
             }
             else
             {
+                if (_cloudTunnelManager.Config.WorkerDomains.Count == 0 && !string.IsNullOrWhiteSpace(TxtWorkerDomains?.Text))
+                {
+                    SaveWorkerDomainsFromInput();
+                }
                 _cloudTunnelManager.Start();
             }
+            _cloudTunnelManager.Config.IsEnabled = _cloudTunnelManager.IsRunning;
+            _cloudTunnelManager.Config.Save();
             UpdateCloudTunnelUI();
         }
         catch (Exception ex)
@@ -1704,9 +1732,16 @@ public partial class MainWindow : FluentWindow
     {
         try
         {
+            if (_cloudTunnelManager.Config.WorkerDomains.Count == 0 && !string.IsNullOrWhiteSpace(TxtWorkerDomains?.Text))
+            {
+                SaveWorkerDomainsFromInput();
+            }
+
             if (!_cloudTunnelManager.IsRunning)
             {
                 _cloudTunnelManager.Start();
+                _cloudTunnelManager.Config.IsEnabled = true;
+                _cloudTunnelManager.Config.Save();
                 UpdateCloudTunnelUI();
             }
 
@@ -1734,6 +1769,11 @@ public partial class MainWindow : FluentWindow
     private void BtnRegenerateSecret_Click(object sender, RoutedEventArgs e)
     {
         _cloudTunnelManager.Config.Secret = CloudTunnelConfig.GenerateSecret();
+        _cloudTunnelManager.Config.Save();
+        if (_cloudTunnelManager.IsRunning)
+        {
+            _cloudTunnelManager.UpdateConfig(_cloudTunnelManager.Config);
+        }
         UpdateCloudTunnelUI();
     }
 
@@ -1741,6 +1781,7 @@ public partial class MainWindow : FluentWindow
     {
         bool enable = ChkSystemProxy.IsChecked == true;
         _cloudTunnelManager.Config.EnableSystemProxy = enable;
+        _cloudTunnelManager.Config.Save();
         if (enable)
         {
             WindowsProxyManager.EnableProxy(_cloudTunnelManager.Config.Host, _cloudTunnelManager.Config.Socks5Port, _cloudTunnelManager.Config.BypassRussianTraffic);
@@ -1755,6 +1796,7 @@ public partial class MainWindow : FluentWindow
     private void ChkBypassRu_Click(object sender, RoutedEventArgs e)
     {
         _cloudTunnelManager.Config.BypassRussianTraffic = ChkBypassRu.IsChecked == true;
+        _cloudTunnelManager.Config.Save();
         if (WindowsProxyManager.IsProxyEnabled())
         {
             WindowsProxyManager.EnableProxy(_cloudTunnelManager.Config.Host, _cloudTunnelManager.Config.Socks5Port, _cloudTunnelManager.Config.BypassRussianTraffic);
@@ -1773,18 +1815,35 @@ public partial class MainWindow : FluentWindow
         catch { }
     }
 
-    private void BtnSaveWorkers_Click(object sender, RoutedEventArgs e)
+    private async void BtnSaveWorkers_Click(object sender, RoutedEventArgs e)
     {
-        var raw = TxtWorkerDomains.Text;
-        var domains = raw.Split(new[] { ',', ';', ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                         .Select(d => d.Trim().Replace("https://", "").Replace("http://", "").TrimEnd('/'))
-                         .Where(d => !string.IsNullOrWhiteSpace(d))
-                         .Distinct(StringComparer.OrdinalIgnoreCase)
-                         .ToList();
+        SaveWorkerDomainsFromInput();
 
-        _cloudTunnelManager.Config.WorkerDomains = domains;
-        BtnSaveWorkers.Content = "✓ Сохранено";
-        _ = Task.Delay(2000).ContinueWith(_ => Dispatcher.Invoke(() => BtnSaveWorkers.Content = "Сохранить"));
+        if (_cloudTunnelManager.IsRunning)
+        {
+            _cloudTunnelManager.UpdateConfig(_cloudTunnelManager.Config);
+        }
+
+        BtnSaveWorkers.IsEnabled = false;
+        BtnSaveWorkers.Content = "Проверка...";
+
+        long ping = await _cloudTunnelManager.PingWorkerAsync();
+        UpdateCloudTunnelUI();
+
+        if (ping >= 0)
+        {
+            BtnSaveWorkers.Content = $"✓ Воркер отвечает ({ping} мс)";
+        }
+        else
+        {
+            BtnSaveWorkers.Content = "✓ Сохранено";
+        }
+
+        _ = Task.Delay(2500).ContinueWith(_ => Dispatcher.Invoke(() =>
+        {
+            BtnSaveWorkers.IsEnabled = true;
+            BtnSaveWorkers.Content = LocalizationManager.GetString("CloudTunnel_BtnSave") ?? "Сохранить";
+        }));
     }
 
     private void BtnWorkerScript_Click(object sender, RoutedEventArgs e)

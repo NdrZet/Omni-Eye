@@ -122,6 +122,39 @@ public sealed class CloudTunnelManager : IAsyncDisposable
         StateChanged?.Invoke();
     }
 
+    public async Task<long> PingWorkerAsync(string? specificDomain = null, CancellationToken ct = default)
+    {
+        string? targetDomain = specificDomain;
+        if (string.IsNullOrWhiteSpace(targetDomain) && _config.WorkerDomains.Count > 0)
+        {
+            targetDomain = _config.WorkerDomains[0];
+        }
+
+        if (string.IsNullOrWhiteSpace(targetDomain))
+        {
+            _workerPingMs = -1;
+            StateChanged?.Invoke();
+            return -1;
+        }
+
+        targetDomain = targetDomain.Trim().Replace("https://", "").Replace("http://", "").TrimEnd('/');
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(4) };
+            var sw = Stopwatch.StartNew();
+            using var resp = await client.GetAsync($"https://{targetDomain}", ct);
+            sw.Stop();
+            _workerPingMs = sw.ElapsedMilliseconds;
+        }
+        catch
+        {
+            _workerPingMs = -1;
+        }
+
+        StateChanged?.Invoke();
+        return _workerPingMs;
+    }
+
     private void StartPingMonitor()
     {
         _pingCts?.Cancel();
@@ -130,31 +163,9 @@ public sealed class CloudTunnelManager : IAsyncDisposable
 
         _ = Task.Run(async () =>
         {
-            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(4) };
-
             while (!ct.IsCancellationRequested)
             {
-                if (_config.WorkerDomains.Count > 0)
-                {
-                    var domain = _config.WorkerDomains[0].Trim().Replace("https://", "").Replace("http://", "").TrimEnd('/');
-                    var sw = Stopwatch.StartNew();
-                    try
-                    {
-                        using var resp = await client.GetAsync($"https://{domain}", ct);
-                        sw.Stop();
-                        _workerPingMs = sw.ElapsedMilliseconds;
-                    }
-                    catch
-                    {
-                        _workerPingMs = -1;
-                    }
-                }
-                else
-                {
-                    _workerPingMs = -1;
-                }
-
-                StateChanged?.Invoke();
+                await PingWorkerAsync(null, ct);
 
                 try
                 {

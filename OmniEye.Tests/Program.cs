@@ -1102,6 +1102,33 @@ invalid domain with spaces
             throw new Exception("WorkerScript resource code is invalid or missing 'cloudflare:sockets'");
         }
 
+        // 6. Test Live WebSocket to user's worker
+        Console.WriteLine(" -> Testing Live WebSocket to cdn.sklv-project.workers.dev...");
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var client = await OmniEye.Core.CloudTunnel.WebSocket.CfWorkerClient.ConnectAsync(
+                new[] { "cdn.sklv-project.workers.dev" },
+                "149.154.167.220",
+                2,
+                TimeSpan.FromSeconds(4),
+                cts.Token
+            );
+            if (client != null)
+            {
+                Console.WriteLine($" -> SUCCESS! Connected to WebSocket on {client.ConnectedDomain}, State={client.State}");
+                await client.DisposeAsync();
+            }
+            else
+            {
+                Console.WriteLine(" -> Could not connect to WebSocket on cdn.sklv-project.workers.dev (null returned)");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($" -> WebSocket connection test exception: {ex.Message}");
+        }
+
         Console.WriteLine(" -> Cloud Tunnel components verified successfully.");
     }
 }
