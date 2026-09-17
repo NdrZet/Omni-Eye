@@ -33,6 +33,7 @@ CloseApplications=yes
 RestartApplications=no
 UninstallDisplayName={#MyAppName} - Zero-Trust Endpoint Protection
 UninstallDisplayIcon={app}\Tray\{#MyAppExeName}
+SetupIconFile=..\OmniEyeTray\Assets\app.ico
 
 [Languages]
 Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"

@@ -204,9 +204,20 @@ public partial class MainWindow : FluentWindow
 
     private void InitializeTrayIcon()
     {
+        Icon? appIcon = null;
+        try
+        {
+            var icoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "app.ico");
+            if (File.Exists(icoPath))
+            {
+                appIcon = new Icon(icoPath);
+            }
+        }
+        catch { }
+
         _notifyIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Shield,
+            Icon = appIcon ?? SystemIcons.Shield,
             Text = "OmniEye Zero-Trust System",
             Visible = true
         };

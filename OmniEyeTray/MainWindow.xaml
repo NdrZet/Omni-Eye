@@ -4,6 +4,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:models="clr-namespace:OmniEye.Core.Models;assembly=OmniEye.Core"
         Title="{DynamicResource App_Title}" 
+        Icon="Assets/app.ico"
         Height="720" Width="1100"
         MinHeight="580" MinWidth="860"
         WindowStartupLocation="CenterScreen"
