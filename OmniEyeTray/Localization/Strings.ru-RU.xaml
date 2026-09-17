@@ -224,5 +224,9 @@
     <sys:String x:Key="DpiBypass_MsgDomainExists">Данный домен уже присутствует в списке.</sys:String>
     <sys:String x:Key="DpiBypass_DomainsCount">Всего доменов:</sys:String>
     <sys:String x:Key="DpiBypass_NoDomainsFound">Домены не найдены</sys:String>
+    <sys:String x:Key="DpiBypass_ViewModeItems">Элементы</sys:String>
+    <sys:String x:Key="DpiBypass_ViewModeNotepad">Блокнот</sys:String>
+    <sys:String x:Key="DpiBypass_BtnOpenNotepad">В Блокноте Windows</sys:String>
+    <sys:String x:Key="DpiBypass_NotepadHint">Редактируйте список построчно. Поддерживаются комментарии (#) и маски (^, *.). При сохранении выполняется автоматическая нормализация.</sys:String>
 </ResourceDictionary>
 

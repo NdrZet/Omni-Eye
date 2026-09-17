@@ -224,5 +224,9 @@
     <sys:String x:Key="DpiBypass_MsgDomainExists">This domain is already present in the list.</sys:String>
     <sys:String x:Key="DpiBypass_DomainsCount">Total domains:</sys:String>
     <sys:String x:Key="DpiBypass_NoDomainsFound">No domains found</sys:String>
+    <sys:String x:Key="DpiBypass_ViewModeItems">Items</sys:String>
+    <sys:String x:Key="DpiBypass_ViewModeNotepad">Notepad</sys:String>
+    <sys:String x:Key="DpiBypass_BtnOpenNotepad">Open in Notepad</sys:String>
+    <sys:String x:Key="DpiBypass_NotepadHint">Edit list line by line. Supports comments (#) and wildcards (^, *.). Auto-sanitization applies on save.</sys:String>
 </ResourceDictionary>
 

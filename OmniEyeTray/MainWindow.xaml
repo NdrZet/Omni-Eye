@@ -1076,6 +1076,9 @@
 
                                     <!-- Action Buttons -->
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:Button x:Name="BtnOpenSystemNotepad" Content="{DynamicResource DpiBypass_BtnOpenNotepad}" 
+                                                   Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=Open24}" 
+                                                   Click="BtnOpenSystemNotepad_Click" Margin="0,0,6,0" FontSize="11" Height="30" Padding="10,0"/>
                                         <ui:Button x:Name="BtnImportDomainList" Content="{DynamicResource DpiBypass_BtnImportList}" 
                                                    Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=ArrowUpload24}" 
                                                    Click="BtnImportDomainList_Click" Margin="0,0,6,0" FontSize="11" Height="30" Padding="10,0"/>
@@ -1099,14 +1102,26 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Tabs -->
+                                    <!-- Tabs & View Mode Switcher -->
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:Button x:Name="BtnTabGeneralList" Content="{DynamicResource DpiBypass_ListGeneral}" 
                                                    Appearance="Primary" Margin="0,0,6,0" Click="BtnTabList_Click" Tag="list-general.txt" Height="28" FontSize="11" Padding="10,0" Cursor="Hand"/>
                                         <ui:Button x:Name="BtnTabGoogleList" Content="{DynamicResource DpiBypass_ListGoogle}" 
                                                    Appearance="Secondary" Margin="0,0,6,0" Click="BtnTabList_Click" Tag="list-google.txt" Height="28" FontSize="11" Padding="10,0" Cursor="Hand"/>
                                         <ui:Button x:Name="BtnTabExcludeList" Content="{DynamicResource DpiBypass_ListExclude}" 
-                                                   Appearance="Secondary" Click="BtnTabList_Click" Tag="list-exclude.txt" Height="28" FontSize="11" Padding="10,0" Cursor="Hand"/>
+                                                   Appearance="Secondary" Margin="0,0,10,0" Click="BtnTabList_Click" Tag="list-exclude.txt" Height="28" FontSize="11" Padding="10,0" Cursor="Hand"/>
+
+                                        <!-- View Mode Switcher (Items vs Notepad) -->
+                                        <Border Background="#14FFFFFF" CornerRadius="6" Padding="2">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:Button x:Name="BtnViewModeItems" Content="{DynamicResource DpiBypass_ViewModeItems}" 
+                                                           Appearance="Primary" Icon="{ui:SymbolIcon Symbol=DocumentBulletList24}" 
+                                                           Click="BtnViewMode_Click" Tag="Items" Height="24" FontSize="10" Padding="6,0" Cursor="Hand" Margin="0,0,2,0"/>
+                                                <ui:Button x:Name="BtnViewModeNotepad" Content="{DynamicResource DpiBypass_ViewModeNotepad}" 
+                                                           Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=DocumentEdit24}" 
+                                                           Click="BtnViewMode_Click" Tag="Notepad" Height="24" FontSize="10" Padding="6,0" Cursor="Hand"/>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
 
                                     <!-- Search Box -->
@@ -1124,53 +1139,77 @@
                                     </Border>
                                 </Grid>
 
-                                <!-- Fast Add Domain Input Row -->
-                                <Grid Margin="0,0,0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <ui:TextBox x:Name="TxtNewDomain" Grid.Column="0" Height="32" Margin="0,0,8,0"
-                                                PlaceholderText="{DynamicResource DpiBypass_AddDomainPlaceholder}" 
-                                                KeyDown="TxtNewDomain_KeyDown" FontSize="12"/>
-                                    <ui:Button x:Name="BtnAddNewDomain" Grid.Column="1" 
-                                               Content="{DynamicResource DpiBypass_BtnAddDomain}" 
-                                               Appearance="Primary" Icon="{ui:SymbolIcon Symbol=Add24}" 
-                                               Click="BtnAddNewDomain_Click" Height="32" Padding="14,0" FontSize="11.5"/>
-                                </Grid>
-
-                                <!-- Domain Items List View -->
-                                <Border Background="#10FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="6" Padding="6" Height="220">
-                                    <Grid>
-                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                            <ItemsControl x:Name="ItemsDomainList">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border Background="#0CFFFFFF" CornerRadius="4" Padding="10,6" Margin="0,0,0,4" BorderBrush="#10FFFFFF" BorderThickness="1">
-                                                            <Grid>
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="Auto" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="Auto" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <Border Grid.Column="0" Width="6" Height="6" CornerRadius="3" Background="#4CC2FF" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                                                <TextBlock Grid.Column="1" Text="{Binding}" Foreground="#EAEAEA" FontSize="12" FontFamily="Consolas, Segoe UI" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                                                <ui:Button Grid.Column="2" Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=Dismiss24}" 
-                                                                           Padding="4,2" Height="24" Width="26" ToolTip="Удалить / Delete" 
-                                                                           Click="BtnDeleteDomain_Click" Tag="{Binding}" Cursor="Hand" VerticalAlignment="Center"/>
-                                                            </Grid>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-
-                                        <!-- Empty State Text -->
-                                        <TextBlock x:Name="TxtEmptyDomainsState" Text="{DynamicResource DpiBypass_NoDomainsFound}" 
-                                                   Foreground="#707070" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                                   Visibility="Collapsed"/>
+                                <!-- Mode 1: Visual Items View (Cards + Fast Add Input) -->
+                                <StackPanel x:Name="PanelItemsView" Visibility="Visible">
+                                    <!-- Fast Add Domain Input Row -->
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <ui:TextBox x:Name="TxtNewDomain" Grid.Column="0" Height="32" Margin="0,0,8,0"
+                                                    PlaceholderText="{DynamicResource DpiBypass_AddDomainPlaceholder}" 
+                                                    KeyDown="TxtNewDomain_KeyDown" FontSize="12"/>
+                                        <ui:Button x:Name="BtnAddNewDomain" Grid.Column="1" 
+                                                   Content="{DynamicResource DpiBypass_BtnAddDomain}" 
+                                                   Appearance="Primary" Icon="{ui:SymbolIcon Symbol=Add24}" 
+                                                   Click="BtnAddNewDomain_Click" Height="32" Padding="14,0" FontSize="11.5"/>
                                     </Grid>
-                                </Border>
+
+                                    <!-- Domain Items List View -->
+                                    <Border Background="#10FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="6" Padding="6" Height="220">
+                                        <Grid>
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                                <ItemsControl x:Name="ItemsDomainList">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Background="#0CFFFFFF" CornerRadius="4" Padding="10,6" Margin="0,0,0,4" BorderBrush="#10FFFFFF" BorderThickness="1">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                        <ColumnDefinition Width="*" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Border Grid.Column="0" Width="6" Height="6" CornerRadius="3" Background="#4CC2FF" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding}" Foreground="#EAEAEA" FontSize="12" FontFamily="Consolas, Segoe UI" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                                    <ui:Button Grid.Column="2" Appearance="Secondary" Icon="{ui:SymbolIcon Symbol=Dismiss24}" 
+                                                                               Padding="4,2" Height="24" Width="26" ToolTip="Удалить / Delete" 
+                                                                               Click="BtnDeleteDomain_Click" Tag="{Binding}" Cursor="Hand" VerticalAlignment="Center"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ScrollViewer>
+
+                                            <!-- Empty State Text -->
+                                            <TextBlock x:Name="TxtEmptyDomainsState" Text="{DynamicResource DpiBypass_NoDomainsFound}" 
+                                                       Foreground="#707070" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                       Visibility="Collapsed"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Mode 2: Multiline Raw Text / Notepad View -->
+                                <StackPanel x:Name="PanelNotepadView" Visibility="Collapsed">
+                                    <Border Background="#10FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="6" Padding="8">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Text="{DynamicResource DpiBypass_NotepadHint}" FontSize="11" Foreground="#888888" Margin="4,0,0,8" TextWrapping="Wrap"/>
+                                            <TextBox Grid.Row="1" x:Name="TxtDomainsRawNotepad" Height="220"
+                                                     AcceptsReturn="True" AcceptsTab="True"
+                                                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                                     TextWrapping="NoWrap"
+                                                     FontFamily="Consolas, Segoe UI Mono, Courier New"
+                                                     FontSize="12" Foreground="#EAEAEA" Background="#0A000000"
+                                                     BorderThickness="1" BorderBrush="#14FFFFFF" Padding="8"
+                                                     TextChanged="TxtDomainsRawNotepad_TextChanged"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
 

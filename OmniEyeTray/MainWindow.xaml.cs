@@ -44,6 +44,8 @@ public partial class MainWindow : FluentWindow
     private string _activeSelectedList = DomainListManager.ListGeneral;
     private readonly ObservableCollection<string> _allDomainsForCurrentList = new();
     private readonly ObservableCollection<string> _filteredDomains = new();
+    private bool _isNotepadViewMode = false;
+    private bool _suppressNotepadTextSync = false;
     private string _currentTab = "Dashboard";
     private int _lastBlockedAttempts = 0;
 
@@ -1207,7 +1209,96 @@ public partial class MainWindow : FluentWindow
             _allDomainsForCurrentList.Add(d);
         }
 
+        if (TxtDomainsRawNotepad != null)
+        {
+            _suppressNotepadTextSync = true;
+            TxtDomainsRawNotepad.Text = string.Join(Environment.NewLine, _allDomainsForCurrentList);
+            _suppressNotepadTextSync = false;
+        }
+
         ApplyDomainFilter(TxtSearchDomains?.Text);
+    }
+
+    private void SetViewMode(bool isNotepad)
+    {
+        _isNotepadViewMode = isNotepad;
+
+        if (_isNotepadViewMode)
+        {
+            BtnViewModeItems.Appearance = ControlAppearance.Secondary;
+            BtnViewModeNotepad.Appearance = ControlAppearance.Primary;
+
+            PanelItemsView.Visibility = Visibility.Collapsed;
+            PanelNotepadView.Visibility = Visibility.Visible;
+            TxtSearchDomains.Visibility = Visibility.Collapsed;
+
+            _suppressNotepadTextSync = true;
+            TxtDomainsRawNotepad.Text = string.Join(Environment.NewLine, _allDomainsForCurrentList);
+            _suppressNotepadTextSync = false;
+        }
+        else
+        {
+            BtnViewModeItems.Appearance = ControlAppearance.Primary;
+            BtnViewModeNotepad.Appearance = ControlAppearance.Secondary;
+
+            PanelItemsView.Visibility = Visibility.Visible;
+            PanelNotepadView.Visibility = Visibility.Collapsed;
+            TxtSearchDomains.Visibility = Visibility.Visible;
+
+            SyncFromNotepadText();
+        }
+    }
+
+    private void SyncFromNotepadText()
+    {
+        if (TxtDomainsRawNotepad == null) return;
+        var parsed = DomainListManager.ParseRawText(TxtDomainsRawNotepad.Text);
+        _allDomainsForCurrentList.Clear();
+        foreach (var d in parsed)
+        {
+            _allDomainsForCurrentList.Add(d);
+        }
+        ApplyDomainFilter(TxtSearchDomains?.Text);
+    }
+
+    private void BtnViewMode_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement elem && elem.Tag is string mode)
+        {
+            SetViewMode(mode == "Notepad");
+        }
+    }
+
+    private void TxtDomainsRawNotepad_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_suppressNotepadTextSync) return;
+        var lines = TxtDomainsRawNotepad.Text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        int count = lines.Count(l => !string.IsNullOrWhiteSpace(l) && !l.TrimStart().StartsWith('#') && !l.TrimStart().StartsWith(';'));
+        if (TxtDomainCountBadge != null)
+        {
+            TxtDomainCountBadge.Text = count.ToString();
+        }
+    }
+
+    private void BtnOpenSystemNotepad_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_isNotepadViewMode)
+            {
+                SyncFromNotepadText();
+            }
+            _domainListManager.SaveList(_activeSelectedList, _allDomainsForCurrentList);
+            _domainListManager.OpenInSystemEditor(_activeSelectedList);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Failed to open in Notepad: {ex.Message}",
+                LocalizationManager.GetString("DpiBypass_ListsTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
     }
 
     private void ApplyDomainFilter(string? query)
@@ -1253,6 +1344,11 @@ public partial class MainWindow : FluentWindow
     {
         if (sender is FrameworkElement elem && elem.Tag is string listName)
         {
+            if (_isNotepadViewMode)
+            {
+                SyncFromNotepadText();
+                _domainListManager.SaveList(_activeSelectedList, _allDomainsForCurrentList);
+            }
             LoadDomainList(listName);
         }
     }
@@ -1309,6 +1405,12 @@ public partial class MainWindow : FluentWindow
 
         TxtNewDomain.Clear();
         _domainListManager.SaveList(_activeSelectedList, _allDomainsForCurrentList);
+        if (TxtDomainsRawNotepad != null && !_isNotepadViewMode)
+        {
+            _suppressNotepadTextSync = true;
+            TxtDomainsRawNotepad.Text = string.Join(Environment.NewLine, _allDomainsForCurrentList);
+            _suppressNotepadTextSync = false;
+        }
         ApplyDomainFilter(TxtSearchDomains.Text);
     }
 
@@ -1321,6 +1423,12 @@ public partial class MainWindow : FluentWindow
             {
                 _allDomainsForCurrentList.Remove(itemToRemove);
                 _domainListManager.SaveList(_activeSelectedList, _allDomainsForCurrentList);
+                if (TxtDomainsRawNotepad != null && !_isNotepadViewMode)
+                {
+                    _suppressNotepadTextSync = true;
+                    TxtDomainsRawNotepad.Text = string.Join(Environment.NewLine, _allDomainsForCurrentList);
+                    _suppressNotepadTextSync = false;
+                }
                 ApplyDomainFilter(TxtSearchDomains.Text);
             }
         }
@@ -1330,6 +1438,14 @@ public partial class MainWindow : FluentWindow
     {
         try
         {
+            if (_isNotepadViewMode)
+            {
+                SyncFromNotepadText();
+                _suppressNotepadTextSync = true;
+                TxtDomainsRawNotepad.Text = string.Join(Environment.NewLine, _allDomainsForCurrentList);
+                _suppressNotepadTextSync = false;
+            }
+
             _domainListManager.SaveList(_activeSelectedList, _allDomainsForCurrentList);
             if (_zapretEngine.IsRunning)
             {

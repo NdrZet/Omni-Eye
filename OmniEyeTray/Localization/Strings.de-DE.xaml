@@ -224,5 +224,9 @@
     <sys:String x:Key="DpiBypass_MsgDomainExists">Diese Domain ist bereits in der Liste vorhanden.</sys:String>
     <sys:String x:Key="DpiBypass_DomainsCount">Gesamtanzahl Domains:</sys:String>
     <sys:String x:Key="DpiBypass_NoDomainsFound">Keine Domains gefunden</sys:String>
+    <sys:String x:Key="DpiBypass_ViewModeItems">Elemente</sys:String>
+    <sys:String x:Key="DpiBypass_ViewModeNotepad">Notizblock</sys:String>
+    <sys:String x:Key="DpiBypass_BtnOpenNotepad">Im Windows-Editor öffnen</sys:String>
+    <sys:String x:Key="DpiBypass_NotepadHint">Bearbeiten Sie die Liste zeilenweise. Unterstützt Kommentare (#) und Platzhalter (^, *.). Automatisches Bereinigen beim Speichern.</sys:String>
 </ResourceDictionary>
 

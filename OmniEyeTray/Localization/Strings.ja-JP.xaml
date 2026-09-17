@@ -224,5 +224,9 @@
     <sys:String x:Key="DpiBypass_MsgDomainExists">このドメインは既にリストに存在します。</sys:String>
     <sys:String x:Key="DpiBypass_DomainsCount">総ドメイン数:</sys:String>
     <sys:String x:Key="DpiBypass_NoDomainsFound">ドメインが見つかりません</sys:String>
+    <sys:String x:Key="DpiBypass_ViewModeItems">アイテム</sys:String>
+    <sys:String x:Key="DpiBypass_ViewModeNotepad">メモ帳</sys:String>
+    <sys:String x:Key="DpiBypass_BtnOpenNotepad">Windows メモ帳で開く</sys:String>
+    <sys:String x:Key="DpiBypass_NotepadHint">リストを1行ずつ編集できます。コメント (#) やワイルドカード (^, *.) に対応。保存時に自動正規化されます。</sys:String>
 </ResourceDictionary>
 

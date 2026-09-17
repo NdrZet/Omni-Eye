@@ -205,10 +205,14 @@ To guarantee continuous availability of essential network communications (includ
 
 An interactive Domain Lists Editor directly within the DPI Bypass page gives users full control over hostlist desynchronization rules:
 * **Hostlist Management Without File Editing:** Seamlessly switch between `list-general.txt` (General), `list-google.txt` (YouTube & Google services), and `list-exclude.txt` (Exclusions) via segmented tabs.
+* **Dual View Modes (Items vs Notepad):**
+  * **Items Mode:** Visual interactive cards with single-click removal buttons (`✕`), fast addition bar, and substring search filter.
+  * **Notepad Mode:** An embedded dark monospace text editor (Consolas, full scrollbars) designed for bulk copying/pasting of dozens/hundreds of domains, with comment support (`#`, `;`) and custom list editing.
+* **External Windows Notepad Integration:** A dedicated "In Windows Notepad" button opens the selected list file directly in native `notepad.exe` with automatic synchronization upon saving.
 * **Intelligent Domain Sanitization & Validation:** Strips protocols (`http://`, `https://`), trailing paths, query parameters, and ports, validating valid FQDN syntax while preserving `^` and `*.` wildcards.
 * **Instant Hot-Reload:** Applying changes automatically restarts the running `winws.exe` engine with the new hostlists in <200ms without interrupting the UI state.
 * **Import, Export & Community Sync:** Export lists to `.txt`, import third-party rules with automatic deduplication, or download community updates directly from GitHub in 1 click.
-* **Real-time Search & Domain Badge:** Instant substring filtering and badge counter displaying total rule counts.
+* **Real-time Search & Dynamic Badge:** Instant substring filtering and badge counter displaying total active rule counts.
 
 ### 3.9. System DNS & Windows 11 Native DoH Integration
 

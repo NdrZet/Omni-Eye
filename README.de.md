@@ -204,10 +204,14 @@ Um den unterbrechungsfreien Zugriff auf Netzwerkdienste (wie Discord Voice und Y
 
 Der integrierte Domain-Listen-Editor auf der Bypass-Seite ermöglicht die vollständige Konfiguration von Hostlist-Regeln direkt über die GUI:
 * **Listenverwaltung ohne Dateieditierung:** Nahtloses Wechseln zwischen `list-general.txt` (Allgemein), `list-google.txt` (YouTube & Google-Dienste) und `list-exclude.txt` (Ausnahmen) über Registerkarten.
+* **Dualer Anzeigemodus (Elemente vs. Editor/Notepad):**
+  * **Element-Modus:** Interaktive visuelle Karten mit 1-Klick-Löschen (`✕`), Schnellhinzufügeleiste und Teilzeichenfolgensuche.
+  * **Notepad-Modus:** Integrierter Monospace-Volltexteditor (Consolas, dunkles Design, Bildlaufleisten) für das Einfügen von Dutzenden/Hunderten Domains, Kommentaren (`#`, `;`) und freier Bearbeitung.
+* **Integration mit externem Windows-Notepad:** Schaltfläche zum sofortigen Öffnen der Hostlist-Datei im nativen `notepad.exe` mit automatischer Synchronisierung.
 * **Intelligente Bereinigung & Validierung:** Entfernt Protokolle (`http://`, `https://`), Pfade, Ports und Abfrageparameter, validiert FQDN-Hostnamen und unterstützt `^` sowie `*.` Platzhalter.
 * **Sofortiger Hot-Reload:** Beim Speichern wird der aktive `winws.exe`-Prozess in unter 200 ms mit den neuen Hostlisten neu gestartet.
 * **Import, Export & Community-Synchronisation:** Export in Textdateien, Batch-Import externer Listen mit Deduplizierung und 1-Klick-Aktualisierung aus Community-Repositories.
-* **Live-Suche & Zähleranzeige:** Schnelles Filtern nach Teilzeichenfolgen und Badge mit Gesamtzahl der Einträge.
+* **Live-Suche & dynamische Zähleranzeige:** Schnelles Filtern nach Teilzeichenfolgen und Badge mit Gesamtzahl aktiver Regeln.
 
 ### 3.9. Sicherer DNS-Manager & Windows 11 DoH
 

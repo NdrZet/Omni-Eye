@@ -151,7 +151,7 @@ public class DomainListManager
             {
                 cleanSet.Add(clean);
             }
-            else if (!string.IsNullOrWhiteSpace(item))
+            else if (!string.IsNullOrWhiteSpace(item) && !item.Contains(' '))
             {
                 cleanSet.Add(item.Trim().ToLowerInvariant());
             }
@@ -277,6 +277,70 @@ public class DomainListManager
 
         cleanDomain = candidate;
         return true;
+    }
+
+    /// <summary>
+    /// Parses, sanitizes, and deduplicates domains from raw multiline text (e.g. from Notepad view).
+    /// </summary>
+    public static List<string> ParseRawText(string rawText)
+    {
+        if (string.IsNullOrWhiteSpace(rawText))
+        {
+            return new List<string>();
+        }
+
+        var lines = rawText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        var cleanSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var rawLine in lines)
+        {
+            var line = rawLine.Trim();
+            if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#') || line.StartsWith(';'))
+            {
+                continue;
+            }
+
+            if (TrySanitizeDomain(line, out var clean, out _))
+            {
+                cleanSet.Add(clean);
+            }
+            else if (!line.Contains(' ') && !line.Contains('\t') && (line.Contains('.') || line.Contains(':')))
+            {
+                cleanSet.Add(line.ToLowerInvariant());
+            }
+        }
+
+        return cleanSet.OrderBy(d => d, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>
+    /// Gets the raw text content of a list file for Notepad viewing.
+    /// </summary>
+    public string GetRawText(string listFileName)
+    {
+        var domains = LoadList(listFileName);
+        return string.Join(Environment.NewLine, domains);
+    }
+
+    /// <summary>
+    /// Opens the specified domain list file in the system default text editor (notepad.exe).
+    /// </summary>
+    public System.Diagnostics.Process? OpenInSystemEditor(string listFileName)
+    {
+        var filePath = GetListFilePath(listFileName);
+        if (!File.Exists(filePath))
+        {
+            SaveList(listFileName, Enumerable.Empty<string>());
+        }
+
+        var psi = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = "notepad.exe",
+            Arguments = $"\"{filePath}\"",
+            UseShellExecute = true
+        };
+
+        return System.Diagnostics.Process.Start(psi);
     }
 
     /// <summary>

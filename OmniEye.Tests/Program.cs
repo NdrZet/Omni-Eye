@@ -951,7 +951,30 @@ public class Program
             if (afterImport.Count != 6)
                 throw new Exception($"Expected 6 domains total after import, got {afterImport.Count}");
 
-            // 6. Test Hot-Reload API Signature on ZapretEngine
+            // 6. Test Multiline Notepad Raw Text Parsing and Getting
+            Console.WriteLine(" -> Testing Multiline Notepad Raw Text Parsing...");
+            string rawNotepadInput = @"
+# Custom comments at the top
+  discord.com  
+# another comment
+https://x.com/explore
+*.twitch.tv
+DISCORD.COM
+  
+invalid domain with spaces
+# EOF comment
+";
+            var parsedNotepad = DomainListManager.ParseRawText(rawNotepadInput);
+            if (parsedNotepad.Count != 3)
+                throw new Exception($"Expected 3 clean domains from notepad input, got {parsedNotepad.Count}");
+            if (!parsedNotepad.Contains("discord.com") || !parsedNotepad.Contains("x.com") || !parsedNotepad.Contains("*.twitch.tv"))
+                throw new Exception("Missing expected domain from ParseRawText.");
+
+            string rawJoined = manager.GetRawText(DomainListManager.ListGeneral);
+            if (string.IsNullOrWhiteSpace(rawJoined))
+                throw new Exception("GetRawText returned empty text.");
+
+            // 7. Test Hot-Reload API Signature on ZapretEngine
             Console.WriteLine(" -> Testing ZapretEngine.Restart() non-crashing invocation...");
             var engine = new ZapretEngine();
             engine.Restart("General");
