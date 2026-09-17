@@ -64,8 +64,8 @@
 
         <!-- Windows 11 SettingsExpander Header Template -->
         <ControlTemplate x:Key="Win11SettingsExpanderHeaderTemplate" TargetType="ToggleButton">
-            <Border x:Name="HBorder" Background="#242424" Padding="16,12" CornerRadius="7" 
-                    BorderBrush="#25FFFFFF" BorderThickness="0" HorizontalAlignment="Stretch">
+            <Border x:Name="HBorder" Background="#161616" Padding="16,12" CornerRadius="7" 
+                    BorderBrush="#282828" BorderThickness="0" HorizontalAlignment="Stretch">
                 <Grid HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -76,7 +76,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Icon Container -->
-                    <Border Grid.Column="0" Background="#18FFFFFF" BorderBrush="#26FFFFFF" BorderThickness="1" 
+                    <Border Grid.Column="0" Background="#121212" BorderBrush="#202020" BorderThickness="1" 
                             CornerRadius="6" Width="36" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Folder24" FontSize="18" Foreground="#4CC2FF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
@@ -110,7 +110,7 @@
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="HBorder" Property="Background" Value="#2A2A2A"/>
+                    <Setter TargetName="HBorder" Property="Background" Value="#1C1C1C"/>
                 </Trigger>
                 <Trigger Property="IsChecked" Value="True">
                     <Setter TargetName="HBorder" Property="CornerRadius" Value="7,7,0,0"/>
@@ -126,7 +126,7 @@
 
         <!-- Windows 11 SettingsExpander Template -->
         <ControlTemplate x:Key="Win11SettingsExpanderTemplate" TargetType="Expander">
-            <Border Background="#202020" BorderBrush="#25FFFFFF" BorderThickness="1" 
+            <Border Background="#121212" BorderBrush="#252525" BorderThickness="1" 
                     CornerRadius="8" Margin="0,0,0,10" HorizontalAlignment="Stretch">
                 <Grid HorizontalAlignment="Stretch">
                     <Grid.RowDefinitions>
@@ -249,7 +249,7 @@
 
                 <!-- Sidebar Footer -->
                 <StackPanel Grid.Row="2" Margin="2,0,2,0">
-                    <Border Background="#1CFFFFFF" CornerRadius="8" Padding="12,10" BorderBrush="#20FFFFFF" BorderThickness="1">
+                    <Border Background="#161616" CornerRadius="8" Padding="12,10" BorderBrush="#252525" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -328,7 +328,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Card 1: Outbound Firewall -->
-                    <Border Grid.Column="0" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                    <Border Grid.Column="0" Background="#161616" CornerRadius="8" Padding="14,12" BorderBrush="#252525" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -346,7 +346,7 @@
                     </Border>
 
                     <!-- Card 2: Whitelist -->
-                    <Border Grid.Column="2" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                    <Border Grid.Column="2" Background="#161616" CornerRadius="8" Padding="14,12" BorderBrush="#252525" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -364,7 +364,7 @@
                     </Border>
 
                     <!-- Card 3: Memory Protection -->
-                    <Border Grid.Column="4" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                    <Border Grid.Column="4" Background="#161616" CornerRadius="8" Padding="14,12" BorderBrush="#252525" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -511,7 +511,7 @@
                         <TextBlock Text="{DynamicResource Firewall_HeaderDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,14"/>
 
                         <!-- Policy Card -->
-                        <Border Background="#1CFFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#20FFFFFF" BorderThickness="1">
+                        <Border Background="#161616" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#282828" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -537,7 +537,7 @@
                         </Border>
 
                         <!-- System Exceptions Card -->
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#161616" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#282828" BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Firewall_ExceptionsTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
                                 <TextBlock Text="{DynamicResource Firewall_ExceptionsDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
@@ -545,7 +545,7 @@
                         </Border>
 
                         <!-- Watchdog Card -->
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#161616" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#282828" BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Firewall_WatchdogTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
                                 <TextBlock Text="{DynamicResource Firewall_WatchdogDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
@@ -554,14 +554,14 @@
 
                         <!-- Active Network Connections Monitor Entry Card -->
                         <Border x:Name="CardOpenNetworkMonitor" CornerRadius="8" Padding="18,16" 
-                                BorderBrush="#24FFFFFF" BorderThickness="1" Cursor="Hand" Margin="0,0,0,12"
+                                BorderBrush="#282828" BorderThickness="1" Cursor="Hand" Margin="0,0,0,12"
                                 MouseLeftButtonUp="CardOpenNetworkMonitor_Click">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="Background" Value="#1CFFFFFF"/>
+                                    <Setter Property="Background" Value="#161616"/>
                                     <Style.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#25FFFFFF"/>
+                                            <Setter Property="Background" Value="#1C1C1C"/>
                                             <Setter Property="BorderBrush" Value="#404CC2FF"/>
                                         </Trigger>
                                     </Style.Triggers>
@@ -614,7 +614,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Filter & Search Controls -->
-                <Border Grid.Row="0" Background="#18FFFFFF" CornerRadius="8" Padding="12,10" Margin="0,0,0,10" BorderBrush="#20FFFFFF" BorderThickness="1">
+                <Border Grid.Row="0" Background="#161616" CornerRadius="8" Padding="12,10" Margin="0,0,0,10" BorderBrush="#282828" BorderThickness="1">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -661,12 +661,12 @@
                 </Border>
 
                 <!-- Full Connections DataGrid -->
-                <Border Grid.Row="1" Background="#18FFFFFF" CornerRadius="8" Padding="0" BorderBrush="#20FFFFFF" BorderThickness="1">
+                <Border Grid.Row="1" Background="#161616" CornerRadius="8" Padding="0" BorderBrush="#282828" BorderThickness="1">
                     <DataGrid x:Name="DgConnections" AutoGenerateColumns="False" 
                               CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False"
-                              Background="Transparent" RowBackground="#14FFFFFF" 
-                              AlternatingRowBackground="#0AFFFFFF"
-                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#14FFFFFF"
+                              Background="Transparent" RowBackground="#121212" 
+                              AlternatingRowBackground="#161616"
+                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#202020"
                               HeadersVisibility="Column" BorderThickness="0"
                               Foreground="#FFFFFF" SelectionMode="Single"
                               ScrollViewer.CanContentScroll="True"
@@ -810,19 +810,19 @@
 
             <!-- ================= VIEW 3: INJECTION ================= -->
             <Grid x:Name="ViewInjection" Grid.Row="1" Visibility="Collapsed">
-                <Border Background="#1CFFFFFF" CornerRadius="8" Padding="22" BorderBrush="#20FFFFFF" BorderThickness="1">
+                <Border Background="#161616" CornerRadius="8" Padding="22" BorderBrush="#282828" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="{DynamicResource Injection_Header}" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
                         <TextBlock Text="{DynamicResource Injection_HeaderDesc}" FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,18"/>
 
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#121212" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#202020" BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Injection_FreezeTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
                                 <TextBlock Text="{DynamicResource Injection_FreezeDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#121212" CornerRadius="8" Padding="16" BorderBrush="#202020" BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Injection_TimerTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
                                 <TextBlock Text="{DynamicResource Injection_TimerDesc}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
@@ -834,12 +834,12 @@
 
             <!-- ================= VIEW 4: SETTINGS ================= -->
             <Grid x:Name="ViewSettings" Grid.Row="1" Visibility="Collapsed">
-                <Border Background="#1CFFFFFF" CornerRadius="8" Padding="22" BorderBrush="#20FFFFFF" BorderThickness="1">
+                <Border Background="#161616" CornerRadius="8" Padding="22" BorderBrush="#282828" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="{DynamicResource Settings_Header}" FontSize="17" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
                         
                         <!-- Language Selection Card -->
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#121212" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#202020" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -855,7 +855,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#121212" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#202020" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -871,7 +871,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#121212" CornerRadius="8" Padding="16" BorderBrush="#202020" BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="{DynamicResource Settings_DbTitle}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF"/>
                                 <TextBlock Text="{DynamicResource Settings_DbPath}" FontSize="11" Foreground="#9E9E9E" Margin="0,4,0,0"/>
@@ -888,7 +888,7 @@
                     <StackPanel Margin="0,0,12,0">
 
                         <!-- Master Control Hero Card -->
-                        <Border Background="#1CFFFFFF" CornerRadius="8" Padding="18,16" Margin="0,0,0,14" BorderBrush="#24FFFFFF" BorderThickness="1">
+                        <Border Background="#161616" CornerRadius="8" Padding="18,16" Margin="0,0,0,14" BorderBrush="#282828" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -940,7 +940,7 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Metric 1: Active Connections -->
-                            <Border Grid.Column="0" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                            <Border Grid.Column="0" Background="#161616" CornerRadius="8" Padding="14,12" BorderBrush="#252525" BorderThickness="1">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -957,7 +957,7 @@
                             </Border>
 
                             <!-- Metric 2: Bytes Transferred -->
-                            <Border Grid.Column="2" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                            <Border Grid.Column="2" Background="#161616" CornerRadius="8" Padding="14,12" BorderBrush="#252525" BorderThickness="1">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -974,7 +974,7 @@
                             </Border>
 
                             <!-- Metric 3: DoH Cache Hits -->
-                            <Border Grid.Column="4" Background="#1CFFFFFF" CornerRadius="8" Padding="14,12" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                            <Border Grid.Column="4" Background="#161616" CornerRadius="8" Padding="14,12" BorderBrush="#252525" BorderThickness="1">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -992,7 +992,7 @@
                         </Grid>
 
                         <!-- Dynamic DoH Resolvers Monitor Card -->
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,14" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#161616" CornerRadius="8" Padding="16" Margin="0,0,0,14" BorderBrush="#282828" BorderThickness="1">
                             <StackPanel>
                                 <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions>
@@ -1011,7 +1011,7 @@
                                 <ItemsControl x:Name="ItemsDohServers">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="#12FFFFFF" CornerRadius="6" Padding="12,8" Margin="0,0,0,6" BorderBrush="#15FFFFFF" BorderThickness="1">
+                                            <Border Background="#121212" CornerRadius="6" Padding="12,8" Margin="0,0,0,6" BorderBrush="#202020" BorderThickness="1">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="Auto" />
@@ -1065,7 +1065,7 @@
                         </Border>
 
                         <!-- Custom Domain Lists Editor Card -->
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" Margin="0,0,0,14" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#161616" CornerRadius="8" Padding="16" Margin="0,0,0,14" BorderBrush="#282828" BorderThickness="1">
                             <StackPanel>
                                 <!-- Card Header -->
                                 <Grid Margin="0,0,0,14">
@@ -1119,7 +1119,7 @@
                                                    Appearance="Secondary" Margin="0,0,10,0" Click="BtnTabList_Click" Tag="list-exclude.txt" Height="28" FontSize="11" Padding="10,0" Cursor="Hand"/>
 
                                         <!-- View Mode Switcher (Items vs Notepad) -->
-                                        <Border Background="#14FFFFFF" CornerRadius="6" Padding="2">
+                                        <Border Background="#121212" BorderBrush="#202020" BorderThickness="1" CornerRadius="6" Padding="2">
                                             <StackPanel Orientation="Horizontal">
                                                 <ui:Button x:Name="BtnViewModeItems" Content="{DynamicResource DpiBypass_ViewModeItems}" 
                                                            Appearance="Primary" Icon="{ui:SymbolIcon Symbol=DocumentBulletList24}" 
@@ -1164,13 +1164,13 @@
                                     </Grid>
 
                                     <!-- Domain Items List View -->
-                                    <Border Background="#10FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="6" Padding="6" Height="220">
+                                    <Border Background="#121212" BorderBrush="#202020" BorderThickness="1" CornerRadius="6" Padding="6" Height="220">
                                         <Grid>
                                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                                 <ItemsControl x:Name="ItemsDomainList">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border Background="#0CFFFFFF" CornerRadius="4" Padding="10,6" Margin="0,0,0,4" BorderBrush="#10FFFFFF" BorderThickness="1">
+                                                            <Border Background="#161616" CornerRadius="4" Padding="10,6" Margin="0,0,0,4" BorderBrush="#222222" BorderThickness="1">
                                                                 <Grid>
                                                                     <Grid.ColumnDefinitions>
                                                                         <ColumnDefinition Width="Auto" />
@@ -1199,7 +1199,7 @@
 
                                 <!-- Mode 2: Multiline Raw Text / Notepad View -->
                                 <StackPanel x:Name="PanelNotepadView" Visibility="Collapsed">
-                                    <Border Background="#10FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="6" Padding="8">
+                                    <Border Background="#121212" BorderBrush="#202020" BorderThickness="1" CornerRadius="6" Padding="8">
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
@@ -1211,8 +1211,8 @@
                                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                                                      TextWrapping="NoWrap"
                                                      FontFamily="Consolas, Segoe UI Mono, Courier New"
-                                                     FontSize="12" Foreground="#EAEAEA" Background="#0A000000"
-                                                     BorderThickness="1" BorderBrush="#14FFFFFF" Padding="8"
+                                                     FontSize="12" Foreground="#EAEAEA" Background="#0E0E0E"
+                                                     BorderThickness="1" BorderBrush="#1E1E1E" Padding="8"
                                                      TextChanged="TxtDomainsRawNotepad_TextChanged"/>
                                         </Grid>
                                     </Border>
@@ -1221,7 +1221,7 @@
                         </Border>
 
                         <!-- Desynchronization Parameters Card -->
-                        <Border Background="#18FFFFFF" CornerRadius="8" Padding="16" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                        <Border Background="#161616" CornerRadius="8" Padding="16" BorderBrush="#282828" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
