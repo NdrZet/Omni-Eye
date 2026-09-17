@@ -56,6 +56,11 @@ Name: "startservice"; Description: "OmniEyeSvc Windows-Dienst installieren und s
 Name: "startservice"; Description: "OmniEyeSvc Windowsサービスをインストールして開始"; Languages: ja; Flags: checkedonce
 
 [Files]
+; Сохранение пользовательских настроек и списков доменов при накатывании обновлений
+Source: "..\publish\OmniEye\Service\appsettings.json"; DestDir: "{app}\Service"; Flags: onlyifdoesntexist uninsneveruninstall
+Source: "..\publish\OmniEye\Tray\Zapret\lists\*"; DestDir: "{app}\Tray\Zapret\lists"; Flags: onlyifdoesntexist uninsneveruninstall recursesubdirs createallsubdirs
+
+; Обновляемые бинарники и исполняемые файлы
 Source: "..\publish\OmniEye\Service\*"; DestDir: "{app}\Service"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\publish\OmniEye\Tray\*"; DestDir: "{app}\Tray"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\publish\OmniEye\InstallService.bat"; DestDir: "{app}"; Flags: ignoreversion
