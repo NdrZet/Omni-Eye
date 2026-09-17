@@ -773,6 +773,7 @@ public class Program
         if (engine.IsRunning)
             throw new Exception("ZapretEngine should not be running immediately upon construction.");
 
+
         Console.WriteLine(" -> ZapretEngine JobObject initialized and ready.");
         return Task.CompletedTask;
     }

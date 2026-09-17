@@ -13,6 +13,7 @@ namespace OmniEye.DpiBypass.Zapret;
 public class ZapretEngine : IDisposable
 {
     private Process? _process;
+    private bool _usedShellExecute = false;
     private IntPtr _jobHandle = IntPtr.Zero;
     private readonly object _lock = new();
 
@@ -22,7 +23,26 @@ public class ZapretEngine : IDisposable
         {
             lock (_lock)
             {
-                return _process != null && !_process.HasExited;
+                if (_process == null) return false;
+                try
+                {
+                    if (!_process.HasExited) return true;
+                }
+                catch { }
+
+                if (_usedShellExecute)
+                {
+                    try
+                    {
+                        var procs = Process.GetProcessesByName("winws");
+                        bool any = procs.Length > 0;
+                        foreach (var p in procs) p.Dispose();
+                        return any;
+                    }
+                    catch { }
+                }
+
+                return false;
             }
         }
     }
@@ -33,8 +53,29 @@ public class ZapretEngine : IDisposable
         {
             lock (_lock)
             {
-                try { return _process != null && !_process.HasExited ? _process.Id : null; }
-                catch { return null; }
+                if (_process == null) return null;
+                try
+                {
+                    if (!_process.HasExited) return _process.Id;
+                }
+                catch { }
+
+                if (_usedShellExecute)
+                {
+                    try
+                    {
+                        var procs = Process.GetProcessesByName("winws");
+                        if (procs.Length > 0)
+                        {
+                            var id = procs[0].Id;
+                            foreach (var p in procs) p.Dispose();
+                            return id;
+                        }
+                    }
+                    catch { }
+                }
+
+                return null;
             }
         }
     }
@@ -83,10 +124,8 @@ public class ZapretEngine : IDisposable
     {
         lock (_lock)
         {
-            if (IsRunning)
-            {
-                Stop();
-            }
+            Stop();
+            KillLingeringWinws();
 
             var zapretDir = ResolveZapretDirectory();
             var binDir = Path.Combine(zapretDir, "bin");
@@ -102,24 +141,12 @@ public class ZapretEngine : IDisposable
 
             var arguments = BuildArguments(presetName, zapretDir, binDir, listsDir);
 
-            var psi = new ProcessStartInfo
-            {
-                FileName = winwsExe,
-                Arguments = arguments,
-                WorkingDirectory = binDir,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-
             Process? proc = null;
-            try
+            bool usedShellExecute = false;
+
+            if (!IsAdministrator())
             {
-                proc = Process.Start(psi);
-            }
-            catch (System.ComponentModel.Win32Exception wEx) when (wEx.NativeErrorCode == 740)
-            {
-                // Elevation required (ERROR_ELEVATION_REQUIRED = 740)
+                // Must elevate to load WinDivert kernel driver
                 var elevatedPsi = new ProcessStartInfo
                 {
                     FileName = winwsExe,
@@ -129,30 +156,82 @@ public class ZapretEngine : IDisposable
                     Verb = "runas",
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
-                proc = Process.Start(elevatedPsi);
-            }
-
-            _process = proc ?? throw new InvalidOperationException("Failed to start winws.exe process.");
-
-            // Check if process immediately exited on launch (e.g. missing files or driver load failure)
-            try
-            {
-                if (_process.WaitForExit(250))
+                try
                 {
-                    int exitCode = _process.ExitCode;
-                    _process.Dispose();
-                    _process = null;
-                    throw new InvalidOperationException($"Zapret winws.exe terminated immediately with exit code {exitCode}. Check administrative privileges and driver status.");
+                    proc = Process.Start(elevatedPsi);
+                    usedShellExecute = true;
+                }
+                catch (System.ComponentModel.Win32Exception wEx)
+                {
+                    throw new InvalidOperationException("Для запуска службы обхода DPI требуются права Администратора (запрос UAC был отклонен).", wEx);
                 }
             }
-            catch (InvalidOperationException)
+            else
             {
-                throw;
+                var psi = new ProcessStartInfo
+                {
+                    FileName = winwsExe,
+                    Arguments = arguments,
+                    WorkingDirectory = binDir,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+
+                try
+                {
+                    proc = Process.Start(psi);
+                }
+                catch (System.ComponentModel.Win32Exception wEx) when (wEx.NativeErrorCode == 740)
+                {
+                    var elevatedPsi = new ProcessStartInfo
+                    {
+                        FileName = winwsExe,
+                        Arguments = arguments,
+                        WorkingDirectory = binDir,
+                        UseShellExecute = true,
+                        Verb = "runas",
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                    proc = Process.Start(elevatedPsi);
+                    usedShellExecute = true;
+                }
             }
-            catch { }
+
+            _process = proc ?? throw new InvalidOperationException("Не удалось запустить процесс winws.exe.");
+            _usedShellExecute = usedShellExecute;
+
+            // Check if process immediately crashed or exited (only for non-ShellExecute where process object is directly queryable)
+            if (!usedShellExecute)
+            {
+                try
+                {
+                    if (_process.WaitForExit(300))
+                    {
+                        int exitCode = _process.ExitCode;
+                        _process.Dispose();
+                        _process = null;
+                        throw new InvalidOperationException($"Служба winws.exe завершилась сразу после запуска (код {exitCode}). Запустите OmniEye от имени Администратора.");
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    throw;
+                }
+                catch { }
+            }
+            else
+            {
+                // For ShellExecute UAC elevation: wait briefly and verify that winws process is alive in the system
+                System.Threading.Thread.Sleep(300);
+                if (!IsRunning)
+                {
+                    throw new InvalidOperationException("Служба winws.exe не смогла запуститься в среде Windows.");
+                }
+            }
 
             // Bind process to JobObject for guaranteed auto-kill on parent exit (if accessible)
-            if (_jobHandle != IntPtr.Zero && _process != null && !_process.HasExited)
+            if (!usedShellExecute && _jobHandle != IntPtr.Zero && _process != null && !_process.HasExited)
             {
                 try
                 {
@@ -164,6 +243,75 @@ public class ZapretEngine : IDisposable
             CurrentPreset = presetName;
             StateChanged?.Invoke(true);
         }
+    }
+
+    /// <summary>
+    /// Checks if current process is running with elevated Administrator privileges.
+    /// </summary>
+    public static bool IsAdministrator()
+    {
+        try
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Guarantees that any stale or orphaned winws.exe process and WinDivert driver are terminated.
+    /// </summary>
+    public static void KillLingeringWinws()
+    {
+        try
+        {
+            foreach (var p in Process.GetProcessesByName("winws"))
+            {
+                try
+                {
+                    p.Kill(entireProcessTree: true);
+                    p.WaitForExit(400);
+                }
+                catch { }
+                finally
+                {
+                    p.Dispose();
+                }
+            }
+        }
+        catch { }
+
+        try
+        {
+            using var killProc = Process.Start(new ProcessStartInfo
+            {
+                FileName = "taskkill.exe",
+                Arguments = "/F /IM winws.exe",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
+            killProc?.WaitForExit(500);
+        }
+        catch { }
+
+        try
+        {
+            using var scProc = Process.Start(new ProcessStartInfo
+            {
+                FileName = "sc.exe",
+                Arguments = "stop WinDivert",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
+            scProc?.WaitForExit(500);
+        }
+        catch { }
     }
 
     /// <summary>
@@ -221,37 +369,8 @@ public class ZapretEngine : IDisposable
                 }
             }
 
-            // Also guarantee any lingering winws.exe instance is stopped
-            try
-            {
-                using var killProc = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "taskkill.exe",
-                    Arguments = "/F /IM winws.exe",
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                });
-                killProc?.WaitForExit(1000);
-            }
-            catch { }
-
-            // Cleanup WinDivert service driver if lingering
-            try
-            {
-                var stopPsi = new ProcessStartInfo
-                {
-                    FileName = "sc.exe",
-                    Arguments = "stop WinDivert",
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                using var p = Process.Start(stopPsi);
-                p?.WaitForExit(1000);
-            }
-            catch { }
-
+            KillLingeringWinws();
+            _usedShellExecute = false;
             StateChanged?.Invoke(false);
         }
     }
